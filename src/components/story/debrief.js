@@ -116,10 +116,30 @@ export function timeBudget(report) {
     const stopPlanned = report.checkpoints[index]?.stop_s_planned ?? 0;
     const moving_s = section.moving_s_actual - section.moving_s_planned;
     const stop_s = (section.stopped_s_actual ?? 0) - stopPlanned;
-    rows.push({ from: section.from, to: section.to, moving_s, stop_s, total_s: moving_s + stop_s });
+    rows.push({
+      from: section.from,
+      to: section.to,
+      start_m: report.checkpoints[index].distance_m,
+      end_m: report.checkpoints[index + 1].distance_m,
+      moving_s,
+      stop_s,
+      total_s: moving_s + stop_s,
+    });
   });
   const sum = (key) => rows.reduce((total, row) => total + row[key], 0);
   return { rows, moving_s: sum("moving_s"), stop_s: sum("stop_s"), total_s: sum("total_s") };
+}
+
+/**
+ * Tick values for a time axis from `min_s` to `max_s` (seconds): every hour, or every half
+ * hour or quarter when the range is short, so there are a handful of lines, never dozens.
+ */
+export function timeTicks(min_s, max_s) {
+  const range = max_s - min_s;
+  const step = [900, 1800, 3600, 7200].find((candidate) => range / candidate <= 6) ?? 14400;
+  const ticks = [];
+  for (let tick = Math.ceil(min_s / step) * step + 0; tick <= max_s; tick += step) ticks.push(tick);
+  return ticks;
 }
 
 /** Sections placed along the route, between the checkpoints they join. */

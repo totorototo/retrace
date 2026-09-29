@@ -7,22 +7,54 @@ const style = (Component) => styled(Component)`
   ${chartCss}
   ${rowsCss}
 
-  .budget-track {
-    border-radius: var(--border-radius-sm);
-    background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  .row {
+    cursor: default;
+  }
+
+  .axis-row .row-track {
+    height: 1rem;
+  }
+
+  .tick-label {
+    position: absolute;
+    bottom: 0;
+    transform: translateX(-50%);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xxsmall);
+    color: color-mix(in srgb, var(--color-text) 55%, transparent);
+    white-space: nowrap;
+  }
+
+  .tick-line {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 1px;
+    background: color-mix(in srgb, var(--color-text) 12%, transparent);
   }
 
   .budget-fill {
+    --fill: color-mix(in srgb, var(--color-text) 55%, transparent);
     position: absolute;
     top: 0;
     bottom: 0;
+    background: var(--fill);
 
-    &.moving {
-      background: var(--color-accent);
+    &[data-tone="behind"] {
+      --fill: color-mix(in srgb, var(--color-behind) 88%, transparent);
     }
 
+    &[data-tone="ahead"] {
+      --fill: color-mix(in srgb, var(--color-ahead) 88%, transparent);
+    }
+
+    /* Stops: the same tone, striped, so the pair reads as one section's delta. */
     &.stop {
-      background: var(--color-primary);
+      background: repeating-linear-gradient(
+        -45deg,
+        var(--fill) 0 3px,
+        color-mix(in srgb, var(--fill) 35%, transparent) 3px 6px
+      );
     }
   }
 

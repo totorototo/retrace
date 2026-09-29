@@ -11,6 +11,7 @@ import {
   sectionSpans,
   spacedNames,
   timeBudget,
+  timeTicks,
   toneOf,
   toneOfRatio,
 } from "./debrief.js";
@@ -114,8 +115,22 @@ describe("timeBudget", () => {
     expect(rows[1]).toMatchObject({ moving_s: 300, stop_s: -200, total_s: 100 });
   });
 
+  it("places each row between its checkpoints", () => {
+    expect(timeBudget(report).rows[1]).toMatchObject({ start_m: 1500, end_m: 3500 });
+  });
+
   it("adds up to the delta at the finish", () => {
     expect(timeBudget(report).total_s).toBe(report.checkpoints.at(-1).delta_s);
+  });
+});
+
+describe("timeTicks", () => {
+  it("steps by the hour over a long range", () => {
+    expect(timeTicks(-3000, 18000)).toEqual([0, 3600, 7200, 10800, 14400, 18000]);
+  });
+
+  it("steps finer over a short one", () => {
+    expect(timeTicks(-600, 1500)).toEqual([0, 900]);
   });
 });
 
