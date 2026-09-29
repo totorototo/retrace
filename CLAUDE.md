@@ -23,6 +23,9 @@ React 19 + styled-components + zustand, Vite 8, Vitest, Playwright, Zig 0.16 via
   a local `.env` (never committed; see `.env.example`). Offline, it falls back to an SVG.
 - Design system: `src/theme/Theme.js` (from Terminus). Use the CSS custom properties.
   Component styles go in `*.style.js` next to the component.
+- Light and dark, as in Terminus: the system's variant until the toggle picks one. Colour
+  that means behind or ahead of the plan uses `--color-behind(-text)` / `--color-ahead(-text)`
+  from `GlobalStyle.js`, never the raw tokens: light's secondary is orange, not green.
 
 ## Data
 

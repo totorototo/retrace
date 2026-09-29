@@ -19,11 +19,11 @@ export const chartCss = css`
     }
 
     [data-tone="behind"] {
-      color: var(--color-accent-text);
+      color: var(--color-behind-text);
     }
 
     [data-tone="ahead"] {
-      color: var(--color-secondary-text);
+      color: var(--color-ahead-text);
     }
   }
 

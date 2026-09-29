@@ -56,11 +56,11 @@ const style = (Component) => styled(Component)`
     color: var(--color-text);
 
     &[data-tone="behind"] {
-      color: var(--color-accent-text);
+      color: var(--color-behind-text);
     }
 
     &[data-tone="ahead"] {
-      color: var(--color-secondary-text);
+      color: var(--color-ahead-text);
     }
   }
 
@@ -69,11 +69,11 @@ const style = (Component) => styled(Component)`
     color: var(--color-primary-text);
 
     &[data-tone="behind"] {
-      color: var(--color-accent-text);
+      color: var(--color-behind-text);
     }
 
     &[data-tone="ahead"] {
-      color: var(--color-secondary-text);
+      color: var(--color-ahead-text);
     }
   }
 

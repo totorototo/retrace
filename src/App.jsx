@@ -3,6 +3,7 @@ import FilePicker from "./components/filePicker/FilePicker.jsx";
 import SettingsForm from "./components/settingsForm/SettingsForm.jsx";
 import Story from "./components/story/Story.jsx";
 import Summary from "./components/summary/Summary.jsx";
+import ThemeToggle from "./components/themeToggle/ThemeToggle.jsx";
 import useStore from "./store/store.js";
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
 
   return (
     <main>
+      <ThemeToggle />
       <Controls>
         <Header>
           <h1>retrace</h1>

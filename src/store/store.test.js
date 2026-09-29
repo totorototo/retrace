@@ -61,3 +61,39 @@ describe("store", () => {
     expect(store.getState().error).toBe("ElevationMissing");
   });
 });
+
+describe("theme", () => {
+  const prefers = (dark) =>
+    vi.stubGlobal("matchMedia", (query) => ({ matches: dark && query.includes("dark") }));
+
+  afterEach(() => {
+    localStorage.clear();
+    vi.unstubAllGlobals();
+  });
+
+  it("starts from the system's variant", () => {
+    prefers(true);
+    expect(createStore(fakeClient).getState().theme).toBe("dark");
+    prefers(false);
+    expect(createStore(fakeClient).getState().theme).toBe("light");
+  });
+
+  it("remembers the variant picked over the system's", () => {
+    prefers(true);
+    const store = createStore(fakeClient);
+    store.getState().toggleTheme();
+    expect(store.getState().theme).toBe("light");
+    expect(createStore(fakeClient).getState().theme).toBe("light");
+  });
+
+  it("still switches when storage is blocked", () => {
+    prefers(false);
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    const store = createStore(fakeClient);
+    store.getState().toggleTheme();
+    expect(store.getState().theme).toBe("dark");
+    vi.restoreAllMocks();
+  });
+});

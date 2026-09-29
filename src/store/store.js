@@ -10,6 +10,24 @@ export const DEFAULT_SETTINGS = {
 };
 
 const MAX_FILE_BYTES = 256 * 1024 * 1024;
+const THEME_KEY = "retrace-theme";
+
+// The variant the user last picked, else the system's, as Terminus starts from.
+// why: localStorage, not zustand's persist middleware: one string is all that survives a
+// reload here, and the store's other state (files, report) must not.
+function initialTheme() {
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === "dark" || saved === "light") return saved;
+  } catch {
+    // Storage blocked (private mode, a sandbox): fall back to the system.
+  }
+  const prefersDark =
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
+  return prefersDark ? "dark" : "light";
+}
 
 export const createStore = (getClient = createWorkerClient) => {
   let client = null;
@@ -29,6 +47,17 @@ export const createStore = (getClient = createWorkerClient) => {
     // Where the pointer is along the route, shared by every chart and the map; null when
     // it's on none of them.
     cursor_m: null,
+    theme: initialTheme(), // dark | light
+
+    toggleTheme() {
+      const theme = get().theme === "dark" ? "light" : "dark";
+      set({ theme });
+      try {
+        localStorage.setItem(THEME_KEY, theme);
+      } catch {
+        // Not remembered across reloads, but still switched.
+      }
+    },
 
     setCursor(cursor_m) {
       if (cursor_m !== get().cursor_m) set({ cursor_m });

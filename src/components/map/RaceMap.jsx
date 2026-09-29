@@ -111,10 +111,11 @@ const RaceMap = memo(function RaceMap({ className }) {
   const cursor = cursor_m == null ? null : profileAt(report.profile, cursor_m);
 
   // Mapbox paints from values, not CSS custom properties: the theme's, as in Terminus.
-  // The planned route takes the background colour: the outdoors basemap is light whatever
-  // the theme, and the dark theme's text colour vanishes on it.
+  // The outdoors basemap is light in both variants, so the planned route takes whichever
+  // of the variant's text and background is the dark one.
   const colors = theme.colors[theme.currentVariant];
-  const plannedColor = colors["--color-background"];
+  const plannedColor =
+    colors[theme.currentVariant === "dark" ? "--color-background" : "--color-text"];
   const trackColor = colors["--color-primary"];
   const offRouteColor = colors["--color-accent"];
   const pinColor = colors["--color-secondary"];

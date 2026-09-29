@@ -10,11 +10,11 @@ const style = (Component) => styled(Component)`
     stroke: none;
 
     &.behind {
-      fill: color-mix(in srgb, var(--color-accent) 55%, transparent);
+      fill: color-mix(in srgb, var(--color-behind) 55%, transparent);
     }
 
     &.ahead {
-      fill: color-mix(in srgb, var(--color-secondary) 70%, transparent);
+      fill: color-mix(in srgb, var(--color-ahead) 70%, transparent);
     }
   }
 `;

@@ -10,11 +10,11 @@ const style = (Component) => styled(Component)`
     fill: color-mix(in srgb, var(--color-text) 22%, transparent);
 
     &[data-tone="behind"] {
-      fill: color-mix(in srgb, var(--color-accent) 50%, transparent);
+      fill: color-mix(in srgb, var(--color-behind) 50%, transparent);
     }
 
     &[data-tone="ahead"] {
-      fill: color-mix(in srgb, var(--color-secondary) 70%, transparent);
+      fill: color-mix(in srgb, var(--color-ahead) 70%, transparent);
     }
   }
 
@@ -22,11 +22,11 @@ const style = (Component) => styled(Component)`
     background: color-mix(in srgb, var(--color-text) 22%, transparent);
 
     &[data-tone="behind"] {
-      background: color-mix(in srgb, var(--color-accent) 50%, transparent);
+      background: color-mix(in srgb, var(--color-behind) 50%, transparent);
     }
 
     &[data-tone="ahead"] {
-      background: color-mix(in srgb, var(--color-secondary) 70%, transparent);
+      background: color-mix(in srgb, var(--color-ahead) 70%, transparent);
     }
   }
 
