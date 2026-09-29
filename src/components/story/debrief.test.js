@@ -1,7 +1,9 @@
 import {
   behindFrom,
+  bridges,
   deviationSpans,
   gapSeries,
+  isOffTrace,
   paceHalves,
   profileAt,
   sectionSpans,
@@ -24,6 +26,56 @@ describe("gapSeries", () => {
       index >= 3 ? { ...point, duration_s_actual: null } : point,
     );
     expect(gapSeries({ ...report, profile }).at(-1).distance_m).toBe(2000);
+  });
+});
+
+describe("off the planned trace", () => {
+  // A point inside the 2200–2600 m detour, "first reached" only at the rejoin (2150 s).
+  const detour = {
+    ...report,
+    profile: [
+      ...report.profile.slice(0, 3),
+      { ...report.profile[2], distance_m: 2400, duration_s_planned: 1800, duration_s_actual: 2150 },
+      ...report.profile.slice(3),
+    ],
+  };
+
+  it("bridges the gap between the points either side", () => {
+    const point = gapSeries(detour)[3];
+    // Straight from 0 s at 2000 m to +300 s at 3000 m: +120 s at 2400 m, not the frozen +350.
+    expect(point).toMatchObject({ distance_m: 2400, off_trace: true, delta_s: 120 });
+    expect(gapSeries(detour).filter((p) => p.off_trace)).toHaveLength(1);
+  });
+
+  it("has one bridge per detour, from and to points on the trace", () => {
+    const [bridge, ...others] = bridges(gapSeries(detour));
+    expect(others).toHaveLength(0);
+    expect([bridge.from.distance_m, bridge.to.distance_m]).toEqual([2000, 3000]);
+  });
+
+  it("leaves a detour never rejoined unbridged", () => {
+    const open = { ...detour.deviations[0], distance_m_rejoined: null };
+    const unfinished = {
+      ...detour,
+      deviations: [open],
+      totals: { ...detour.totals, distance_m_reached: 2600 },
+      profile: detour.profile.map((p) =>
+        p.distance_m > 2400 ? { ...p, duration_s_actual: null } : p,
+      ),
+    };
+    const points = gapSeries(unfinished);
+    expect(points.at(-1)).toMatchObject({ distance_m: 2400, off_trace: true, delta_s: 350 });
+    expect(bridges(points)).toEqual([]);
+  });
+
+  it("tells a distance inside a detour", () => {
+    const spans = deviationSpans(report);
+    expect([2200, 2400, 2600, 3000].map((d) => isOffTrace(spans, d))).toEqual([
+      false,
+      true,
+      false,
+      false,
+    ]);
   });
 });
 

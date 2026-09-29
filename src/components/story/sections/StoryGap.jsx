@@ -7,6 +7,7 @@ import useStore from "../../../store/store.js";
 import { formatDelta, formatDuration } from "../../../utils/format.js";
 import {
   behindFrom,
+  bridges,
   deviationSpans,
   gapSeries,
   profileAt,
@@ -81,6 +82,12 @@ const StoryGap = memo(function StoryGap({ className }) {
 
     return {
       points,
+      bridges: bridges(points).map(({ from, to }) => ({
+        x1: scaleX(from.distance_m),
+        y1: scaleY(from.delta_s),
+        x2: scaleX(to.distance_m),
+        y2: scaleY(to.delta_s),
+      })),
       min,
       max,
       scaleX,
@@ -92,7 +99,8 @@ const StoryGap = memo(function StoryGap({ className }) {
     };
   }, [report, distance_m_max]);
 
-  const { points, min, max, scaleX, scaleY, zeroY, areaPath, checkpoints, deviations } = chart;
+  const { points, bridges: bridgeLines, min, max, scaleX, scaleY, zeroY, areaPath } = chart;
+  const { checkpoints, deviations } = chart;
   const shown = cursor_m == null ? points.at(-1) : profileAt(points, cursor_m);
 
   return (
@@ -107,12 +115,23 @@ const StoryGap = memo(function StoryGap({ className }) {
             <span>
               plan <b>{formatDuration(shown.duration_s_planned)}</b>
             </span>
-            <span>
-              actual <b>{formatDuration(shown.duration_s_actual)}</b>
-            </span>
-            <span data-tone={toneOf(shown.delta_s)}>
-              <b>{formatDelta(shown.delta_s)}</b>
-            </span>
+            {shown.off_trace ? (
+              <>
+                <span>off the planned trace</span>
+                <span data-tone={toneOf(shown.delta_s)}>
+                  ≈ <b>{formatDelta(shown.delta_s)}</b>
+                </span>
+              </>
+            ) : (
+              <>
+                <span>
+                  actual <b>{formatDuration(shown.duration_s_actual)}</b>
+                </span>
+                <span data-tone={toneOf(shown.delta_s)}>
+                  <b>{formatDelta(shown.delta_s)}</b>
+                </span>
+              </>
+            )}
           </div>
 
           <div className="plot" {...cursorHandlers}>
@@ -152,6 +171,10 @@ const StoryGap = memo(function StoryGap({ className }) {
               <path className="gap-area behind" d={areaPath} clipPath={`url(#${clipId}-behind)`} />
               <path className="gap-area ahead" d={areaPath} clipPath={`url(#${clipId}-ahead)`} />
               <line className="zero-line" x1={0} x2={WIDTH} y1={zeroY} y2={zeroY} />
+              {/* Across a detour only the ends are known: a straight, dashed bridge. */}
+              {bridgeLines.map((line, index) => (
+                <line key={index} className="bridge-line" {...line} />
+              ))}
               {cursor_m != null && (
                 <line
                   className="cursor-line"

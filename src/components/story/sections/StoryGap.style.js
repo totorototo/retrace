@@ -6,6 +6,13 @@ const style = (Component) => styled(Component)`
   display: block;
   ${chartCss}
 
+  .bridge-line {
+    stroke: var(--color-text);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+    vector-effect: non-scaling-stroke;
+  }
+
   .gap-area {
     stroke: none;
 

@@ -7,6 +7,7 @@ import useStore from "../../../store/store.js";
 import { formatDelta, formatDuration } from "../../../utils/format.js";
 import {
   deviationSpans,
+  isOffTrace,
   profileAt,
   sectionSpans,
   spacedNames,
@@ -78,6 +79,8 @@ const StoryProfile = memo(function StoryProfile({ className }) {
 
   const { min, max, scaleX, scaleY, segments, checkpoints, linePath, deviations } = chart;
   const shown = cursor_m == null ? null : profileAt(report.profile, cursor_m);
+  // Inside a detour, the profile's actual time is the rejoin time: not a time at this point.
+  const offTrace = shown != null && isOffTrace(deviations, shown.distance_m);
   const deltaS =
     shown?.duration_s_actual == null ? null : shown.duration_s_actual - shown.duration_s_planned;
 
@@ -102,13 +105,19 @@ const StoryProfile = memo(function StoryProfile({ className }) {
                 <span>
                   plan <b>{formatDuration(shown.duration_s_planned)}</b>
                 </span>
-                <span>
-                  actual <b>{formatDuration(shown.duration_s_actual)}</b>
-                </span>
-                <span data-tone={toneOf(deltaS)}>
-                  <b>{formatDelta(deltaS)}</b>
-                </span>
-                {shown.heart_rate_bpm_average != null && (
+                {offTrace ? (
+                  <span>off the planned trace</span>
+                ) : (
+                  <>
+                    <span>
+                      actual <b>{formatDuration(shown.duration_s_actual)}</b>
+                    </span>
+                    <span data-tone={toneOf(deltaS)}>
+                      <b>{formatDelta(deltaS)}</b>
+                    </span>
+                  </>
+                )}
+                {!offTrace && shown.heart_rate_bpm_average != null && (
                   <span>
                     HR <b>{Math.round(shown.heart_rate_bpm_average)}</b>
                   </span>

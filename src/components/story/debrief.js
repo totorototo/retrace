@@ -12,14 +12,57 @@ export const toneOfRatio = (ratio) =>
 /**
  * The gap curve: race time behind the plan (positive) or ahead of it (negative), every
  * profile point (100 m). Stops where the actual times do.
+ *
+ * Off the planned trace, the time a planned km was "first reached" is the time the runner
+ * came back to the trace: every point of a detour gets the rejoin time, and the curve would
+ * jump at the start of it and slide down across it. So those points are `off_trace`, and
+ * their gap is bridged in a straight line between the points either side: the two ends are
+ * known, the way between them is not.
  */
 export function gapSeries(report) {
   const points = [];
   for (const point of report.profile) {
     if (point.duration_s_actual == null) break;
-    points.push({ ...point, delta_s: point.duration_s_actual - point.duration_s_planned });
+    points.push({
+      ...point,
+      delta_s: point.duration_s_actual - point.duration_s_planned,
+      off_trace: false,
+    });
   }
+  for (const span of deviationSpans(report)) bridge(points, span);
   return points;
+}
+
+function bridge(points, span) {
+  const inside = (point) => point.distance_m > span.start_m && point.distance_m < span.end_m;
+  const before = points.findLast((point) => point.distance_m <= span.start_m);
+  const after = points.find((point) => point.distance_m >= span.end_m);
+  for (const point of points) {
+    if (!inside(point)) continue;
+    point.off_trace = true;
+    // Never rejoined (the curve ends in the detour): nothing to bridge to.
+    if (!before || !after) continue;
+    const fraction =
+      (point.distance_m - before.distance_m) / (after.distance_m - before.distance_m);
+    point.delta_s = before.delta_s + fraction * (after.delta_s - before.delta_s);
+  }
+}
+
+/** Whether `distance_m` along the plan lies inside a stretch run off the trace. */
+export const isOffTrace = (spans, distance_m) =>
+  spans.some((span) => distance_m > span.start_m && distance_m < span.end_m);
+
+/** The runs of off-trace points, with the on-trace point either side: the bridges to draw. */
+export function bridges(points) {
+  const found = [];
+  for (let i = 0; i < points.length; i++) {
+    if (!points[i].off_trace) continue;
+    let j = i;
+    while (j + 1 < points.length && points[j + 1].off_trace) j++;
+    if (i > 0 && j + 1 < points.length) found.push({ from: points[i - 1], to: points[j + 1] });
+    i = j;
+  }
+  return found;
 }
 
 /** The profile point nearest `distance_m`: the profile is evenly spaced, save its end. */
