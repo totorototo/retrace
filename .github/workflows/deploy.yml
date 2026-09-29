@@ -139,7 +139,8 @@ jobs:
           retention-days: 30
 
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # From main, pushed or run by hand; never from a pull request.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [build, e2e]
     runs-on: ubuntu-latest
     steps:
