@@ -1,0 +1,16 @@
+node_modules
+dist
+dev-dist
+.zigar-cache
+zig/.zig-cache
+zig/zig-out
+zig/zig-pkg
+playwright-report
+test-results
+coverage
+.DS_Store
+# Personal recordings hold GPS tracks and health data: never commit them.
+*.fit
+*.gpx
+!zig/testdata/*.fit
+!zig/testdata/*.gpx

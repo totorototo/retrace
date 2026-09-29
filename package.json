@@ -1,0 +1,46 @@
+{
+  "name": "retrace",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Trail race analysis: plan vs actual, in the browser (Zig/WASM via Zigar).",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:zig": "cd zig && zig build test --summary all",
+    "test:all": "npm run test:zig && npm run test:run",
+    "e2e": "playwright test",
+    "fixtures": "node scripts/make-fixtures.mjs"
+  },
+  "dependencies": {
+    "react": "19.2.1",
+    "react-dom": "19.2.1",
+    "styled-components": "^6.4.2",
+    "zustand": "5.0.9"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.1",
+    "@playwright/test": "1.57.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@vitejs/plugin-react": "6.0.3",
+    "eslint": "9.39.1",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "7.0.1",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "globals": "16.5.0",
+    "jsdom": "27.2.0",
+    "prettier": "3.7.4",
+    "rollup-plugin-zigar": "^0.16.0",
+    "vite": "^8.1.0",
+    "vite-plugin-pwa": "1.3.0",
+    "vitest": "4.1.9",
+    "workbox-precaching": "^7.3.0",
+    "workbox-routing": "^7.3.0"
+  }
+}
