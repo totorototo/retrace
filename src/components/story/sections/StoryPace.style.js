@@ -11,11 +11,11 @@ const style = (Component) => styled(Component)`
     transition: fill var(--transition-fast);
 
     &[data-tone="behind"] {
-      fill: color-mix(in srgb, var(--color-behind) 60%, transparent);
+      fill: color-mix(in srgb, var(--color-behind) 90%, transparent);
     }
 
     &[data-tone="ahead"] {
-      fill: color-mix(in srgb, var(--color-ahead) 75%, transparent);
+      fill: color-mix(in srgb, var(--color-ahead) 90%, transparent);
     }
 
     &.active {

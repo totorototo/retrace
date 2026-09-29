@@ -1,4 +1,4 @@
-import { area as d3Area, curveMonotoneX } from "d3-shape";
+import { area as d3Area, curveMonotoneX, line as d3Line } from "d3-shape";
 import { memo, useId, useMemo } from "react";
 
 import { createXScale, createYScale } from "../../../helpers/d3.js";
@@ -74,6 +74,11 @@ const StoryGap = memo(function StoryGap({ className }) {
       .y0(zeroY)
       .y1((point) => scaleY(point.delta_s))
       .curve(curveMonotoneX)(points);
+    // The area's top edge, solid: as Terminus draws its accent, where the fill alone reads dull.
+    const edgePath = d3Line()
+      .x((point) => scaleX(point.distance_m))
+      .y((point) => scaleY(point.delta_s))
+      .curve(curveMonotoneX)(points);
 
     const checkpoints = report.checkpoints.slice(1, -1).map((checkpoint) => {
       const x = scaleX(checkpoint.distance_m);
@@ -94,13 +99,14 @@ const StoryGap = memo(function StoryGap({ className }) {
       scaleY,
       zeroY,
       areaPath,
+      edgePath,
       checkpoints,
       deviations: deviationSpans(report),
     };
   }, [report, distance_m_max]);
 
   const { points, bridges: bridgeLines, min, max, scaleX, scaleY, zeroY, areaPath } = chart;
-  const { checkpoints, deviations } = chart;
+  const { edgePath, checkpoints, deviations } = chart;
   const shown = cursor_m == null ? points.at(-1) : profileAt(points, cursor_m);
 
   return (
@@ -170,6 +176,8 @@ const StoryGap = memo(function StoryGap({ className }) {
               ))}
               <path className="gap-area behind" d={areaPath} clipPath={`url(#${clipId}-behind)`} />
               <path className="gap-area ahead" d={areaPath} clipPath={`url(#${clipId}-ahead)`} />
+              <path className="gap-edge behind" d={edgePath} clipPath={`url(#${clipId}-behind)`} />
+              <path className="gap-edge ahead" d={edgePath} clipPath={`url(#${clipId}-ahead)`} />
               <line className="zero-line" x1={0} x2={WIDTH} y1={zeroY} y2={zeroY} />
               {/* Across a detour only the ends are known: a straight, dashed bridge. */}
               {bridgeLines.map((line, index) => (

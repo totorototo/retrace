@@ -13,15 +13,29 @@ const style = (Component) => styled(Component)`
     vector-effect: non-scaling-stroke;
   }
 
+  .gap-edge {
+    fill: none;
+    stroke-width: 1.75;
+    vector-effect: non-scaling-stroke;
+
+    &.behind {
+      stroke: var(--color-behind);
+    }
+
+    &.ahead {
+      stroke: var(--color-ahead);
+    }
+  }
+
   .gap-area {
     stroke: none;
 
     &.behind {
-      fill: color-mix(in srgb, var(--color-behind) 55%, transparent);
+      fill: color-mix(in srgb, var(--color-behind) 88%, transparent);
     }
 
     &.ahead {
-      fill: color-mix(in srgb, var(--color-ahead) 70%, transparent);
+      fill: color-mix(in srgb, var(--color-ahead) 88%, transparent);
     }
   }
 `;
