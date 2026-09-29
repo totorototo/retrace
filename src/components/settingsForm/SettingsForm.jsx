@@ -1,7 +1,4 @@
-import { useState } from "react";
-
 import useStore from "../../store/store.js";
-import { formatDuration, formatPace } from "../../utils/format.js";
 import {
   LIFE_BASE_STOP_OPTIONS,
   profileOf,
@@ -11,14 +8,8 @@ import {
 import { Form } from "./SettingsForm.style.js";
 
 // gpxz's pace settings, which must match the ones the plan was made with: Terminus's
-// runner profile and LifeBase stop pickers, plus the raw numbers for any other plan.
-const FIELDS = [
-  { key: "pace_base_s_per_km", label: "Flat pace (s/km)", step: 5, min: 120 },
-  { key: "fatigue_coefficient", label: "Fatigue", step: 0.0005, min: 0 },
-  { key: "life_base_stop_s", label: "LifeBase stop (s)", step: 60, min: 0 },
-];
-
-function Picker({ label, options, selected, onPick, children }) {
+// runner profile and LifeBase stop pickers, plus its default as a profile of its own.
+function Picker({ label, options, selected, onPick }) {
   return (
     <div className="picker" role="radiogroup" aria-label={label}>
       {options.map((option) => (
@@ -33,7 +24,6 @@ function Picker({ label, options, selected, onPick, children }) {
           {option.label}
         </button>
       ))}
-      {children}
     </div>
   );
 }
@@ -43,9 +33,6 @@ export default function SettingsForm() {
   const setSettings = useStore((state) => state.setSettings);
   const profile = profileOf(settings);
   const stop = stopOf(settings);
-  const [customOpen, setCustomOpen] = useState(false);
-  // Settings no preset matches can only be read, and changed, as numbers.
-  const showFields = customOpen || !profile || !stop;
 
   return (
     <Form onSubmit={(event) => event.preventDefault()} aria-label="Plan settings">
@@ -57,21 +44,8 @@ export default function SettingsForm() {
         onPick={({ pace_base_s_per_km, fatigue_coefficient }) =>
           setSettings({ pace_base_s_per_km, fatigue_coefficient })
         }
-      >
-        <button
-          type="button"
-          role="radio"
-          aria-checked={!profile}
-          className={profile ? "picker-btn" : "picker-btn active"}
-          onClick={() => setCustomOpen(true)}
-        >
-          Custom
-        </button>
-      </Picker>
-      <p className="picker-note">
-        {profile?.sub ??
-          `${formatPace(settings.pace_base_s_per_km)} on flat, fatigue ${settings.fatigue_coefficient}`}
-      </p>
+      />
+      <p className="picker-note">{profile?.sub}</p>
 
       <span className="picker-label">LifeBase stops</span>
       <Picker
@@ -80,35 +54,8 @@ export default function SettingsForm() {
         selected={stop}
         onPick={(option) => setSettings({ life_base_stop_s: option.value })}
       />
-      <p className="picker-note">
-        {stop?.sub ?? `${formatDuration(settings.life_base_stop_s)} at each LifeBase`}
-      </p>
-
-      {showFields && (
-        <div className="fields">
-          {FIELDS.map(({ key, label, step, min }) => (
-            <label key={key}>
-              {label}
-              {/* Keyed on the value, so a preset picked above shows here too. */}
-              <input
-                key={settings[key]}
-                type="number"
-                step={step}
-                min={min}
-                defaultValue={settings[key]}
-                data-testid={`setting-${key}`}
-                onBlur={(event) => {
-                  const value = Number(event.target.value);
-                  if (Number.isFinite(value) && value >= min && value !== settings[key]) {
-                    setSettings({ [key]: key === "life_base_stop_s" ? Math.round(value) : value });
-                  }
-                }}
-              />
-            </label>
-          ))}
-        </div>
-      )}
-      <p className="hint">Pick the settings the plan was made with, in Terminus or gpxz.</p>
+      <p className="picker-note">{stop?.sub}</p>
+      <p className="hint">Pick the settings the plan was made with in Terminus.</p>
     </Form>
   );
 }
