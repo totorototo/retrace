@@ -11,16 +11,73 @@ const style = (Component) => styled(Component)`
     cursor: default;
   }
 
-  /* Terminus's category badge, shrunk to a prefix so the row stays one line. */
-  .climb-category {
-    display: inline-block;
-    min-width: 2.2em;
-    font-weight: var(--font-weight-bold);
-    color: var(--color-primary-text);
+  .climb-bar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: color-mix(in srgb, var(--color-text) 45%, transparent);
+
+    &[data-tone="behind"] {
+      background: color-mix(in srgb, var(--color-behind) 88%, transparent);
+    }
+
+    &[data-tone="ahead"] {
+      background: color-mix(in srgb, var(--color-ahead) 88%, transparent);
+    }
   }
 
-  .climb-planned {
+  .legend-swatch.climb-bar {
+    position: static;
+  }
+
+  /* Terminus's category badge, shrunk to a pill that keeps the row on one line. */
+  .climb-category {
+    display: inline-block;
+    min-width: 2.4em;
+    margin-right: 0.5em;
+    padding: 0 0.3em;
+    border-radius: var(--border-radius-xs);
+    text-align: center;
+    font-weight: var(--font-weight-bold);
+    color: color-mix(in srgb, var(--color-text) 45%, transparent);
+
+    &[data-category] {
+      color: var(--color-primary-text);
+      background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+    }
+
+    &[data-category="HC"],
+    &[data-category="1"] {
+      color: var(--color-background);
+      background: var(--color-primary);
+    }
+  }
+
+  .climb-speed {
+    display: inline-block;
+    min-width: 3.5ch;
+    margin-left: 0.6em;
     color: color-mix(in srgb, var(--color-text) 50%, transparent);
+  }
+
+  /* Where the route's second half starts: the lede's two numbers, split in the list. */
+  .halfway {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.25rem 0;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xxsmall);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-text) 50%, transparent);
+
+    &::before,
+    &::after {
+      content: "";
+      flex: 1;
+      border-top: 1px dashed color-mix(in srgb, var(--color-text) 25%, transparent);
+    }
   }
 `;
 

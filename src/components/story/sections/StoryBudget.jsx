@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react";
 
 import useStore from "../../../store/store.js";
-import { formatDelta } from "../../../utils/format.js";
+import { formatDelta, formatTick } from "../../../utils/format.js";
 import { timeBudget, timeTicks, toneOf } from "../debrief.js";
 import StorySection from "../StorySection.jsx";
 import style from "./StoryBudget.style.js";
@@ -10,15 +10,6 @@ const PARTS = [
   { key: "moving_s", label: "Moving", className: "moving" },
   { key: "stop_s", label: "Stops", className: "stop" },
 ];
-
-// Ticks fall on whole quarters: "+1h", "−30'", "+1h30".
-function tickLabel(seconds) {
-  if (seconds === 0) return "0";
-  const minutes = Math.round(Math.abs(seconds) / 60);
-  const [h, m] = [Math.floor(minutes / 60), minutes % 60];
-  const text = h === 0 ? `${m}'` : m === 0 ? `${h}h` : `${h}h${m}`;
-  return `${seconds > 0 ? "+" : "−"}${text}`;
-}
 
 // Lays a row's parts out from the zero line: time lost stacks right, time gained left.
 // Each part carries its tone, so lost and gained read in the story's behind/ahead colours.
@@ -80,7 +71,7 @@ const StoryBudget = memo(function StoryBudget({ className }) {
             <span className="row-track">
               {ticks.map((tick) => (
                 <span key={tick.seconds} className="tick-label" style={{ left: `${tick.pct}%` }}>
-                  {tickLabel(tick.seconds)}
+                  {formatTick(tick.seconds)}
                 </span>
               ))}
             </span>

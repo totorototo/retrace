@@ -57,7 +57,7 @@ it("lists the climbs, and pointing at one marks it on the terrain", () => {
   renderStory();
   const rows = within(screen.getByTestId("climbs")).getAllByRole("listitem");
   expect(rows).toHaveLength(2);
-  expect(rows[0]).toHaveTextContent("2118 / 1800");
+  expect(rows[0]).toHaveTextContent("−1'+18%");
   expect(rows[0].querySelector(".row-value")).toHaveAttribute("data-tone", "ahead");
   expect(rows[1].querySelector(".row-value")).toHaveAttribute("data-tone", "behind");
   fireEvent.pointerEnter(rows[1]);

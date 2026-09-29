@@ -11,28 +11,6 @@ const style = (Component) => styled(Component)`
     cursor: default;
   }
 
-  .axis-row .row-track {
-    height: 1rem;
-  }
-
-  .tick-label {
-    position: absolute;
-    bottom: 0;
-    transform: translateX(-50%);
-    font-family: var(--font-family-mono);
-    font-size: var(--font-size-xxsmall);
-    color: color-mix(in srgb, var(--color-text) 55%, transparent);
-    white-space: nowrap;
-  }
-
-  .tick-line {
-    position: absolute;
-    top: -3px;
-    bottom: -3px;
-    width: 1px;
-    background: color-mix(in srgb, var(--color-text) 12%, transparent);
-  }
-
   .budget-fill {
     --fill: color-mix(in srgb, var(--color-text) 55%, transparent);
     position: absolute;

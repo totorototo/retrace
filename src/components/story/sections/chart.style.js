@@ -202,6 +202,30 @@ export const rowsCss = css`
     background: color-mix(in srgb, var(--color-text) 40%, transparent);
   }
 
+  /* A time axis over the rows: tick labels in an .axis-row, a .tick-line per tick in each
+     track, and .row-zero at 0. */
+  .axis-row .row-track {
+    height: 1rem;
+  }
+
+  .tick-label {
+    position: absolute;
+    bottom: 0;
+    transform: translateX(-50%);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xxsmall);
+    color: color-mix(in srgb, var(--color-text) 55%, transparent);
+    white-space: nowrap;
+  }
+
+  .tick-line {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 1px;
+    background: color-mix(in srgb, var(--color-text) 12%, transparent);
+  }
+
   .dumbbell-link {
     position: absolute;
     top: 50%;

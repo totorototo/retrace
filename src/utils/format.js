@@ -16,6 +16,15 @@ export function formatDelta(seconds) {
   return seconds >= 0 ? `+${formatDuration(seconds)}` : formatDuration(seconds);
 }
 
+/** An axis tick on whole quarters: 0, "+1h", "−30'", "+1h30". */
+export function formatTick(seconds) {
+  if (seconds === 0) return "0";
+  const minutes = Math.round(Math.abs(seconds) / 60);
+  const [h, m] = [Math.floor(minutes / 60), minutes % 60];
+  const text = h === 0 ? `${m}'` : m === 0 ? `${h}h` : `${h}h${m}`;
+  return `${seconds > 0 ? "+" : "−"}${text}`;
+}
+
 /** 6012 → "6.0 km". */
 export function formatKm(meters, digits = 1) {
   if (meters == null || !Number.isFinite(meters)) return "–";

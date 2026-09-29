@@ -196,21 +196,15 @@ export const climbAt = (climbs, distance_m) =>
   ) ?? null;
 
 /**
- * Climbing speed against the plan in each half of the route (a climb falls in the half its
- * middle does), weighted by the meters climbed: planned over actual time on the climbs, so
- * above 1 is faster than planned. Null for a half with no climb both planned and run.
+ * Time lost (positive) or gained on the climbs in each half of the route (a climb falls in
+ * the half its middle does). Climbs outside the plan or not run count for nothing.
  */
 export function climbHalves(climbs, distance_m) {
-  const halves = [
-    { planned: 0, actual: 0 },
-    { planned: 0, actual: 0 },
-  ];
+  const halves = [0, 0];
   for (const climb of climbs) {
     if (climb.vam_m_per_h_planned == null || climb.duration_s_actual == null) continue;
     const middle_m = climb.distance_m_start + climb.distance_m / 2;
-    const half = halves[middle_m < distance_m / 2 ? 0 : 1];
-    half.planned += climb.duration_s_planned;
-    half.actual += climb.duration_s_actual;
+    halves[middle_m < distance_m / 2 ? 0 : 1] += climb.duration_s_actual - climb.duration_s_planned;
   }
-  return halves.map((half) => (half.actual > 0 ? half.planned / half.actual : null));
+  return halves;
 }

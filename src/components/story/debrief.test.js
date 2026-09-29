@@ -179,10 +179,10 @@ it("finds the climb under a distance", () => {
   expect(climbAt(report.climbs, 3000)).toBe(report.climbs[1]);
 });
 
-it("compares climbing speed in each half, by time on the climbs", () => {
+it("sums the time lost or gained on the climbs in each half", () => {
   const [first, second] = climbHalves(report.climbs, 3500);
-  expect(first).toBeCloseTo(400 / 340);
-  expect(second).toBeCloseTo(600 / 900);
+  expect(first).toBe(340 - 400);
+  expect(second).toBe(900 - 600);
   const unplanned = report.climbs.map((c) => ({ ...c, vam_m_per_h_planned: null }));
-  expect(climbHalves(unplanned, 3500)).toEqual([null, null]);
+  expect(climbHalves(unplanned, 3500)).toEqual([0, 0]);
 });
