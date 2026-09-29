@@ -15,6 +15,9 @@ coverage
 !zig/testdata/*.fit
 !zig/testdata/*.gpx
 
+# Claude Code per-machine settings
+.claude/settings.local.json
+
 # Local env (Mapbox token)
 .env
 .env.*
