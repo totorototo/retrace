@@ -1,0 +1,42 @@
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { ThemeProvider } from "styled-components";
+
+import useStore from "../../store/store.js";
+import THEME from "../../theme/Theme.js";
+import { report } from "./report.fixture.js";
+import Story from "./Story.jsx";
+import { STORY_SECTIONS } from "./storySections.js";
+
+const renderStory = () =>
+  render(
+    <ThemeProvider theme={{ ...THEME, currentVariant: "dark" }}>
+      <Story />
+    </ThemeProvider>,
+  );
+
+beforeEach(() => useStore.setState({ report }));
+
+it("tells the race from the report", () => {
+  renderStory();
+  expect(screen.getByTestId("total-actual")).toHaveTextContent("0h47");
+  expect(screen.getByTestId("total-delta")).toHaveTextContent("+0h07");
+  expect(screen.getByText(/until km 2, then behind for good/)).toBeInTheDocument();
+  expect(within(screen.getByTestId("budget")).getAllByRole("listitem")).toHaveLength(2);
+  expect(within(screen.getByTestId("checkpoints")).getAllByRole("row")).toHaveLength(4);
+  expect(screen.getByText(/missed by 0h02/)).toBeInTheDocument();
+});
+
+it("has a dot for each section", () => {
+  renderStory();
+  expect(screen.getAllByRole("button", { name: /Jump to/ })).toHaveLength(STORY_SECTIONS.length);
+});
+
+it("reads out the section under the pointer", () => {
+  renderStory();
+  const readout = screen.getByTestId("pace-readout");
+  const plot = readout.nextElementSibling;
+  plot.getBoundingClientRect = () => ({ left: 0, width: 350 });
+  fireEvent.pointerMove(plot, { clientX: 300 });
+  expect(readout).toHaveTextContent("Aid → Finish");
+  expect(readout).toHaveTextContent("1.25×");
+});

@@ -12,6 +12,7 @@ const GlobalStyle = createGlobalStyle`
     ${(props) => Object.values(props.theme.font).map(toCustomProperties).join("\n")}
     ${(props) => toCustomProperties(props.theme.borderRadius)}
     ${(props) => toCustomProperties(props.theme.transitions)}
+    ${(props) => toCustomProperties(props.theme.zIndex)}
 
     color-scheme: ${(props) => props.theme.currentVariant};
     font-family: var(--font-family-sansSerif);

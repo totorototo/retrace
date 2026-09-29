@@ -18,6 +18,8 @@
     "fixtures": "node scripts/make-fixtures.mjs"
   },
   "dependencies": {
+    "d3-scale": "4.0.2",
+    "d3-shape": "3.2.0",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "styled-components": "^6.4.2",
