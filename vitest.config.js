@@ -20,5 +20,26 @@ export default defineConfig({
     include: ["src/**/*.test.{js,jsx}"],
     // Never reach Mapbox from unit tests (jsdom has no WebGL), whatever a local .env holds.
     env: { VITE_MAPBOX_KEY: "" },
+    // As Terminus's: the page code, less tests, styles and entry points.
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html", "lcov"],
+      reportsDirectory: "./coverage",
+      include: ["src/**/*.{js,jsx}"],
+      exclude: [
+        "src/**/*.test.{js,jsx}",
+        "src/**/*.style.{js,jsx}",
+        "src/**/*.fixture.js",
+        "src/main.jsx",
+        "src/sw.js",
+      ],
+      // Terminus's thresholds.
+      thresholds: {
+        lines: 75,
+        functions: 65,
+        branches: 65,
+        statements: 75,
+      },
+    },
   },
 });

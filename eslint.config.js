@@ -5,7 +5,17 @@ import simpleImportSort from "eslint-plugin-simple-import-sort";
 import globals from "globals";
 
 export default [
-  { ignores: ["dist", "node_modules", ".zigar-cache", "zig", "playwright-report", "test-results"] },
+  {
+    ignores: [
+      "dist",
+      "node_modules",
+      ".zigar-cache",
+      "zig",
+      "playwright-report",
+      "test-results",
+      "coverage",
+    ],
+  },
   js.configs.recommended,
   {
     files: ["**/*.{js,jsx,mjs}"],
@@ -29,6 +39,11 @@ export default [
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
     },
+  },
+  // CommonJS config for tools that want it (lighthouserc.cjs).
+  {
+    files: ["**/*.cjs"],
+    languageOptions: { sourceType: "commonjs", globals: { ...globals.node } },
   },
   {
     files: ["**/*.test.{js,jsx}"],
