@@ -131,3 +131,113 @@ export const chartCss = css`
     border-radius: var(--border-radius-xs);
   }
 `;
+
+// Rows of label, track and value, as in the cutoff buffers, the time budget and the climbs:
+// one look for every per-item list, and a dumbbell (planned ring, actual dot) for the two
+// that compare a planned value with an actual one.
+export const rowsCss = css`
+  .row-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: minmax(6rem, 11rem) 1fr minmax(3.5rem, max-content);
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: var(--border-radius-xs);
+
+    &.active {
+      background: color-mix(in srgb, var(--color-text) 7%, transparent);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-text) 7%, transparent);
+    }
+
+    /* Phone width: the label on its own line, so the track keeps the width. */
+    @media (max-width: 40em) {
+      grid-template-columns: 1fr minmax(3.5rem, max-content);
+      gap: 0.25rem 0.75rem;
+
+      .row-label {
+        grid-column: 1 / -1;
+      }
+    }
+  }
+
+  .row-label,
+  .row-value {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xsmall);
+    color: color-mix(in srgb, var(--color-text) 65%, transparent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .row-value {
+    text-align: right;
+
+    &[data-tone="behind"] {
+      color: var(--color-behind-text);
+    }
+
+    &[data-tone="ahead"] {
+      color: var(--color-ahead-text);
+    }
+  }
+
+  .row-track {
+    position: relative;
+    display: block;
+    height: 12px;
+  }
+
+  .row-zero {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 1px;
+    background: color-mix(in srgb, var(--color-text) 40%, transparent);
+  }
+
+  .dumbbell-link {
+    position: absolute;
+    top: 50%;
+    height: 2px;
+    margin-top: -1px;
+    background: color-mix(in srgb, var(--color-text) 20%, transparent);
+  }
+
+  .dumbbell-mark {
+    position: absolute;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    margin: -5px 0 0 -5px;
+    border-radius: 50%;
+
+    &.planned {
+      border: 2px solid var(--color-primary);
+    }
+
+    &.actual {
+      background: color-mix(in srgb, var(--color-text) 55%, transparent);
+
+      &[data-tone="behind"] {
+        background: var(--color-behind);
+      }
+
+      &[data-tone="ahead"] {
+        background: var(--color-ahead);
+      }
+    }
+  }
+
+  .legend-swatch.dumbbell-mark {
+    position: static;
+    display: inline-block;
+    margin: 0;
+  }
+`;

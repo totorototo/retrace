@@ -58,8 +58,8 @@ it("lists the climbs, and pointing at one marks it on the terrain", () => {
   const rows = within(screen.getByTestId("climbs")).getAllByRole("listitem");
   expect(rows).toHaveLength(2);
   expect(rows[0]).toHaveTextContent("2118 / 1800");
-  expect(rows[0].querySelector(".climb-value")).toHaveAttribute("data-tone", "ahead");
-  expect(rows[1].querySelector(".climb-value")).toHaveAttribute("data-tone", "behind");
+  expect(rows[0].querySelector(".row-value")).toHaveAttribute("data-tone", "ahead");
+  expect(rows[1].querySelector(".row-value")).toHaveAttribute("data-tone", "behind");
   fireEvent.pointerEnter(rows[1]);
   expect(screen.getByTestId("profile-readout")).toHaveTextContent("climb +50 m to 1150 m");
   expect(rows[1]).toHaveClass("active");

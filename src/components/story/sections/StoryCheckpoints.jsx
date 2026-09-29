@@ -21,19 +21,19 @@ function Buffers({ checkpoints }) {
 
   return (
     <div className="chart-frame">
-      <ol className="buffer-list" data-testid="buffers">
+      <ol className="row-list" data-testid="buffers">
         {rows.map((row, index) => {
           const planned = row.margin_s_planned;
           const actual = row.margin_s_actual;
           const both = planned != null && actual != null;
           return (
-            <li key={index} className="buffer-row">
-              <span className="buffer-label">{row.name}</span>
-              <span className="buffer-track">
-                <span className="buffer-zero" style={{ left: `${pct(0)}%` }} />
+            <li key={index} className="row">
+              <span className="row-label">{row.name}</span>
+              <span className="row-track">
+                <span className="row-zero" style={{ left: `${pct(0)}%` }} />
                 {both && (
                   <span
-                    className="buffer-link"
+                    className="dumbbell-link"
                     style={{
                       left: `${pct(Math.min(planned, actual))}%`,
                       width: `${Math.abs(pct(planned) - pct(actual))}%`,
@@ -41,17 +41,17 @@ function Buffers({ checkpoints }) {
                   />
                 )}
                 {planned != null && (
-                  <span className="buffer-mark planned" style={{ left: `${pct(planned)}%` }} />
+                  <span className="dumbbell-mark planned" style={{ left: `${pct(planned)}%` }} />
                 )}
                 {actual != null && (
                   <span
-                    className="buffer-mark actual"
-                    data-missed={actual < 0 || undefined}
+                    className="dumbbell-mark actual"
+                    data-tone={actual < 0 ? "behind" : undefined}
                     style={{ left: `${pct(actual)}%` }}
                   />
                 )}
               </span>
-              <span className="buffer-value" data-missed={actual < 0 || undefined}>
+              <span className="row-value" data-tone={actual < 0 ? "behind" : undefined}>
                 {formatDelta(actual)}
               </span>
             </li>
@@ -60,10 +60,10 @@ function Buffers({ checkpoints }) {
       </ol>
       <div className="legend">
         <span className="legend-item">
-          <span className="legend-swatch buffer-mark planned" /> planned buffer
+          <span className="legend-swatch dumbbell-mark planned" /> planned buffer
         </span>
         <span className="legend-item">
-          <span className="legend-swatch buffer-mark actual" /> actual
+          <span className="legend-swatch dumbbell-mark actual" /> actual
         </span>
         <span className="legend-item">line: the cutoff</span>
       </div>

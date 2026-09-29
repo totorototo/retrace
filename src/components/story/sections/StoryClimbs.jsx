@@ -1,9 +1,7 @@
 import { memo, useMemo } from "react";
 
 import { getClimbCategory } from "../../../helpers/climbCategory.js";
-import { useCollapsibleList } from "../../../hooks/useCollapsibleList.js";
 import useStore from "../../../store/store.js";
-import CollapseToggle from "../CollapseToggle.jsx";
 import { climbAt, climbHalves } from "../debrief.js";
 import StorySection from "../StorySection.jsx";
 import style from "./StoryClimbs.style.js";
@@ -17,8 +15,8 @@ const toneOfVam = (actual, planned) => {
 
 const speed = (ratio) => (ratio == null ? "–" : `${ratio.toFixed(2)}×`);
 
-// Terminus's climb list (category badge, where, how much) with the race added: climbing
-// speed (VAM, vertical meters per hour) planned as a ring, actual as a dot.
+// One row per climb, as the cutoff buffers: its category (Terminus's), where and how much,
+// then climbing speed (VAM, vertical meters per hour) planned as a ring, actual as a dot.
 // why: VAM rather than time, so a 1,200 m climb and a 150 m one compare on one scale, and
 // the fade shows as dots drifting left of their rings down the list.
 const StoryClimbs = memo(function StoryClimbs({ className }) {
@@ -35,11 +33,6 @@ const StoryClimbs = memo(function StoryClimbs({ className }) {
 
   const halves = climbHalves(climbs, report.totals.distance_m_planned);
   const active = cursor_m == null ? null : climbAt(climbs, cursor_m);
-  // Never collapse the climb the cursor is on out of sight.
-  const { visibleCount, hiddenCount, expand } = useCollapsibleList(climbs.length, {
-    threshold: 8,
-    activeIndex: active ? climbs.indexOf(active) : -1,
-  });
 
   if (!climbs.length) {
     return (
@@ -60,8 +53,8 @@ const StoryClimbs = memo(function StoryClimbs({ className }) {
           <strong>{speed(halves[1])}</strong> on the second&apos;s.
         </p>
         <div className="chart-frame">
-          <ol className="climb-list" data-testid="climbs">
-            {climbs.slice(0, visibleCount).map((climb, index) => {
+          <ol className="row-list" data-testid="climbs">
+            {climbs.map((climb, index) => {
               const category = getClimbCategory(climb);
               const planned = climb.vam_m_per_h_planned;
               const actual = climb.vam_m_per_h_actual;
@@ -69,47 +62,42 @@ const StoryClimbs = memo(function StoryClimbs({ className }) {
               return (
                 <li
                   key={index}
-                  className={climb === active ? "climb-row active" : "climb-row"}
+                  className={climb === active ? "row active" : "row"}
                   onPointerEnter={() => setCursor(climb.distance_m_start + climb.distance_m / 2)}
                   onPointerLeave={() => setCursor(null)}
                 >
-                  <span className={`climb-marker${category ? "" : " unranked"}`}>
-                    {category?.key}
+                  <span className="row-label">
+                    <span className="climb-category">{category?.key ?? "·"}</span>
+                    km {(climb.distance_m_start / 1000).toFixed(1)} · +
+                    {Math.round(climb.elevation_gain_m)} m
                   </span>
-                  <span className="climb-info">
-                    <span className="climb-meta">
-                      km {(climb.distance_m_start / 1000).toFixed(1)} · +
-                      {Math.round(climb.elevation_gain_m)} m ·{" "}
-                      {climb.gradient_percent_average.toFixed(1)}%
-                    </span>
-                    <span className="climb-track">
-                      {planned != null && actual != null && (
-                        <span
-                          className="climb-link"
-                          style={{
-                            left: `${scale(Math.min(planned, actual))}%`,
-                            width: `${Math.abs(scale(planned) - scale(actual))}%`,
-                          }}
-                        />
-                      )}
-                      {planned != null && (
-                        <span
-                          className="climb-mark planned"
-                          style={{ left: `${scale(planned)}%` }}
-                        />
-                      )}
-                      {actual != null && (
-                        <span
-                          className="climb-mark actual"
-                          data-tone={tone}
-                          style={{ left: `${scale(actual)}%` }}
-                        />
-                      )}
-                    </span>
+                  <span className="row-track">
+                    {planned != null && actual != null && (
+                      <span
+                        className="dumbbell-link"
+                        style={{
+                          left: `${scale(Math.min(planned, actual))}%`,
+                          width: `${Math.abs(scale(planned) - scale(actual))}%`,
+                        }}
+                      />
+                    )}
+                    {planned != null && (
+                      <span
+                        className="dumbbell-mark planned"
+                        style={{ left: `${scale(planned)}%` }}
+                      />
+                    )}
+                    {actual != null && (
+                      <span
+                        className="dumbbell-mark actual"
+                        data-tone={tone}
+                        style={{ left: `${scale(actual)}%` }}
+                      />
+                    )}
                   </span>
-                  <span className="climb-value" data-tone={tone}>
+                  <span className="row-value" data-tone={tone}>
                     {actual == null ? "–" : Math.round(actual)}
-                    <span className="climb-value-planned">
+                    <span className="climb-planned">
                       {planned == null ? " unplanned" : ` / ${Math.round(planned)}`}
                     </span>
                   </span>
@@ -117,16 +105,15 @@ const StoryClimbs = memo(function StoryClimbs({ className }) {
               );
             })}
           </ol>
-          <CollapseToggle hiddenCount={hiddenCount} onExpand={expand} />
           <div className="legend">
             <span className="legend-item">
-              <span className="legend-swatch climb-mark planned" /> planned VAM
+              <span className="legend-swatch dumbbell-mark planned" /> planned VAM
             </span>
             <span className="legend-item">
-              <span className="legend-swatch climb-mark actual" data-tone="ahead" /> faster
+              <span className="legend-swatch dumbbell-mark actual" data-tone="ahead" /> faster
             </span>
             <span className="legend-item">
-              <span className="legend-swatch climb-mark actual" data-tone="behind" /> slower
+              <span className="legend-swatch dumbbell-mark actual" data-tone="behind" /> slower
             </span>
             <span className="legend-item">m/h, actual / planned</span>
           </div>

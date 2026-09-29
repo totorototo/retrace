@@ -59,14 +59,14 @@ const StoryBudget = memo(function StoryBudget({ className }) {
           <strong>{formatDelta(totals.stop_s)}</strong> {verb(totals.stop_s)} stopping.
         </p>
         <div className="chart-frame">
-          <ol className="budget-list" data-testid="budget">
+          <ol className="row-list" data-testid="budget">
             {rows.map((row, index) => (
-              <li key={index} className="budget-row">
-                <span className="budget-label" title={`${row.from} → ${row.to}`}>
+              <li key={index} className="row">
+                <span className="row-label" title={`${row.from} → ${row.to}`}>
                   → {row.to}
                 </span>
-                <span className="budget-track">
-                  <span className="budget-zero" style={{ left: `${zeroPct}%` }} />
+                <span className="row-track budget-track">
+                  <span className="row-zero" style={{ left: `${zeroPct}%` }} />
                   {row.segments.map((segment) => (
                     <span
                       key={segment.key}
@@ -76,7 +76,7 @@ const StoryBudget = memo(function StoryBudget({ className }) {
                     />
                   ))}
                 </span>
-                <span className="budget-value" data-tone={toneOf(row.total_s)}>
+                <span className="row-value" data-tone={toneOf(row.total_s)}>
                   {formatDelta(row.total_s)}
                 </span>
               </li>
