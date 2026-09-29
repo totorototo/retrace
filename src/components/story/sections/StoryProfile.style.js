@@ -30,6 +30,10 @@ const style = (Component) => styled(Component)`
     }
   }
 
+  .climb-band {
+    fill: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  }
+
   .profile-line {
     fill: none;
     stroke: color-mix(in srgb, var(--color-text) 70%, transparent);

@@ -1,6 +1,8 @@
 import {
   behindFrom,
   bridges,
+  climbAt,
+  climbHalves,
   deviationSpans,
   gapSeries,
   isOffTrace,
@@ -154,4 +156,18 @@ it("reads a pace ratio within 5 % of 1 as on plan", () => {
     "ahead",
     "behind",
   ]);
+});
+
+it("finds the climb under a distance", () => {
+  expect(climbAt(report.climbs, 500)).toBe(report.climbs[0]);
+  expect(climbAt(report.climbs, 1500)).toBeNull();
+  expect(climbAt(report.climbs, 3000)).toBe(report.climbs[1]);
+});
+
+it("compares climbing speed in each half, by time on the climbs", () => {
+  const [first, second] = climbHalves(report.climbs, 3500);
+  expect(first).toBeCloseTo(400 / 340);
+  expect(second).toBeCloseTo(600 / 900);
+  const unplanned = report.climbs.map((c) => ({ ...c, vam_m_per_h_planned: null }));
+  expect(climbHalves(unplanned, 3500)).toEqual([null, null]);
 });

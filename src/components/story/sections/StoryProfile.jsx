@@ -6,6 +6,7 @@ import { useDistanceCursor } from "../../../hooks/useDistanceCursor.js";
 import useStore from "../../../store/store.js";
 import { formatDelta, formatDuration } from "../../../utils/format.js";
 import {
+  climbAt,
   deviationSpans,
   isOffTrace,
   profileAt,
@@ -79,6 +80,8 @@ const StoryProfile = memo(function StoryProfile({ className }) {
 
   const { min, max, scaleX, scaleY, segments, checkpoints, linePath, deviations } = chart;
   const shown = cursor_m == null ? null : profileAt(report.profile, cursor_m);
+  // The climb under the cursor, shaded: pointing at a row in the climbs list lands here.
+  const climb = cursor_m == null ? null : climbAt(report.climbs, cursor_m);
   // Inside a detour, the profile's actual time is the rejoin time: not a time at this point.
   const offTrace = shown != null && isOffTrace(deviations, shown.distance_m);
   const deltaS =
@@ -102,6 +105,12 @@ const StoryProfile = memo(function StoryProfile({ className }) {
                 <span>
                   <b>{Math.round(shown.elevation_m)}</b> m
                 </span>
+                {climb && (
+                  <span>
+                    climb <b>+{Math.round(climb.elevation_gain_m)} m</b> to{" "}
+                    {Math.round(climb.elevation_m_summit)} m
+                  </span>
+                )}
                 <span>
                   plan <b>{formatDuration(shown.duration_s_planned)}</b>
                 </span>
@@ -155,6 +164,18 @@ const StoryProfile = memo(function StoryProfile({ className }) {
                   </clipPath>
                 ))}
               </defs>
+              {climb && (
+                <rect
+                  className="climb-band"
+                  x={scaleX(climb.distance_m_start)}
+                  y={-VPAD}
+                  width={
+                    scaleX(climb.distance_m_start + climb.distance_m) -
+                    scaleX(climb.distance_m_start)
+                  }
+                  height={HEIGHT + VPAD * 2}
+                />
+              )}
               {segments.map((segment, index) => (
                 <path
                   key={index}

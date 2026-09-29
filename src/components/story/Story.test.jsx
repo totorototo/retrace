@@ -53,6 +53,20 @@ it("asks for a Mapbox token when there is none", async () => {
   expect(await screen.findByText(/Set VITE_MAPBOX_KEY/)).toBeInTheDocument();
 });
 
+it("lists the climbs, and pointing at one marks it on the terrain", () => {
+  renderStory();
+  const rows = within(screen.getByTestId("climbs")).getAllByRole("listitem");
+  expect(rows).toHaveLength(2);
+  expect(rows[0]).toHaveTextContent("2118 / 1800");
+  expect(rows[0].querySelector(".climb-value")).toHaveAttribute("data-tone", "ahead");
+  expect(rows[1].querySelector(".climb-value")).toHaveAttribute("data-tone", "behind");
+  fireEvent.pointerEnter(rows[1]);
+  expect(screen.getByTestId("profile-readout")).toHaveTextContent("climb +50 m to 1150 m");
+  expect(rows[1]).toHaveClass("active");
+  fireEvent.pointerLeave(rows[1]);
+  expect(screen.getByTestId("profile-readout")).toHaveTextContent("Point along the profile");
+});
+
 it("reads out the section under the pointer", () => {
   renderStory();
   const readout = screen.getByTestId("pace-readout");
