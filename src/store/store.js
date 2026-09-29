@@ -26,6 +26,13 @@ export const createStore = (getClient = createWorkerClient) => {
     report: null,
     status: "idle", // idle | working | done | error
     error: null,
+    // Where the pointer is along the route, shared by every chart and the map; null when
+    // it's on none of them.
+    cursor_m: null,
+
+    setCursor(cursor_m) {
+      if (cursor_m !== get().cursor_m) set({ cursor_m });
+    },
 
     async loadFile(kind, file) {
       if (file.size > MAX_FILE_BYTES) {
@@ -73,6 +80,7 @@ export const createStore = (getClient = createWorkerClient) => {
         report: null,
         status: "idle",
         error: null,
+        cursor_m: null,
       });
     },
   }));

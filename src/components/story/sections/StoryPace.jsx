@@ -4,19 +4,15 @@ import { createXScale, createYScale } from "../../../helpers/d3.js";
 import { useDistanceCursor } from "../../../hooks/useDistanceCursor.js";
 import useStore from "../../../store/store.js";
 import { formatDuration } from "../../../utils/format.js";
-import { paceHalves, sectionSpans, spacedNames } from "../debrief.js";
+import { paceHalves, sectionSpans, spacedNames, toneOfRatio } from "../debrief.js";
 import StorySection from "../StorySection.jsx";
 import style from "./StoryPace.style.js";
 
 const WIDTH = 300;
 const HEIGHT = 110;
 const VPAD = 6;
-// Sections this far from 1 read as on plan: no tone.
-const ON_PLAN = 0.05;
 
 const ratio = (value) => (value == null ? "–" : `${value.toFixed(2)}×`);
-const toneOfRatio = (value) =>
-  value == null || Math.abs(value - 1) < ON_PLAN ? undefined : value > 1 ? "behind" : "ahead";
 
 // why: bars as wide as their section (a Marimekko) rather than equal-width: a 21 km section
 // at 1.17× costs far more than a 6 km one at 1.67×, and area is what the eye compares.

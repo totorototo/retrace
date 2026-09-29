@@ -18,10 +18,13 @@
     "fixtures": "node scripts/make-fixtures.mjs"
   },
   "dependencies": {
+    "@styled-icons/feather": "10.47.0",
     "d3-scale": "4.0.2",
     "d3-shape": "3.2.0",
+    "mapbox-gl": "3.25.0",
     "react": "19.2.1",
     "react-dom": "19.2.1",
+    "react-map-gl": "8.1.1",
     "styled-components": "^6.4.2",
     "zustand": "5.0.9"
   },

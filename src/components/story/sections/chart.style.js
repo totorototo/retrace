@@ -76,11 +76,36 @@ export const chartCss = css`
     vector-effect: non-scaling-stroke;
   }
 
+  .deviation-band {
+    fill: color-mix(in srgb, var(--color-text) 9%, transparent);
+  }
+
+  .deviation-strip {
+    fill: var(--color-accent);
+  }
+
+  .deviation-swatch {
+    background: color-mix(in srgb, var(--color-text) 9%, transparent);
+    border-top: 3px solid var(--color-accent);
+  }
+
   .cursor-line {
     stroke: var(--color-text);
     stroke-width: 1;
     stroke-dasharray: 3 2;
     vector-effect: non-scaling-stroke;
+  }
+
+  /* HTML, not SVG: a circle in the stretched viewBox would draw as an ellipse. */
+  .cursor-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
+    border-radius: 50%;
+    background: var(--color-text);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-background) 65%, transparent);
+    pointer-events: none;
   }
 
   .legend {
@@ -100,6 +125,7 @@ export const chartCss = css`
   }
 
   .legend-swatch {
+    display: inline-block;
     width: 10px;
     height: 10px;
     border-radius: var(--border-radius-xs);

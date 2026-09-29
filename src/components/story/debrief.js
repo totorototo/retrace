@@ -5,28 +5,47 @@
 export const toneOf = (deltaS) =>
   deltaS == null || Math.abs(deltaS) < 30 ? undefined : deltaS > 0 ? "behind" : "ahead";
 
+/** A pace ratio (actual over planned moving time) within 5 % of 1 reads as on plan. */
+export const toneOfRatio = (ratio) =>
+  ratio == null || Math.abs(ratio - 1) < 0.05 ? undefined : ratio > 1 ? "behind" : "ahead";
+
 /**
- * The gap curve: race time behind the plan (positive) or ahead of it (negative), per km.
- * Starts at the first checkpoint and stops where the actual times do.
+ * The gap curve: race time behind the plan (positive) or ahead of it (negative), every
+ * profile point (100 m). Stops where the actual times do.
  */
 export function gapSeries(report) {
-  const point = (distance_m, planned, actual) => ({
-    distance_m,
-    duration_s_planned: planned,
-    duration_s_actual: actual,
-    delta_s: actual - planned,
-  });
-  const points = [point(0, 0, 0)];
-  for (const split of report.splits) {
-    if (split.duration_s_actual == null) break;
-    points.push(point(split.distance_m, split.duration_s_planned, split.duration_s_actual));
-  }
-  // The splits stop at the last whole km; the finish is a checkpoint.
-  const finish = report.checkpoints.at(-1);
-  if (finish?.duration_s_actual != null && finish.distance_m > points.at(-1).distance_m) {
-    points.push(point(finish.distance_m, finish.duration_s_planned, finish.duration_s_actual));
+  const points = [];
+  for (const point of report.profile) {
+    if (point.duration_s_actual == null) break;
+    points.push({ ...point, delta_s: point.duration_s_actual - point.duration_s_planned });
   }
   return points;
+}
+
+/** The profile point nearest `distance_m`: the profile is evenly spaced, save its end. */
+export function profileAt(profile, distance_m) {
+  let low = 0;
+  let high = profile.length - 1;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if (profile[middle].distance_m < distance_m) low = middle + 1;
+    else high = middle;
+  }
+  const before = profile[Math.max(0, low - 1)];
+  const after = profile[low];
+  return distance_m - before.distance_m < after.distance_m - distance_m ? before : after;
+}
+
+/**
+ * The stretches run off the planned trace, placed on it. One left before the first
+ * checkpoint starts at 0; one never rejoined ends where the runner got to.
+ */
+export function deviationSpans(report) {
+  return report.deviations.map((deviation) => ({
+    ...deviation,
+    start_m: deviation.distance_m_left ?? 0,
+    end_m: deviation.distance_m_rejoined ?? report.totals.distance_m_reached,
+  }));
 }
 
 /**

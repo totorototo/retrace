@@ -5,19 +5,21 @@ import { createXScale, createYScale } from "../../../helpers/d3.js";
 import { useDistanceCursor } from "../../../hooks/useDistanceCursor.js";
 import useStore from "../../../store/store.js";
 import { formatDelta, formatDuration } from "../../../utils/format.js";
-import { behindFrom, gapSeries, spacedNames, toneOf } from "../debrief.js";
+import {
+  behindFrom,
+  deviationSpans,
+  gapSeries,
+  profileAt,
+  spacedNames,
+  toneOf,
+} from "../debrief.js";
 import StorySection from "../StorySection.jsx";
+import DeviationBands from "./DeviationBands.jsx";
 import style from "./StoryGap.style.js";
 
 const WIDTH = 300;
 const HEIGHT = 110;
 const VPAD = 6;
-
-function nearest(points, distance_m) {
-  return points.reduce((best, point) =>
-    Math.abs(point.distance_m - distance_m) < Math.abs(best.distance_m - distance_m) ? point : best,
-  );
-}
 
 function Lede({ points, finished }) {
   const last = points.at(-1);
@@ -77,11 +79,21 @@ const StoryGap = memo(function StoryGap({ className }) {
       return { x, pct: (x / WIDTH) * 100, name: checkpoint.name };
     });
 
-    return { points, min, max, scaleX, scaleY, zeroY, areaPath, checkpoints };
+    return {
+      points,
+      min,
+      max,
+      scaleX,
+      scaleY,
+      zeroY,
+      areaPath,
+      checkpoints,
+      deviations: deviationSpans(report),
+    };
   }, [report, distance_m_max]);
 
-  const { points, min, max, scaleX, scaleY, zeroY, areaPath, checkpoints } = chart;
-  const shown = cursor_m == null ? points.at(-1) : nearest(points, cursor_m);
+  const { points, min, max, scaleX, scaleY, zeroY, areaPath, checkpoints, deviations } = chart;
+  const shown = cursor_m == null ? points.at(-1) : profileAt(points, cursor_m);
 
   return (
     <div className={className}>
@@ -121,6 +133,12 @@ const StoryGap = memo(function StoryGap({ className }) {
                   <rect x={0} y={zeroY} width={WIDTH} height={HEIGHT + VPAD - zeroY} />
                 </clipPath>
               </defs>
+              <DeviationBands
+                spans={deviations}
+                scaleX={scaleX}
+                top={-VPAD}
+                height={HEIGHT + VPAD * 2}
+              />
               {checkpoints.map((checkpoint, index) => (
                 <line
                   key={index}
@@ -170,6 +188,14 @@ const StoryGap = memo(function StoryGap({ className }) {
               </span>
             ))}
           </div>
+          {deviations.length > 0 && (
+            <div className="legend">
+              <span className="legend-item">
+                <span className="legend-swatch deviation-swatch" />
+                off the planned trace
+              </span>
+            </div>
+          )}
         </div>
       </StorySection>
     </div>

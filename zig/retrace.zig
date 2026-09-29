@@ -264,6 +264,9 @@ test "analyze: a report with every checkpoint" {
     const root = parsed.value.object;
     try testing.expect(root.get("checkpoints").?.array.items.len >= 2);
     try testing.expect(root.get("totals").?.object.get("finished").?.bool);
+    // The series the story's profile and map draw.
+    try testing.expect(root.get("profile").?.array.items.len >= 2);
+    try testing.expect(root.get("track").?.array.items.len >= 2);
 }
 
 test "analyze: garbage bytes are an error, not a crash" {

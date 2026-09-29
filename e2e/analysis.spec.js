@@ -17,6 +17,9 @@ test("plan vs actual from a GPX and a FIT", async ({ page }) => {
   await expect(rows).toHaveCount(3);
   await expect(rows.nth(1)).toContainText("Refuge");
   await expect(page.getByTestId("total-actual")).toHaveText("0h59");
+  // The series from debriefz reach the story: the profile and the gap read them.
+  await expect(page.getByTestId("profile-readout")).toBeVisible();
+  await expect(page.getByTestId("gap-readout")).toContainText("km 6.0");
 });
 
 test("a bad file shows the Zig error", async ({ page }) => {

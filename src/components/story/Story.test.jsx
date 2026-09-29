@@ -14,7 +14,7 @@ const renderStory = () =>
     </ThemeProvider>,
   );
 
-beforeEach(() => useStore.setState({ report }));
+beforeEach(() => useStore.setState({ report, cursor_m: null }));
 
 it("tells the race from the report", () => {
   renderStory();
@@ -29,6 +29,28 @@ it("tells the race from the report", () => {
 it("has a dot for each section", () => {
   renderStory();
   expect(screen.getAllByRole("button", { name: /Jump to/ })).toHaveLength(STORY_SECTIONS.length);
+});
+
+const pointAt = (plot, clientX) => {
+  plot.getBoundingClientRect = () => ({ left: 0, width: 350 });
+  fireEvent.pointerMove(plot, { clientX });
+};
+
+it("shares the cursor: pointing at the gap reads out the terrain there", () => {
+  renderStory();
+  const profile = screen.getByTestId("profile-readout");
+  expect(profile).toHaveTextContent("Point along the profile");
+  pointAt(screen.getByTestId("gap-readout").nextElementSibling, 100);
+  expect(profile).toHaveTextContent("km 1.0");
+  expect(profile).toHaveTextContent("1200 m");
+  expect(profile).toHaveTextContent("-0h01");
+  fireEvent.pointerLeave(screen.getByTestId("gap-readout").nextElementSibling);
+  expect(profile).toHaveTextContent("Point along the profile");
+});
+
+it("asks for a Mapbox token when there is none", async () => {
+  renderStory();
+  expect(await screen.findByText(/Set VITE_MAPBOX_KEY/)).toBeInTheDocument();
 });
 
 it("reads out the section under the pointer", () => {

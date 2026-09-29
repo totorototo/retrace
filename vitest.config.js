@@ -18,5 +18,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/setupTests.js"],
     include: ["src/**/*.test.{js,jsx}"],
+    // Never reach Mapbox from unit tests (jsdom has no WebGL), whatever a local .env holds.
+    env: { VITE_MAPBOX_KEY: "" },
   },
 });

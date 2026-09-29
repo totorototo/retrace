@@ -14,3 +14,8 @@ coverage
 *.gpx
 !zig/testdata/*.fit
 !zig/testdata/*.gpx
+
+# Local env (Mapbox token)
+.env
+.env.*
+!.env.example

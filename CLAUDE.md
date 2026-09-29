@@ -19,6 +19,8 @@ React 19 + styled-components + zustand, Vite 8, Vitest, Playwright, Zig 0.16 via
 - Only the worker imports `.zig` files. Unit tests mock them (`vi.mock`); vitest.config.js
   stubs `.zig` loads so Vitest never compiles Zig. The real WASM path is covered by e2e.
 - Files are read in JS and posted as ArrayBuffers. Nothing is uploaded or stored remotely.
+  The one network use is the map: Mapbox tiles for the race area, with `VITE_MAPBOX_KEY` from
+  a local `.env` (never committed; see `.env.example`). Offline, it falls back to an SVG.
 - Design system: `src/theme/Theme.js` (from Terminus). Use the CSS custom properties.
   Component styles go in `*.style.js` next to the component.
 

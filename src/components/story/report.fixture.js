@@ -12,6 +12,28 @@ const checkpoint = (fields) => ({
   ...fields,
 });
 
+function profilePoint(distance_m, elevation_m, planned, actual, heartRate) {
+  return {
+    distance_m,
+    elevation_m,
+    latitude: 45 + distance_m / 1e5,
+    longitude: 6,
+    duration_s_planned: planned,
+    duration_s_actual: actual,
+    heart_rate_bpm_average: heartRate,
+  };
+}
+
+function trackPoint(km, duration_s, on_route) {
+  return {
+    latitude: 45 + km / 100,
+    longitude: on_route ? 6 : 6.002,
+    duration_s,
+    distance_m: km * 1000,
+    on_route,
+  };
+}
+
 export const report = {
   name: "Test Trail",
   settings: {},
@@ -98,6 +120,33 @@ export const report = {
     { distance_m: 2000, duration_s_planned: 1500, duration_s_actual: 1500 },
     { distance_m: 3000, duration_s_planned: 2100, duration_s_actual: 2400 },
   ],
-  deviations: [],
+  deviations: [
+    {
+      distance_m_left: 2200,
+      distance_m_rejoined: 2600,
+      duration_s_left: 1700,
+      duration_s: 240,
+      distance_m: 450,
+      offset_m_max: 120,
+    },
+  ],
   calibration: null,
+  // Every 1000 m and at the end: the splits' times, on a small hill.
+  profile: [
+    profilePoint(0, 1000, 0, 0, null),
+    profilePoint(1000, 1200, 400, 340, 150),
+    profilePoint(2000, 1100, 1500, 1500, 145),
+    profilePoint(3000, 1150, 2100, 2400, 140),
+    profilePoint(3500, 1000, 2400, 2800, 138),
+  ],
+  // Off the trace for two points between 2200 and 2600 m.
+  track: [
+    trackPoint(0, 0, true),
+    trackPoint(1, 700, true),
+    trackPoint(2, 1600, true),
+    trackPoint(2.2, 1700, false),
+    trackPoint(2.4, 1850, false),
+    trackPoint(2.6, 1940, true),
+    trackPoint(3.5, 2800, true),
+  ],
 };
