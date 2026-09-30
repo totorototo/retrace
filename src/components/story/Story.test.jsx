@@ -48,9 +48,11 @@ it("shares the cursor: pointing at the gap reads out the terrain there", () => {
   expect(profile).toHaveTextContent("Point along the profile");
 });
 
+// The map is lazy: its first import brings in mapbox-gl, which under coverage on a cold CI
+// runner takes over findBy's 1 s default (~0.3 s locally, 1.3 s on CI).
 it("asks for a Mapbox token when there is none", async () => {
   renderStory();
-  expect(await screen.findByText(/Set VITE_MAPBOX_KEY/)).toBeInTheDocument();
+  expect(await screen.findByText(/Set VITE_MAPBOX_KEY/, {}, { timeout: 5000 })).toBeInTheDocument();
 });
 
 it("lists the climbs, and pointing at one marks it on the terrain", () => {
