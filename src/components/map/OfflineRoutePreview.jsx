@@ -4,17 +4,19 @@ import { projectPoints, VIEW } from "./offlineRouteProjection.js";
 
 // Adapted from Terminus: the route drawn without a basemap when Mapbox can't be reached.
 // Here several lines (the plan, the track's runs) share one projection, fitted to all.
-export default function OfflineRoutePreview({ lines, marker, markerColor }) {
-  const { paths, cursor } = useMemo(() => {
+// Markers ({ coordinate, fill, stroke }: the cursor, the replay's runners) are projected on
+// their own: they move every frame of a replay, the lines never do.
+export default function OfflineRoutePreview({ lines, markers = [] }) {
+  const { paths, toSvg } = useMemo(() => {
     const { toSvg } = projectPoints(lines.flatMap((line) => line.coordinates));
     return {
       paths: lines.map((line) => ({
         ...line,
         points: line.coordinates.map((coordinate) => toSvg(coordinate).join(",")).join(" "),
       })),
-      cursor: marker ? toSvg(marker) : null,
+      toSvg,
     };
-  }, [lines, marker]);
+  }, [lines]);
 
   return (
     <>
@@ -38,7 +40,21 @@ export default function OfflineRoutePreview({ lines, marker, markerColor }) {
             vectorEffect="non-scaling-stroke"
           />
         ))}
-        {cursor && <circle cx={cursor[0]} cy={cursor[1]} r={8} fill={markerColor} />}
+        {markers.map((marker, index) => {
+          const [cx, cy] = toSvg(marker.coordinate);
+          return (
+            <circle
+              key={index}
+              cx={cx}
+              cy={cy}
+              r={8}
+              fill={marker.fill}
+              stroke={marker.stroke}
+              strokeWidth={marker.stroke ? 3 : 0}
+              vectorEffect="non-scaling-stroke"
+            />
+          );
+        })}
       </svg>
       <div className="offline-badge">Offline: map tiles unavailable</div>
     </>

@@ -9,6 +9,9 @@ export const DEFAULT_SETTINGS = {
   life_base_stop_s: 3600,
 };
 
+// A replay belongs to the report it was started on.
+const NO_REPLAY = { replay_s: null, replayPlaying: false };
+
 const MAX_FILE_BYTES = 256 * 1024 * 1024;
 const THEME_KEY = "retrace-theme";
 
@@ -47,6 +50,11 @@ export const createStore = (getClient = createWorkerClient) => {
     // Where the pointer is along the route, shared by every chart and the map; null when
     // it's on none of them.
     cursor_m: null,
+    // The race replayed on the map, in race seconds: null when it isn't being replayed.
+    // why: in the store, not the map's state: it changes every frame, and only the leaves
+    // that select it (the runners' markers, the controls) re-render, not the whole map.
+    replay_s: null,
+    replayPlaying: false,
     theme: initialTheme(), // dark | light
 
     toggleTheme() {
@@ -63,13 +71,21 @@ export const createStore = (getClient = createWorkerClient) => {
       if (cursor_m !== get().cursor_m) set({ cursor_m });
     },
 
+    setReplay(replay_s, replayPlaying = get().replayPlaying) {
+      set({ replay_s, replayPlaying });
+    },
+
+    stopReplay() {
+      set({ replay_s: null, replayPlaying: false });
+    },
+
     async loadFile(kind, file) {
       if (file.size > MAX_FILE_BYTES) {
         set({ status: "error", error: `${file.name} is too large` });
         return;
       }
       const bytes = await file.arrayBuffer();
-      set({ [kind]: { name: file.name, bytes }, report: null, error: null });
+      set({ [kind]: { name: file.name, bytes }, report: null, error: null, ...NO_REPLAY });
       await get().refresh();
     },
 
@@ -92,7 +108,7 @@ export const createStore = (getClient = createWorkerClient) => {
         ]);
         const report = gpx && fit ? await worker().analyze(gpx.bytes, fit.bytes, settings) : null;
         if (current !== generation) return;
-        set({ plan, activity, report, status: "done" });
+        set({ plan, activity, report, status: "done", ...NO_REPLAY });
       } catch (err) {
         if (current !== generation) return;
         set({ status: "error", error: err.message });
@@ -110,6 +126,7 @@ export const createStore = (getClient = createWorkerClient) => {
         status: "idle",
         error: null,
         cursor_m: null,
+        ...NO_REPLAY,
       });
     },
   }));

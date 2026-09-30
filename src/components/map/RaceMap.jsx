@@ -11,7 +11,6 @@ import { useTheme } from "styled-components";
 import { useIsOnline } from "../../hooks/useIsOnline.js";
 import useStore from "../../store/store.js";
 import { profileAt } from "../story/debrief.js";
-import OfflineRoutePreview from "./OfflineRoutePreview.jsx";
 import {
   bounds as boundsOf,
   checkpointPositions,
@@ -20,6 +19,7 @@ import {
   trackRuns,
 } from "./raceGeometry.js";
 import style from "./RaceMap.style.js";
+import { OfflineReplayPreview, ReplayControls, ReplayMarkers } from "./Replay.jsx";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_KEY;
 
@@ -27,7 +27,8 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_KEY;
 // then tilt, fullscreen (native or a CSS fallback), and an SVG preview offline. Here it
 // draws the plan and the race: the planned route under the actual track, the track's
 // off-route runs in the accent colour, a pin per checkpoint, and a marker at the chart
-// cursor, so pointing along any chart shows where that was.
+// cursor, so pointing along any chart shows where that was. Its replay runs the race again
+// against the plan's runner (Replay.jsx).
 
 // iPhone Safari only gives <video> the element Fullscreen API (see Terminus).
 const hasFullscreenApi =
@@ -120,6 +121,25 @@ const RaceMap = memo(function RaceMap({ className }) {
   const offRouteColor = colors["--color-accent"];
   const pinColor = colors["--color-secondary"];
 
+  // Memoised: a new array would make the offline preview project the route again.
+  const offlineLines = useMemo(
+    () => [
+      {
+        coordinates: geometry.planned,
+        color: colors["--color-text"],
+        width: 4,
+        opacity: 0.35,
+      },
+      ...geometry.runs.map((run) => ({
+        coordinates: run.coordinates,
+        color: run.on_route ? trackColor : offRouteColor,
+        width: run.on_route ? 2 : 3,
+        opacity: 1,
+      })),
+    ],
+    [geometry, colors, trackColor, offRouteColor],
+  );
+
   const fitToBounds = useCallback(() => {
     if (!mapRef.current) return;
     // fitBounds zooms out too far with a pitch set: fit flat, then tilt (see Terminus).
@@ -183,23 +203,15 @@ const RaceMap = memo(function RaceMap({ className }) {
     return renderFullscreenable(
       <div ref={containerRef} className={containerClassName}>
         {fullscreenButton}
-        <OfflineRoutePreview
-          lines={[
-            {
-              coordinates: geometry.planned,
-              color: colors["--color-text"],
-              width: 4,
-              opacity: 0.35,
-            },
-            ...geometry.runs.map((run) => ({
-              coordinates: run.coordinates,
-              color: run.on_route ? trackColor : offRouteColor,
-              width: run.on_route ? 2 : 3,
-              opacity: 1,
-            })),
-          ]}
-          marker={cursor && [cursor.longitude, cursor.latitude]}
-          markerColor={colors["--color-text"]}
+        <ReplayControls />
+        <OfflineReplayPreview
+          lines={offlineLines}
+          cursor={cursor}
+          colors={{
+            text: colors["--color-text"],
+            background: colors["--color-background"],
+            runner: trackColor,
+          }}
         />
       </div>,
     );
@@ -208,6 +220,7 @@ const RaceMap = memo(function RaceMap({ className }) {
   return renderFullscreenable(
     <div ref={containerRef} className={containerClassName}>
       {fullscreenButton}
+      <ReplayControls />
       <Map
         ref={mapRef}
         mapboxAccessToken={MAPBOX_TOKEN}
@@ -266,6 +279,7 @@ const RaceMap = memo(function RaceMap({ className }) {
             <div className="cursor-marker" data-testid="map-cursor" />
           </Marker>
         )}
+        <ReplayMarkers runnerColor={trackColor} planColor={plannedColor} />
       </Map>
     </div>,
   );
