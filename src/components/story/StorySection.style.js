@@ -3,7 +3,7 @@ import styled from "styled-components";
 const style = (Component) => styled(Component)`
   display: block;
   width: 100%;
-  padding: clamp(4rem, 14vh, 7rem) clamp(1.25rem, 6vw, 4rem);
+  padding: clamp(4rem, 14vh, 7rem) clamp(1.5rem, 6vw, 4rem);
   position: relative;
 
   .section-inner {
@@ -63,6 +63,17 @@ const style = (Component) => styled(Component)`
     padding: 1.5rem;
     border-radius: var(--border-radius-lg);
     border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+  }
+
+  /* Phones: less air around each section and inside the frames, so the charts keep the
+     width. why: the 1.5rem gutter (not 1.25rem) keeps the frames clear of the dot nav. */
+  @media (max-width: 40em) {
+    padding-block: 3rem;
+
+    .chart-frame {
+      padding: 1rem;
+      border-radius: var(--border-radius-md);
+    }
   }
 `;
 

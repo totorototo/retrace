@@ -6,8 +6,8 @@ const style = (Component) => styled(Component)`
   flex-direction: column;
   min-height: 70vh;
   justify-content: center;
-  padding: clamp(3rem, 10vh, 6rem) clamp(1.25rem, 6vw, 4rem);
-  max-width: calc(46rem + 2 * clamp(1.25rem, 6vw, 4rem));
+  padding: clamp(3rem, 10vh, 6rem) clamp(1.5rem, 6vw, 4rem);
+  max-width: calc(46rem + 2 * clamp(1.5rem, 6vw, 4rem));
   margin: 0 auto;
 
   .eyebrow {
@@ -35,10 +35,18 @@ const style = (Component) => styled(Component)`
   .stat-row {
     display: flex;
     flex-wrap: wrap;
-    gap: clamp(1.5rem, 5vw, 3.5rem);
+    gap: 1.25rem clamp(1.5rem, 5vw, 3.5rem);
+  }
 
-    & + & {
-      margin-top: 2rem;
+  .stat-row + .stat-row {
+    margin-top: 2rem;
+  }
+
+  /* Phones: three columns, so a wrapped row lines up with the one above. */
+  @media (max-width: 40em) {
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 

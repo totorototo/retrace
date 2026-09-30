@@ -4,8 +4,9 @@ import { createXScale, createYScale } from "../../../helpers/d3.js";
 import { useDistanceCursor } from "../../../hooks/useDistanceCursor.js";
 import useStore from "../../../store/store.js";
 import { formatDuration } from "../../../utils/format.js";
-import { paceHalves, sectionSpans, spacedNames, toneOfRatio } from "../debrief.js";
+import { paceHalves, sectionSpans, toneOfRatio } from "../debrief.js";
 import StorySection from "../StorySection.jsx";
+import AxisNames from "./AxisNames.jsx";
 import style from "./StoryPace.style.js";
 
 const WIDTH = 300;
@@ -143,13 +144,7 @@ const StoryPace = memo(function StoryPace({ className }) {
             )}
           </div>
 
-          <div className="axis-names">
-            {spacedNames(names).map((name, index) => (
-              <span key={index} className="axis-name" style={{ left: `${name.pct}%` }}>
-                {name.name}
-              </span>
-            ))}
-          </div>
+          <AxisNames markers={names} />
         </div>
       </StorySection>
     </div>

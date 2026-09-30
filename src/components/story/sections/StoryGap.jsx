@@ -5,16 +5,9 @@ import { createXScale, createYScale } from "../../../helpers/d3.js";
 import { useDistanceCursor } from "../../../hooks/useDistanceCursor.js";
 import useStore from "../../../store/store.js";
 import { formatDelta, formatDuration } from "../../../utils/format.js";
-import {
-  behindFrom,
-  bridges,
-  deviationSpans,
-  gapSeries,
-  profileAt,
-  spacedNames,
-  toneOf,
-} from "../debrief.js";
+import { behindFrom, bridges, deviationSpans, gapSeries, profileAt, toneOf } from "../debrief.js";
 import StorySection from "../StorySection.jsx";
+import AxisNames from "./AxisNames.jsx";
 import DeviationBands from "./DeviationBands.jsx";
 import style from "./StoryGap.style.js";
 
@@ -212,13 +205,7 @@ const StoryGap = memo(function StoryGap({ className }) {
             )}
           </div>
 
-          <div className="axis-names">
-            {spacedNames(checkpoints).map((checkpoint, index) => (
-              <span key={index} className="axis-name" style={{ left: `${checkpoint.pct}%` }}>
-                {checkpoint.name}
-              </span>
-            ))}
-          </div>
+          <AxisNames markers={checkpoints} />
           {deviations.length > 0 && (
             <div className="legend">
               <span className="legend-item">

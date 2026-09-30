@@ -11,11 +11,11 @@ import {
   isOffTrace,
   profileAt,
   sectionSpans,
-  spacedNames,
   toneOf,
   toneOfRatio,
 } from "../debrief.js";
 import StorySection from "../StorySection.jsx";
+import AxisNames from "./AxisNames.jsx";
 import DeviationBands from "./DeviationBands.jsx";
 import style from "./StoryProfile.style.js";
 
@@ -220,13 +220,7 @@ const StoryProfile = memo(function StoryProfile({ className }) {
             )}
           </div>
 
-          <div className="axis-names">
-            {spacedNames(checkpoints).map((checkpoint, index) => (
-              <span key={index} className="axis-name" style={{ left: `${checkpoint.pct}%` }}>
-                {checkpoint.name}
-              </span>
-            ))}
-          </div>
+          <AxisNames markers={checkpoints} />
           <div className="legend">
             <span className="legend-item">
               <span className="legend-swatch profile-area" data-tone="behind" />

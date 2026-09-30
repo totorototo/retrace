@@ -4,7 +4,7 @@ import styled from "styled-components";
 // share a left edge. The rows are styled here, as StorySection styles its sections' charts:
 // FilePicker and SettingsForm only emit the class names.
 const style = (Component) => styled(Component)`
-  padding: 0 clamp(1.25rem, 6vw, 4rem);
+  padding: 0 clamp(1.5rem, 6vw, 4rem);
 
   .setup-inner {
     max-width: 46rem;

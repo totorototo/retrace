@@ -6,6 +6,8 @@ import { toneOf } from "../debrief.js";
 import StorySection from "../StorySection.jsx";
 import style from "./StoryCheckpoints.style.js";
 
+const COLUMNS = ["Checkpoint", "km", "Plan", "Actual", "Delta", "Stop", "Margin"];
+
 // The cutoff buffer at each checkpoint with a cutoff: planned (ring) against actual (dot),
 // the cutoff itself the zero line. Below zero, it was missed.
 function Buffers({ checkpoints }) {
@@ -106,29 +108,31 @@ const StoryCheckpoints = memo(function StoryCheckpoints({ className }) {
         )}
         <Buffers checkpoints={checkpoints} />
 
+        {/* why: the explicit roles keep it a table for screen readers on phones, where the
+            rows are grids (Safari drops the table semantics of a restyled table). */}
         <div className="table-wrap">
-          <table data-testid="checkpoints">
-            <thead>
-              <tr>
-                <th>Checkpoint</th>
-                <th>km</th>
-                <th>Plan</th>
-                <th>Actual</th>
-                <th>Delta</th>
-                <th>Stop</th>
-                <th>Margin</th>
+          <table data-testid="checkpoints" role="table">
+            <thead role="rowgroup">
+              <tr role="row">
+                {COLUMNS.map((column) => (
+                  <th key={column} role="columnheader">
+                    {column}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody role="rowgroup">
               {checkpoints.map((checkpoint, index) => (
-                <tr key={`${checkpoint.name}-${index}`}>
-                  <td>{checkpoint.name}</td>
-                  <td>{(checkpoint.distance_m / 1000).toFixed(1)}</td>
-                  <td>{formatDuration(checkpoint.duration_s_planned)}</td>
-                  <td>{formatDuration(checkpoint.duration_s_actual)}</td>
-                  <td data-tone={toneOf(checkpoint.delta_s)}>{formatDelta(checkpoint.delta_s)}</td>
-                  <td>{formatDuration(checkpoint.stop_s_actual)}</td>
-                  <td>{formatDelta(checkpoint.margin_s_actual)}</td>
+                <tr key={`${checkpoint.name}-${index}`} role="row">
+                  <td role="cell">{checkpoint.name}</td>
+                  <td role="cell">{(checkpoint.distance_m / 1000).toFixed(1)}</td>
+                  <td role="cell">{formatDuration(checkpoint.duration_s_planned)}</td>
+                  <td role="cell">{formatDuration(checkpoint.duration_s_actual)}</td>
+                  <td role="cell" data-tone={toneOf(checkpoint.delta_s)}>
+                    {formatDelta(checkpoint.delta_s)}
+                  </td>
+                  <td role="cell">{formatDuration(checkpoint.stop_s_actual)}</td>
+                  <td role="cell">{formatDelta(checkpoint.margin_s_actual)}</td>
                 </tr>
               ))}
             </tbody>

@@ -48,6 +48,52 @@ const style = (Component) => styled(Component)`
   td[data-tone="ahead"] {
     color: var(--color-ahead-text);
   }
+
+  /* Phones: seven columns don't fit, and scrolling sideways hides the times, which matter
+     most. Each row is two lines instead: the name and its km, then the five times, under
+     headers laid out the same way. */
+  @media (max-width: 40em) {
+    .table-wrap {
+      overflow-x: visible;
+    }
+
+    tr {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+    }
+
+    th,
+    td {
+      padding: 6px 0;
+      border-bottom: none;
+    }
+
+    th:nth-child(-n + 2) {
+      display: none;
+    }
+
+    td:first-child {
+      grid-column: 1 / 4;
+      padding-top: 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    td:nth-child(2) {
+      grid-column: 4 / 6;
+      padding-top: 10px;
+      color: color-mix(in srgb, var(--color-text) 55%, transparent);
+
+      &::after {
+        content: " km";
+      }
+    }
+
+    td:nth-child(n + 3) {
+      padding-bottom: 10px;
+    }
+  }
 `;
 
 export default style;

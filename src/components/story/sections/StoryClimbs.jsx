@@ -74,7 +74,10 @@ const StoryClimbs = memo(function StoryClimbs({ className }) {
 
   return (
     <div className={className}>
-      <StorySection eyebrow="The climbs" title={`${climbs.length} climbs`}>
+      <StorySection
+        eyebrow="The climbs"
+        title={climbs.length === 1 ? "1 climb" : `${climbs.length} climbs`}
+      >
         <p className="lede">
           <strong>{formatDuration(Math.abs(chart.total))}</strong> {verb(chart.total)} on the
           climbs: <strong>{formatDelta(chart.halves[0])}</strong> in the first half,{" "}
