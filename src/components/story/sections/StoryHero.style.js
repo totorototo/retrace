@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-// Terminus's StoryHero, shorter: here it sits under the file pickers, not at the top.
+// Terminus's StoryHero, shorter: here it sits under the setup, not at the top.
 const style = (Component) => styled(Component)`
   display: flex;
   flex-direction: column;

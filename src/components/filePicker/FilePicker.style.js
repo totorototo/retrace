@@ -1,46 +1,28 @@
 import styled from "styled-components";
 
-export const Row = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
+// The row itself is Setup's; these are what only a file row has.
+export const FileName = styled.span`
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ${({ $loaded }) =>
+    $loaded ? "var(--font-family-mono)" : "var(--font-family-sansSerif)"};
+  font-size: ${({ $loaded }) => ($loaded ? "var(--font-size)" : "var(--font-size-small)")};
+  color: ${({ $loaded }) =>
+    $loaded ? "var(--color-text)" : "color-mix(in srgb, var(--color-text) 55%, transparent)"};
 `;
 
-export const Slot = styled.label`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 16px;
-  border: 1px dashed
-    ${({ $loaded }) => ($loaded ? "var(--color-secondary)" : "var(--color-progress)")};
-  border-radius: var(--border-radius-md);
-  background: var(--color-surface);
-  cursor: pointer;
-  transition: border-color var(--transition-fast);
+// Visually hidden but still in the tab order; the row's chip shows its focus.
+export const Input = styled.input`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 
-  &:hover {
-    border-color: var(--color-primary);
-  }
-
-  span:first-child {
-    font-family: var(--font-family-mono);
-    font-size: var(--font-size-tiny);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--color-primary-text);
-  }
-
-  span:last-of-type {
-    font-size: var(--font-size-small);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
+  label:has(&:focus-visible) .chip {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 `;
