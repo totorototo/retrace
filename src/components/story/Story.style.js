@@ -14,7 +14,8 @@ const style = (Component) => styled(Component)`
 
   .contour-line {
     stroke: var(--color-secondary);
-    stroke-width: 1;
+    /* Terminus's weight: its 1-unit stroke stretches with the 200-unit-wide viewBox. */
+    stroke-width: 0.5vw;
     vector-effect: non-scaling-stroke;
     opacity: 0.16;
   }

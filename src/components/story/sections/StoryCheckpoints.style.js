@@ -34,7 +34,7 @@ const style = (Component) => styled(Component)`
   th {
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-tiny);
-    opacity: 0.7;
+    color: color-mix(in srgb, var(--color-text) 70%, transparent);
   }
 
   td {

@@ -43,7 +43,7 @@ export const chartCss = css`
     left: 0;
     font-family: var(--font-family-mono);
     font-size: var(--font-size-xsmall);
-    color: color-mix(in srgb, var(--color-text) 55%, transparent);
+    color: color-mix(in srgb, var(--color-text) 70%, transparent);
     pointer-events: none;
   }
 
@@ -60,7 +60,7 @@ export const chartCss = css`
     white-space: nowrap;
     font-family: var(--font-family-mono);
     font-size: var(--font-size-xxsmall);
-    color: color-mix(in srgb, var(--color-text) 55%, transparent);
+    color: color-mix(in srgb, var(--color-text) 65%, transparent);
   }
 
   .zero-line {
@@ -115,7 +115,7 @@ export const chartCss = css`
     margin-top: 1rem;
     font-family: var(--font-family-mono);
     font-size: var(--font-size-xsmall);
-    color: color-mix(in srgb, var(--color-text) 70%, transparent);
+    color: color-mix(in srgb, var(--color-text) 65%, transparent);
   }
 
   .legend-item {
@@ -214,7 +214,7 @@ export const rowsCss = css`
     transform: translateX(-50%);
     font-family: var(--font-family-mono);
     font-size: var(--font-size-xxsmall);
-    color: color-mix(in srgb, var(--color-text) 55%, transparent);
+    color: color-mix(in srgb, var(--color-text) 65%, transparent);
     white-space: nowrap;
   }
 

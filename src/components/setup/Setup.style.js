@@ -24,7 +24,7 @@ const style = (Component) => styled(Component)`
       font-weight: var(--font-weight-bold);
       letter-spacing: -0.04em;
       line-height: 1;
-      color: var(--color-primary-text);
+      color: var(--color-text);
     }
   }
 
@@ -81,8 +81,8 @@ const style = (Component) => styled(Component)`
     cursor: pointer;
 
     &:hover .chip {
-      border-color: color-mix(in srgb, var(--color-text) 35%, transparent);
-      color: var(--color-text);
+      border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+      color: var(--color-primary);
     }
   }
 
@@ -143,8 +143,10 @@ const style = (Component) => styled(Component)`
     cursor: pointer;
     transition: all var(--transition-base);
 
+    /* Terminus's hover for an outlined button (its retry and fullscreen buttons). */
     &:hover {
-      border-color: color-mix(in srgb, var(--color-text) 35%, transparent);
+      border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+      color: var(--color-primary);
     }
 
     &.active {
@@ -157,7 +159,7 @@ const style = (Component) => styled(Component)`
     margin-top: 1rem;
     font-family: var(--font-family-mono);
     font-size: var(--font-size-small);
-    color: var(--color-secondary-text);
+    color: color-mix(in srgb, var(--color-text) 85%, transparent);
 
     &[role="alert"] {
       color: var(--color-accent-text);

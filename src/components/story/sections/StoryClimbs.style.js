@@ -30,26 +30,22 @@ const style = (Component) => styled(Component)`
     position: static;
   }
 
-  /* Terminus's category badge, shrunk to a pill that keeps the row on one line. */
+  /* Terminus's category marker (a primary ring), shrunk to a pill that keeps the row on one
+     line. Not filled for the hardest: Terminus fills it only for the climb in progress. */
   .climb-category {
     display: inline-block;
     min-width: 2.4em;
     margin-right: 0.5em;
     padding: 0 0.3em;
+    border: 1px dashed color-mix(in srgb, var(--color-text) 35%, transparent);
     border-radius: var(--border-radius-xs);
     text-align: center;
     font-weight: var(--font-weight-bold);
     color: color-mix(in srgb, var(--color-text) 45%, transparent);
 
     &[data-category] {
+      border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
       color: var(--color-primary-text);
-      background: color-mix(in srgb, var(--color-primary) 14%, transparent);
-    }
-
-    &[data-category="HC"],
-    &[data-category="1"] {
-      color: var(--color-background);
-      background: var(--color-primary);
     }
   }
 
