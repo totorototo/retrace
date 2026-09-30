@@ -61,3 +61,8 @@ it("switches between light and dark", () => {
   expect(useStore.getState().theme).toBe("light");
   expect(screen.getByRole("button", { name: "Switch to dark mode" })).toBeInTheDocument();
 });
+
+it("closes the page with the footer", () => {
+  render(<App />);
+  expect(screen.getByRole("contentinfo")).toHaveTextContent("© 2026 retrace — La Vallée");
+});
