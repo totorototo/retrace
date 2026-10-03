@@ -14,6 +14,9 @@ coverage
 *.gpx
 !zig/testdata/*.fit
 !zig/testdata/*.gpx
+# The demo race: the author's own GRP 2026, already public (Strava, Garmin Connect).
+!public/demo/*.fit
+!public/demo/*.gpx
 
 # Claude Code per-machine settings
 .claude/settings.local.json

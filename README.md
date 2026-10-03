@@ -1,8 +1,8 @@
 # retrace
 
 Trail race analysis in the browser: the **plan** (a GPX route with typed checkpoints) against
-what was **actually run** (a FIT activity). Everything runs locally, as an installable PWA; files
-never leave the device.
+what was **actually run** (a FIT activity), shown on one race: the author's Grand Raid des
+Pyrénées 2026 Ultra Tour. The analysis runs locally, as an installable PWA that works offline.
 
 The analysis is Zig, compiled to WebAssembly with [Zigar](https://github.com/chung-leong/zigar)
 and run in a web worker. It is not vendored: `zig/build.zig.zon` pins three libraries.
@@ -39,7 +39,8 @@ zig/
 src/
   worker/            analysis.worker.js (owns WASM) + client.js (promise RPC)
   store/             zustand: files, settings, results
-  components/        FilePicker, SettingsForm, Summary
+  components/        Setup, SettingsForm, Story, …
+  demo.js            the demo race's files, served from public/demo/
   theme/             Terminus design system (Theme.js copied from Terminus)
   sw.js              Workbox precache → works offline
 e2e/                 Playwright specs
@@ -47,7 +48,7 @@ e2e/                 Playwright specs
 
 ## Data flow
 
-1. `FilePicker` reads the file with `File.arrayBuffer()`.
+1. At startup, the store fetches the demo race (`public/demo/`, GRP 2026) as ArrayBuffers.
 2. The store sends the bytes to the worker (copied and transferred, so the store keeps its
    own bytes and can rerun when the settings change).
 3. The worker passes a `Uint8Array` to the Zig export. Zig parses and compares, then returns

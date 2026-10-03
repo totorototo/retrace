@@ -2,17 +2,24 @@ import { fileURLToPath } from "node:url";
 
 import { expect, test } from "@playwright/test";
 
-// The synthetic race from scripts/make-fixtures.mjs, run through the real WASM module.
+// The synthetic race from scripts/make-fixtures.mjs, run through the real WASM module in
+// place of the demo race: same path, smaller files, known answers.
 const fixture = (name) => fileURLToPath(new URL(`../zig/testdata/${name}`, import.meta.url));
 
-test("plan vs actual from a GPX and a FIT", async ({ page }) => {
+const serveDemo = (page, { gpx, fit }) =>
+  Promise.all([
+    page.route("**/demo/*.gpx", (route) => route.fulfill(gpx)),
+    page.route("**/demo/*.fit", (route) => route.fulfill(fit)),
+  ]);
+
+test("opens straight on the demo race, plan vs actual", async ({ page }) => {
+  await serveDemo(page, {
+    gpx: { path: fixture("route.gpx") },
+    fit: { path: fixture("activity.fit") },
+  });
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "retrace" })).toBeVisible();
 
-  await page.getByTestId("gpx-input").setInputFiles(fixture("route.gpx"));
-  await expect(page.getByTestId("plan-distance")).toHaveText("6.0 km");
-
-  await page.getByTestId("fit-input").setInputFiles(fixture("activity.fit"));
   const rows = page.getByTestId("checkpoints").locator("tbody tr");
   await expect(rows).toHaveCount(3);
   await expect(rows.nth(1)).toContainText("Refuge");
@@ -23,12 +30,11 @@ test("plan vs actual from a GPX and a FIT", async ({ page }) => {
 });
 
 test("a bad file shows the Zig error", async ({ page }) => {
-  await page.goto("/");
-  await page.getByTestId("fit-input").setInputFiles({
-    name: "broken.fit",
-    mimeType: "application/octet-stream",
-    buffer: Buffer.from("not a fit file"),
+  await serveDemo(page, {
+    gpx: { path: fixture("route.gpx") },
+    fit: { body: Buffer.from("not a fit file") },
   });
+  await page.goto("/");
   await expect(page.getByTestId("error")).toBeVisible();
 });
 

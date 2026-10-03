@@ -18,8 +18,9 @@ React 19 + styled-components + zustand, Vite 8, Vitest, Playwright, Zig 0.16 via
 
 - Only the worker imports `.zig` files. Unit tests mock them (`vi.mock`); vitest.config.js
   stubs `.zig` loads so Vitest never compiles Zig. The real WASM path is covered by e2e.
-- Files are read in JS and posted as ArrayBuffers. Nothing is uploaded or stored remotely.
-  The one network use is the map: Mapbox tiles for the race area, with `VITE_MAPBOX_KEY` from
+- No file pickers: the app is a demo of one race. `src/demo.js` names the GRP 2026 files in
+  `public/demo/`; `main.jsx` fetches them at startup and the store posts them to the worker as
+  ArrayBuffers. e2e routes those URLs to the synthetic fixtures. The other network use is the map: Mapbox tiles for the race area, with `VITE_MAPBOX_KEY` from
   a local `.env` (never committed; see `.env.example`). Offline, it falls back to an SVG.
 - Design system: `src/theme/Theme.js` (from Terminus). Use the CSS custom properties.
   Component styles go in `*.style.js` next to the component.
@@ -30,4 +31,5 @@ React 19 + styled-components + zustand, Vite 8, Vitest, Playwright, Zig 0.16 via
 ## Data
 
 - Never commit personal recordings. `.gitignore` blocks `*.fit`/`*.gpx` except the synthetic
-  fixtures in `zig/testdata/` (regenerate with `npm run fixtures`).
+  fixtures in `zig/testdata/` (regenerate with `npm run fixtures`) and the demo race in
+  `public/demo/` (the author's GRP 2026, already public on Strava and Garmin Connect).

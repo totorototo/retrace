@@ -1,13 +1,12 @@
 import { memo, useState } from "react";
 
 import useStore from "../../store/store.js";
-import FilePicker from "../filePicker/FilePicker.jsx";
 import { profileOf, stopOf } from "../settingsForm/PaceSettings.constants.js";
 import SettingsForm from "../settingsForm/SettingsForm.jsx";
 import Summary from "../summary/Summary.jsx";
 import style from "./Setup.style.js";
 
-// What the story is made from, folded to one row once the story is there.
+// The race and the settings the story is made from, folded to one row once it is there.
 function Recap({ onChange }) {
   const gpx = useStore((state) => state.gpx);
   const fit = useStore((state) => state.fit);
@@ -39,8 +38,7 @@ const Setup = memo(function Setup({ className }) {
   const report = useStore((state) => state.report);
   const status = useStore((state) => state.status);
   const error = useStore((state) => state.error);
-  // why: folded by default once there is a report, so the story's hero opens the page; kept
-  // open while changing, since swapping a file drops the report until the new one is in.
+  // why: folded by default once there is a report, so the story's hero opens the page.
   const [changing, setChanging] = useState(false);
   const open = !report || changing;
 
@@ -54,10 +52,10 @@ const Setup = memo(function Setup({ className }) {
         {!report && (
           <div className="intro">
             <span className="eyebrow">Plan vs actual</span>
-            <h2 className="title">Your race, against the plan</h2>
+            <h2 className="title">A race, against its plan</h2>
             <p className="lede">
-              The route you planned in Terminus, the activity from your watch, and the settings the
-              plan was made with. Nothing leaves this device.
+              The Grand Raid des Pyrénées 2026 Ultra Tour: the route planned in Terminus, against
+              the activity from the watch, with the settings the plan was made with.
             </p>
           </div>
         )}
@@ -65,7 +63,6 @@ const Setup = memo(function Setup({ className }) {
         {open ? (
           <>
             <div className="ledger">
-              <FilePicker />
               <SettingsForm />
             </div>
             {report && (

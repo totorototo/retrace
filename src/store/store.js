@@ -1,5 +1,6 @@
 import { create } from "zustand";
 
+import { DEMO_FILES } from "../demo.js";
 import { createWorkerClient } from "../worker/client.js";
 
 // The plan's pace settings (gpxz defaults). They must match the ones the plan was made with.
@@ -12,7 +13,6 @@ export const DEFAULT_SETTINGS = {
 // A replay belongs to the report it was started on.
 const NO_REPLAY = { replay_s: null, replayPlaying: false };
 
-const MAX_FILE_BYTES = 256 * 1024 * 1024;
 const THEME_KEY = "retrace-theme";
 
 // The variant the user last picked, else the system's, as Terminus starts from.
@@ -79,13 +79,22 @@ export const createStore = (getClient = createWorkerClient) => {
       set({ replay_s: null, replayPlaying: false });
     },
 
-    async loadFile(kind, file) {
-      if (file.size > MAX_FILE_BYTES) {
-        set({ status: "error", error: `${file.name} is too large` });
+    // Fetches the demo race's two files, then analyses them.
+    async loadDemo(files = DEMO_FILES) {
+      set({ status: "working", error: null });
+      try {
+        const [gpx, fit] = await Promise.all(
+          [files.gpx, files.fit].map(async ({ name, url }) => {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
+            return { name, bytes: await response.arrayBuffer() };
+          }),
+        );
+        set({ gpx, fit, report: null, ...NO_REPLAY });
+      } catch (err) {
+        set({ status: "error", error: err.message });
         return;
       }
-      const bytes = await file.arrayBuffer();
-      set({ [kind]: { name: file.name, bytes }, report: null, error: null, ...NO_REPLAY });
       await get().refresh();
     },
 

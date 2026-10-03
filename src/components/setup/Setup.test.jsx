@@ -16,10 +16,10 @@ beforeEach(() =>
   }),
 );
 
-it("opens on the intro and the files, before there is a report", () => {
+it("opens on the intro and the settings, before there is a report", () => {
   render(<Setup />);
-  expect(screen.getByRole("heading", { name: "Your race, against the plan" })).toBeInTheDocument();
-  expect(screen.getByTestId("gpx-input")).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "A race, against its plan" })).toBeInTheDocument();
+  expect(screen.getByRole("form", { name: "Plan settings" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "Change" })).toBeNull();
 });
 
@@ -30,12 +30,12 @@ it("folds to one row once there is a report, and opens to change it", () => {
     fit: { name: "activity.fit" },
   });
   render(<Setup />);
-  expect(screen.queryByTestId("gpx-input")).toBeNull();
+  expect(screen.queryByRole("form", { name: "Plan settings" })).toBeNull();
   expect(screen.getByText("Default profile · 1 hour at each LifeBase")).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "Change" }));
-  expect(screen.getByTestId("gpx-name")).toHaveTextContent("route.gpx");
+  expect(screen.getByRole("form", { name: "Plan settings" })).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "Done" }));
-  expect(screen.queryByTestId("gpx-input")).toBeNull();
+  expect(screen.queryByRole("form", { name: "Plan settings" })).toBeNull();
 });

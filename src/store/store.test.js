@@ -1,11 +1,20 @@
 import { createStore, DEFAULT_SETTINGS } from "./store.js";
 
-// jsdom's File has no arrayBuffer(); the store only needs these three members.
-const file = (name, bytes = [1, 2, 3]) => ({
-  name,
-  size: bytes.length,
-  arrayBuffer: async () => new Uint8Array(bytes).buffer,
-});
+const FILES = {
+  gpx: { name: "route.gpx", url: "/demo/route.gpx" },
+  fit: { name: "activity.fit", url: "/demo/activity.fit" },
+};
+
+// fetch answering every URL with a few bytes, or with `status` for the ones in `failing`.
+const serve = (failing = [], status = 404) =>
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url) => ({
+      ok: !failing.includes(url),
+      status: failing.includes(url) ? status : 200,
+      arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer,
+    })),
+  );
 
 function fakeClient() {
   return {
@@ -16,16 +25,20 @@ function fakeClient() {
 }
 
 describe("store", () => {
-  it("summarizes a plan alone, then analyses once the activity arrives", async () => {
+  beforeEach(() => serve());
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("fetches the demo race and analyses it", async () => {
     const client = fakeClient();
     const store = createStore(() => client);
 
-    await store.getState().loadFile("gpx", file("route.gpx"));
-    expect(store.getState().plan).toEqual({ distance_m: 6000 });
-    expect(store.getState().report).toBeNull();
-    expect(client.analyze).not.toHaveBeenCalled();
+    await store.getState().loadDemo(FILES);
 
-    await store.getState().loadFile("fit", file("activity.fit"));
+    expect(fetch).toHaveBeenCalledWith("/demo/route.gpx");
+    expect(fetch).toHaveBeenCalledWith("/demo/activity.fit");
+    expect(store.getState().gpx.name).toBe("route.gpx");
+    expect(store.getState().plan).toEqual({ distance_m: 6000 });
+    expect(store.getState().activity).toEqual({ samples: 10 });
     expect(store.getState().report).toEqual({ checkpoints: [] });
     expect(store.getState().status).toBe("done");
     expect(client.analyze).toHaveBeenCalledWith(
@@ -38,8 +51,7 @@ describe("store", () => {
   it("reruns the analysis with new settings", async () => {
     const client = fakeClient();
     const store = createStore(() => client);
-    await store.getState().loadFile("gpx", file("route.gpx"));
-    await store.getState().loadFile("fit", file("activity.fit"));
+    await store.getState().loadDemo(FILES);
 
     await store.getState().setSettings({ pace_base_s_per_km: 420 });
 
@@ -50,12 +62,24 @@ describe("store", () => {
     );
   });
 
+  it("reports a file it could not fetch", async () => {
+    serve(["/demo/activity.fit"]);
+    const client = fakeClient();
+    const store = createStore(() => client);
+
+    await store.getState().loadDemo(FILES);
+
+    expect(store.getState().status).toBe("error");
+    expect(store.getState().error).toBe("activity.fit: HTTP 404");
+    expect(client.analyze).not.toHaveBeenCalled();
+  });
+
   it("reports worker errors", async () => {
     const client = fakeClient();
     client.summarizePlan.mockRejectedValue(new Error("ElevationMissing"));
     const store = createStore(() => client);
 
-    await store.getState().loadFile("gpx", file("route.gpx"));
+    await store.getState().loadDemo(FILES);
 
     expect(store.getState().status).toBe("error");
     expect(store.getState().error).toBe("ElevationMissing");

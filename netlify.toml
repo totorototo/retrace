@@ -5,7 +5,7 @@
 
 # The CSP allows what retrace loads: its own code and WASM (Zigar compiles it at runtime,
 # hence 'wasm-unsafe-eval'; Mapbox and Zigar start workers from blob: URLs), and Mapbox's
-# tiles, styles, glyphs and telemetry. Nothing else leaves the page: files are read locally.
+# tiles, styles, glyphs and telemetry. Nothing else leaves the page.
 [[headers]]
   for = "/*"
   [headers.values]
@@ -19,6 +19,12 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# The demo race never changes under its name.
+[[headers]]
+  for = "/demo/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
 
 [[redirects]]
   from = "/*"
