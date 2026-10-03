@@ -16,7 +16,8 @@
     "test:zig": "cd zig && zig build test --summary all",
     "test:all": "npm run test:zig && npm run test:run",
     "e2e": "playwright test",
-    "fixtures": "node scripts/make-fixtures.mjs"
+    "fixtures": "node scripts/make-fixtures.mjs",
+    "scrub-fit": "node scripts/scrub-fit.mjs"
   },
   "dependencies": {
     "@styled-icons/feather": "10.47.0",

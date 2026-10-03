@@ -32,4 +32,5 @@ React 19 + styled-components + zustand, Vite 8, Vitest, Playwright, Zig 0.16 via
 
 - Never commit personal recordings. `.gitignore` blocks `*.fit`/`*.gpx` except the synthetic
   fixtures in `zig/testdata/` (regenerate with `npm run fixtures`) and the demo race in
-  `public/demo/` (the author's GRP 2026, already public on Strava and Garmin Connect).
+  `public/demo/` (the author's GRP 2026, already public on Strava and Garmin Connect, passed
+  through `npm run scrub-fit` so it holds the race and not the runner's profile).
