@@ -126,13 +126,21 @@ const StoryCheckpoints = memo(function StoryCheckpoints({ className }) {
                 <tr key={`${checkpoint.name}-${index}`} role="row">
                   <td role="cell">{checkpoint.name}</td>
                   <td role="cell">{(checkpoint.distance_m / 1000).toFixed(1)}</td>
-                  <td role="cell">{formatDuration(checkpoint.duration_s_planned)}</td>
-                  <td role="cell">{formatDuration(checkpoint.duration_s_actual)}</td>
-                  <td role="cell" data-tone={toneOf(checkpoint.delta_s)}>
+                  <td role="cell" data-label={COLUMNS[2]}>
+                    {formatDuration(checkpoint.duration_s_planned)}
+                  </td>
+                  <td role="cell" data-label={COLUMNS[3]}>
+                    {formatDuration(checkpoint.duration_s_actual)}
+                  </td>
+                  <td role="cell" data-label={COLUMNS[4]} data-tone={toneOf(checkpoint.delta_s)}>
                     {formatDelta(checkpoint.delta_s)}
                   </td>
-                  <td role="cell">{formatDuration(checkpoint.stop_s_actual)}</td>
-                  <td role="cell">{formatDelta(checkpoint.margin_s_actual)}</td>
+                  <td role="cell" data-label={COLUMNS[5]}>
+                    {formatDuration(checkpoint.stop_s_actual)}
+                  </td>
+                  <td role="cell" data-label={COLUMNS[6]}>
+                    {formatDelta(checkpoint.margin_s_actual)}
+                  </td>
                 </tr>
               ))}
             </tbody>
