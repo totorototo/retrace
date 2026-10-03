@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 
 import { createXScale, createYScale } from "../../helpers/d3.js";
 import useStore from "../../store/store.js";
+import ErrorBoundary from "../errorBoundary/ErrorBoundary.jsx";
 import { gapSeries } from "./debrief.js";
 import style from "./Story.style.js";
 import StoryDotNav from "./StoryDotNav.jsx";
@@ -85,7 +86,7 @@ const Story = memo(function Story({ className }) {
           </svg>
         )}
         <div className="story-content">
-          {STORY_SECTIONS.map(({ id, Component }, index) => (
+          {STORY_SECTIONS.map(({ id, label, Component }, index) => (
             <div
               key={id}
               id={`story-${id}`}
@@ -93,7 +94,15 @@ const Story = memo(function Story({ className }) {
                 sectionRefs.current[index] = element;
               }}
             >
-              <Component />
+              {/* why: one boundary per section, so a section that throws on an unexpected
+                  report loses only itself, and the dot nav still finds its place. */}
+              <ErrorBoundary
+                className="section-fallback"
+                message={`${label}: this section couldn't be drawn.`}
+                resetKey={report}
+              >
+                <Component />
+              </ErrorBoundary>
             </div>
           ))}
         </div>

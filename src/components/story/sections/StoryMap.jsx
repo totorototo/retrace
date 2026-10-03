@@ -1,5 +1,6 @@
 import { lazy, memo } from "react";
 
+import ErrorBoundary from "../../errorBoundary/ErrorBoundary.jsx";
 import LazyPanel from "../../lazyPanel/LazyPanel.jsx";
 import StorySection from "../StorySection.jsx";
 import style from "./StoryMap.style.js";
@@ -17,9 +18,13 @@ const StoryMap = memo(function StoryMap({ className }) {
           chart to place it here.
         </p>
         <div className="map-frame">
-          <LazyPanel>
-            <RaceMap />
-          </LazyPanel>
+          {/* Inside the frame, not around the section: a map chunk that fails to load (a
+              stale tab after a deploy) leaves the heading and the frame in place. */}
+          <ErrorBoundary className="panel-fallback" message="The map couldn't be loaded.">
+            <LazyPanel>
+              <RaceMap />
+            </LazyPanel>
+          </ErrorBoundary>
         </div>
       </StorySection>
     </div>
