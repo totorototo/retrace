@@ -16,7 +16,34 @@ const style = (Component) => styled(Component)`
     display: flex;
     align-items: center;
     min-height: 44px;
+    gap: 0.625rem;
     margin-top: calc(env(safe-area-inset-top, 0px) + 1.25rem);
+
+    .mark {
+      width: 44px;
+      height: 44px;
+      flex: none;
+      fill: none;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+
+    /* why: the favicon's colours are dark's primary and secondary; the tokens keep the
+       pair in light too (blue plan, orange run). */
+    .mark-plan {
+      stroke: var(--color-primary);
+      stroke-width: 4.5;
+    }
+
+    .mark-run {
+      stroke: var(--color-secondary);
+      stroke-width: 3;
+      stroke-dasharray: 5 5;
+    }
+
+    .wordmark-re {
+      color: color-mix(in srgb, var(--color-text) 55%, transparent);
+    }
 
     h1 {
       font-family: var(--font-family-mono);
