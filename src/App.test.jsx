@@ -10,6 +10,7 @@ const reset = (state) =>
     plan: null,
     activity: null,
     status: "idle",
+    phase: null,
     error: null,
     gpx: null,
     ...state,
@@ -18,9 +19,9 @@ const reset = (state) =>
 beforeEach(() => reset());
 
 it("says when it is working, and shows an error from the worker", () => {
-  reset({ status: "working" });
+  reset({ status: "working", phase: "analysing" });
   const { rerender } = render(<App />);
-  expect(screen.getByRole("status")).toHaveTextContent("Analysing");
+  expect(screen.getByRole("status")).toHaveTextContent("Comparing the race with the plan");
   reset({ status: "error", error: "InvalidFit" });
   rerender(<App />);
   expect(screen.getByTestId("error")).toHaveTextContent("InvalidFit");

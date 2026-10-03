@@ -46,6 +46,8 @@ export const createStore = (getClient = createWorkerClient) => {
     activity: null,
     report: null,
     status: "idle", // idle | working | done | error
+    // What the work is at while status is "working", for the loader's label.
+    phase: null, // reading | parsing | analysing
     error: null,
     // Where the pointer is along the route, shared by every chart and the map; null when
     // it's on none of them.
@@ -81,7 +83,7 @@ export const createStore = (getClient = createWorkerClient) => {
 
     // Fetches the demo race's two files, then analyses them.
     async loadDemo(files = DEMO_FILES) {
-      set({ status: "working", error: null });
+      set({ status: "working", phase: "reading", error: null });
       try {
         const [gpx, fit] = await Promise.all(
           [files.gpx, files.fit].map(async ({ name, url }) => {
@@ -92,7 +94,7 @@ export const createStore = (getClient = createWorkerClient) => {
         );
         set({ gpx, fit, report: null, ...NO_REPLAY });
       } catch (err) {
-        set({ status: "error", error: err.message });
+        set({ status: "error", phase: null, error: err.message });
         return;
       }
       await get().refresh();
@@ -109,18 +111,22 @@ export const createStore = (getClient = createWorkerClient) => {
       const { gpx, fit, settings } = get();
       if (!gpx && !fit) return;
       const current = ++generation;
-      set({ status: "working", error: null });
+      set({ status: "working", phase: "parsing", error: null });
       try {
         const [plan, activity] = await Promise.all([
           gpx ? worker().summarizePlan(gpx.bytes, settings) : null,
           fit ? worker().summarizeActivity(fit.bytes) : null,
         ]);
-        const report = gpx && fit ? await worker().analyze(gpx.bytes, fit.bytes, settings) : null;
+        let report = null;
+        if (gpx && fit) {
+          if (current === generation) set({ phase: "analysing" });
+          report = await worker().analyze(gpx.bytes, fit.bytes, settings);
+        }
         if (current !== generation) return;
-        set({ plan, activity, report, status: "done", ...NO_REPLAY });
+        set({ plan, activity, report, status: "done", phase: null, ...NO_REPLAY });
       } catch (err) {
         if (current !== generation) return;
-        set({ status: "error", error: err.message });
+        set({ status: "error", phase: null, error: err.message });
       }
     },
 
@@ -133,6 +139,7 @@ export const createStore = (getClient = createWorkerClient) => {
         activity: null,
         report: null,
         status: "idle",
+        phase: null,
         error: null,
         cursor_m: null,
         ...NO_REPLAY,

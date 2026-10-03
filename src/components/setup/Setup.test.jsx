@@ -9,6 +9,7 @@ beforeEach(() =>
     plan: null,
     activity: null,
     status: "idle",
+    phase: null,
     error: null,
     gpx: null,
     fit: null,
@@ -37,5 +38,12 @@ it("folds to one row once there is a report, and opens to change it", () => {
   expect(screen.getByRole("form", { name: "Plan settings" })).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "Done" }));
+  expect(screen.queryByRole("form", { name: "Plan settings" })).toBeNull();
+});
+
+it("shows the loader in the settings' place while the race first loads", () => {
+  useStore.setState({ status: "working", phase: "reading" });
+  render(<Setup />);
+  expect(screen.getByRole("status")).toHaveTextContent("Reading the race files…");
   expect(screen.queryByRole("form", { name: "Plan settings" })).toBeNull();
 });

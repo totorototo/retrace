@@ -1,10 +1,18 @@
 import { memo, useState } from "react";
 
 import useStore from "../../store/store.js";
+import LoadingSpinner from "../loadingSpinner/LoadingSpinner.jsx";
 import { profileOf, stopOf } from "../settingsForm/PaceSettings.constants.js";
 import SettingsForm from "../settingsForm/SettingsForm.jsx";
 import Summary from "../summary/Summary.jsx";
 import style from "./Setup.style.js";
+
+// The loader's label for each step of the work.
+const PHASE_LABELS = {
+  reading: "Reading the race files…",
+  parsing: "Parsing the plan and the activity…",
+  analysing: "Comparing the race with the plan…",
+};
 
 // The race and the settings the story is made from, folded to one row once it is there.
 function Recap({ onChange }) {
@@ -37,10 +45,12 @@ function Recap({ onChange }) {
 const Setup = memo(function Setup({ className }) {
   const report = useStore((state) => state.report);
   const status = useStore((state) => state.status);
+  const phase = useStore((state) => state.phase);
   const error = useStore((state) => state.error);
   // why: folded by default once there is a report, so the story's hero opens the page.
   const [changing, setChanging] = useState(false);
   const open = !report || changing;
+  const working = status === "working";
 
   return (
     <div className={className}>
@@ -60,7 +70,9 @@ const Setup = memo(function Setup({ className }) {
           </div>
         )}
 
-        {open ? (
+        {/* why: on first load the loader takes the settings' place, so it is in view on a
+            phone; once there is a story, the settings stay and the loader goes below them. */}
+        {working && !report ? null : open ? (
           <>
             <div className="ledger">
               <SettingsForm />
@@ -82,11 +94,7 @@ const Setup = memo(function Setup({ className }) {
           <Recap onChange={() => setChanging(true)} />
         )}
 
-        {status === "working" && (
-          <p className="status" role="status">
-            Analysing…
-          </p>
-        )}
+        {working && <LoadingSpinner label={PHASE_LABELS[phase] ?? "Working…"} />}
         {status === "error" && (
           <p className="status" role="alert" data-testid="error">
             {error}

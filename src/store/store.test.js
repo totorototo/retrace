@@ -48,6 +48,22 @@ describe("store", () => {
     );
   });
 
+  it("names the step it is at while working, and clears it once done", async () => {
+    const client = fakeClient();
+    let finish;
+    client.analyze.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+    const store = createStore(() => client);
+    const phases = [];
+    store.subscribe(({ phase }) => phase !== phases.at(-1) && phases.push(phase));
+
+    const loading = store.getState().loadDemo(FILES);
+    await vi.waitFor(() => expect(store.getState().phase).toBe("analysing"));
+    finish({ checkpoints: [] });
+    await loading;
+
+    expect(phases).toEqual(["reading", "parsing", "analysing", null]);
+  });
+
   it("reruns the analysis with new settings", async () => {
     const client = fakeClient();
     const store = createStore(() => client);
@@ -71,6 +87,7 @@ describe("store", () => {
 
     expect(store.getState().status).toBe("error");
     expect(store.getState().error).toBe("activity.fit: HTTP 404");
+    expect(store.getState().phase).toBeNull();
     expect(client.analyze).not.toHaveBeenCalled();
   });
 
