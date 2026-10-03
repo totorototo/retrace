@@ -24,7 +24,8 @@ export default defineConfig({
       srcDir: "src",
       filename: "sw.js",
       registerType: "autoUpdate",
-      injectRegister: "script-defer",
+      // main.jsx registers it through virtual:pwa-register, which handles the update.
+      injectRegister: false,
       injectManifest: {
         // The worker chunk embeds the WASM module.
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,

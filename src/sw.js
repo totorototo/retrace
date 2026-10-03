@@ -3,6 +3,13 @@
 import { precacheAndRoute } from "workbox-precaching";
 import { registerRoute } from "workbox-routing";
 
+// A new build takes over as soon as it is installed, and main.jsx reloads the page onto it
+// (registerType "autoUpdate"). why: waiting, a new build would only start once every tab
+// was closed; and taking over without the reload would leave the old page asking for chunks
+// the new precache no longer holds. No clientsClaim: a first visit is controlled from its
+// next load, which keeps the e2e page.route stubs in front of the demo fetches.
+self.skipWaiting();
+
 precacheAndRoute(self.__WB_MANIFEST);
 
 // The demo race, cached on first use rather than precached.
