@@ -12,17 +12,31 @@ self.skipWaiting();
 
 precacheAndRoute(self.__WB_MANIFEST);
 
-// The demo race, cached on first use rather than precached.
-// why: 17 MB would hold up the service worker's install on every new build, while the files
-// themselves never change.
+// The demo race, cached on first use rather than precached, and fetched from the network
+// first: Netlify revalidates it on every load, so an unchanged file costs a 304 and a
+// re-scrubbed one arrives at once. The cache answers only offline.
+// why: 14 MB would hold up the service worker's install on every new build; and cache-first
+// would serve the first copy it ever kept, forever.
 registerRoute(
   ({ url }) => url.origin === self.location.origin && url.pathname.includes("/demo/"),
   async ({ request }) => {
     const cache = await caches.open("retrace-demo");
-    const cached = await cache.match(request);
-    if (cached) return cached;
-    const response = await fetch(request);
-    if (response.ok) await cache.put(request, response.clone());
-    return response;
+    try {
+      const response = await fetch(request);
+      // A revalidated file comes back the same: skip rewriting 11 MB when its ETag hasn't
+      // moved.
+      const etag = response.headers.get("etag");
+      const kept = etag && (await cache.match(request))?.headers.get("etag");
+      // Never a page in place of a file (a host's SPA fallback): it would be kept for good.
+      const page = response.headers.get("content-type")?.includes("text/html");
+      if (response.ok && !page && (!etag || kept !== etag)) {
+        await cache.put(request, response.clone());
+      }
+      return response;
+    } catch (error) {
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      throw error;
+    }
   },
 );
