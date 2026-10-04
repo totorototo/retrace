@@ -109,22 +109,93 @@ const style = (Component) => styled(Component)`
     margin-bottom: 1rem;
   }
 
-  .in-short ul {
+  /* The waterfall: label, track, value, in fixed columns so every bar shares one scale. */
+  .waterfall {
     list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr 4rem;
+    align-items: center;
     gap: 0.75rem;
   }
 
-  .in-short li {
+  .step-total {
+    margin-top: 0.25rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+  }
+
+  .step-track {
+    position: relative;
+    height: 14px;
+  }
+
+  .step-zero {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 1px;
+    background: color-mix(in srgb, var(--color-text) 35%, transparent);
+  }
+
+  .step-bar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: var(--border-radius-xs);
+    background: color-mix(in srgb, var(--color-text) 30%, transparent);
+
+    &[data-tone="behind"] {
+      background: color-mix(in srgb, var(--color-behind) 88%, transparent);
+    }
+
+    &[data-tone="ahead"] {
+      background: color-mix(in srgb, var(--color-ahead) 88%, transparent);
+    }
+  }
+
+  .step-value {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-bold);
+    text-align: right;
+    color: var(--color-text);
+
+    &[data-tone="behind"] {
+      color: var(--color-behind-text);
+    }
+
+    &[data-tone="ahead"] {
+      color: var(--color-ahead-text);
+    }
+  }
+
+  .step .more {
+    font-size: var(--font-size-small);
+    color: color-mix(in srgb, var(--color-text) 75%, transparent);
+  }
+
+  .facts {
+    list-style: none;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .facts li {
     font-family: var(--font-family-sansSerif);
-    font-size: var(--font-size-medium);
+    font-size: var(--font-size);
     line-height: 1.5;
     color: color-mix(in srgb, var(--color-text) 70%, transparent);
-    padding-left: 1rem;
-    border-left: 2px solid color-mix(in srgb, var(--color-text) 15%, transparent);
 
     strong {
       color: var(--color-text);
@@ -143,6 +214,10 @@ const style = (Component) => styled(Component)`
     &:focus-visible {
       text-decoration: underline;
     }
+  }
+
+  .facts .more::after {
+    content: " →";
   }
 
   .stat-label {

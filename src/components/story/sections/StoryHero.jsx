@@ -42,54 +42,72 @@ function More({ id, label }) {
   };
   return (
     <a className="more" href={`#story-${id}`} onClick={onClick}>
-      {label} →
+      {label}
     </a>
   );
 }
 
+// Where the delta came from, as a waterfall: each step a bar from where the last one ended,
+// lost time right and gained time left, then the total from zero.
+// why: the race's headline is a sum (lost going down, given back going up, the rest, the
+// stops); a waterfall shows a sum at a glance, where sentences make the reader add it up.
+function Waterfall({ steps, total_s }) {
+  const ends = steps.flatMap((step) => [step.start, step.start + step.seconds]);
+  const min = Math.min(0, total_s, ...ends);
+  const max = Math.max(0, total_s, ...ends);
+  const span = max - min || 1;
+  const pct = (seconds) => ((seconds - min) / span) * 100;
+  const bar = (from, to) => ({
+    left: `${pct(Math.min(from, to))}%`,
+    width: `${Math.abs(pct(to) - pct(from))}%`,
+  });
+  return (
+    <ol className="waterfall" data-testid="waterfall">
+      {steps.map((step) => (
+        <li key={step.key} className="step">
+          <More id={step.id} label={step.label} />
+          <span className="step-track" aria-hidden="true">
+            <span className="step-zero" style={{ left: `${pct(0)}%` }} />
+            <span
+              className="step-bar"
+              data-tone={toneOf(step.seconds)}
+              style={bar(step.start, step.start + step.seconds)}
+            />
+          </span>
+          <span className="step-value" data-tone={toneOf(step.seconds)}>
+            {formatDelta(step.seconds)}
+          </span>
+        </li>
+      ))}
+      <li className="step step-total">
+        <More id="gap" label="vs plan" />
+        <span className="step-track" aria-hidden="true">
+          <span className="step-zero" style={{ left: `${pct(0)}%` }} />
+          <span className="step-bar" data-tone={toneOf(total_s)} style={bar(0, total_s)} />
+        </span>
+        <span className="step-value" data-tone={toneOf(total_s)}>
+          {formatDelta(total_s)}
+        </span>
+      </li>
+    </ol>
+  );
+}
+
 /**
- * The story in a few lines, before its sections: where the time went, what the terrain did,
- * how the pace held, the night, and what to plan next time. why: the hero's figures say how
- * far off the race was; these say why, for a reader who stops after one screen.
+ * The story in short, before its sections: where the delta came from, then the pace, the
+ * night and what to plan next time, each linked to the section that tells it in full.
  */
 function InShort({ report }) {
-  const { time, terrain, fade, night, next } = takeaways(report);
-  const lines = [];
-  // Each part by its sign: "cost" when it lost time, "gave back" when it gained some.
-  const part = (seconds) =>
-    seconds > 0 ? (
-      <>
-        cost <strong>{formatDelta(seconds)}</strong>
-      </>
-    ) : (
-      <>
-        gave back <strong>{formatDuration(-seconds)}</strong>
-      </>
-    );
-  if (time) {
-    lines.push(
-      <li key="time">
-        Moving {time.moving_s > 0 ? "slower" : "faster"} than planned {part(time.moving_s)}; the
-        stops {part(time.stop_s)}. <More id="budget" label="Time lost" />
-      </li>,
-    );
-  }
-  if (terrain) {
-    lines.push(
-      <li key="terrain">
-        Going down {part(terrain.descents_s)}; going up {part(terrain.climbs_s)}.{" "}
-        <More id="climbs" label="Climbs" />
-      </li>,
-    );
-  }
+  const { steps, fade, night, next } = takeaways(report);
+  const facts = [];
   if (fade) {
-    lines.push(
+    facts.push(
       <li key="fade">
-        <strong>{times(fade.first)}</strong> the planned pace in the first half,{" "}
-        <strong>{times(fade.second)}</strong> in the second
+        Pace <strong>{times(fade.first)}</strong> → <strong>{times(fade.second)}</strong> the plan
+        by half
         {fade.slowest && (
           <>
-            ; slowest into {fade.slowest.to} at <strong>{times(fade.slowest.pace_ratio)}</strong>
+            ; slowest into {fade.slowest.to}, <strong>{times(fade.slowest.pace_ratio)}</strong>
           </>
         )}
         . <More id="pace" label="Pace" />
@@ -97,16 +115,15 @@ function InShort({ report }) {
     );
   }
   if (night) {
-    lines.push(
+    facts.push(
       <li key="night">
         {Math.abs(night.night - night.day) < 0.05 ? (
           <>
-            No slower in the dark than by day: <strong>{times(night.night)}</strong> the planned
-            time.
+            No slower in the dark: <strong>{times(night.night)}</strong> the plan, night and day.
           </>
         ) : (
           <>
-            <strong>{times(night.night)}</strong> the planned time in the dark,{" "}
+            <strong>{times(night.night)}</strong> the plan in the dark,{" "}
             <strong>{times(night.day)}</strong> by day.
           </>
         )}{" "}
@@ -115,20 +132,21 @@ function InShort({ report }) {
     );
   }
   if (next) {
-    lines.push(
+    facts.push(
       <li key="next">
-        Next time, plan <strong>{formatPace(next.pace_base_s_per_km)}</strong> with a{" "}
-        <strong>{next.fatigue_coefficient.toFixed(4)}</strong> fade: it would have called the race
-        within <strong>{formatDuration(next.error_s_rms_replanned)}</strong> on average.{" "}
+        Next time: <strong>{formatPace(next.pace_base_s_per_km)}</strong>, fade{" "}
+        <strong>{next.fatigue_coefficient.toFixed(4)}</strong>, within{" "}
+        <strong>{formatDuration(next.error_s_rms_replanned)}</strong> on average.{" "}
         <More id="calibration" label="Next time" />
       </li>,
     );
   }
-  if (!lines.length) return null;
+  if (!steps && !facts.length) return null;
   return (
     <section className="in-short" aria-label="In short" data-testid="in-short">
-      <span className="in-short-title">In short</span>
-      <ul>{lines}</ul>
+      <span className="in-short-title">In short: where the time went</span>
+      {steps && <Waterfall {...steps} />}
+      {facts.length > 0 && <ul className="facts">{facts}</ul>}
     </section>
   );
 }

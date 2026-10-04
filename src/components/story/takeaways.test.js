@@ -14,9 +14,24 @@ describe("takeaways", () => {
     expect(next).toBeNull();
   });
 
+  it("adds the steps up to the delta: down, up, the rest of the moving, the stops", () => {
+    const { steps } = takeaways(report);
+    expect(steps.steps.map(({ key, seconds, start }) => [key, seconds, start])).toEqual([
+      ["down", 60, 0],
+      ["up", -60, 60],
+      ["rest", 600, 0],
+      ["stops", -180, 600],
+    ]);
+    // The delta at the finish, 400 s, in whole minutes as shown: the stops' -200 s rounds to
+    // -3 min, and the rest takes the difference, so the steps add up to the 7 min shown.
+    expect(steps.total_s).toBe(420);
+    expect(steps.steps.reduce((sum, step) => sum + step.seconds, 0)).toBe(420);
+  });
+
   it("leaves out what the report can't answer", () => {
     const bare = { ...report, descents: undefined, sections: [], checkpoints: report.checkpoints };
-    const { time, terrain, fade } = takeaways(bare);
+    const { time, terrain, fade, steps } = takeaways(bare);
+    expect(steps).toBeNull();
     expect(time).toBeNull();
     expect(terrain).toBeNull();
     expect(fade).toBeNull();

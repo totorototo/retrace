@@ -44,5 +44,50 @@ export function takeaways(report) {
   const light = dayNightRatios(report, nightSpans(report));
   const night = light.night != null && light.day != null ? light : null;
 
-  return { time, terrain, fade, night, next: report.calibration ?? null };
+  return {
+    time,
+    terrain,
+    steps: waterfall(time, terrain),
+    fade,
+    night,
+    next: report.calibration ?? null,
+  };
+}
+
+/**
+ * Where the delta came from, step by step: going down, going up, the rest of the moving, the
+ * stops. The steps add up to the time budget's total, the delta at the last checkpoint
+ * reached: "the rest" is the moving time off the climbs and descents, which takes in the
+ * flats and the detours the climbs and descents leave out. Without descents, moving and
+ * stops alone. In whole minutes. Null without a time budget.
+ */
+function waterfall(time, terrain) {
+  if (!time) return null;
+  const steps = terrain
+    ? [
+        { key: "down", label: "going down", seconds: terrain.descents_s, id: "climbs" },
+        { key: "up", label: "going up", seconds: terrain.climbs_s, id: "climbs" },
+        {
+          key: "rest",
+          label: "the rest",
+          seconds: time.moving_s - terrain.descents_s - terrain.climbs_s,
+          id: "pace",
+        },
+      ]
+    : [{ key: "moving", label: "moving", seconds: time.moving_s, id: "pace" }];
+  steps.push({ key: "stops", label: "stops", seconds: time.stop_s, id: "budget" });
+  // Whole minutes, as they're shown, with the rest (or the moving) taking the rounding: the
+  // figures on screen add up to the total on screen, which minutes rounded one by one don't.
+  const minute = (seconds) => Math.round(seconds / 60) * 60;
+  const total = minute(time.moving_s + time.stop_s);
+  const absorber = steps.find((step) => step.key === "rest" || step.key === "moving");
+  for (const step of steps) if (step !== absorber) step.seconds = minute(step.seconds);
+  absorber.seconds =
+    total - steps.reduce((sum, step) => (step === absorber ? sum : sum + step.seconds), 0);
+  let start = 0;
+  for (const step of steps) {
+    step.start = start;
+    start += step.seconds;
+  }
+  return { steps, total_s: start };
 }
