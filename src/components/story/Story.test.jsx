@@ -16,7 +16,9 @@ const renderStory = () =>
 
 beforeEach(() => useStore.setState({ report, cursor_m: null }));
 
-it("tells the race from the report", () => {
+// The first render pays the cold start of every section (React, styled-components, d3):
+// ~1.5 s locally, 8.7 s under coverage on CI, past the 5 s default. Later renders take ~50 ms.
+it("tells the race from the report", { timeout: 20000 }, () => {
   renderStory();
   expect(screen.getByTestId("total-actual")).toHaveTextContent("0h47");
   expect(screen.getByTestId("total-delta")).toHaveTextContent("+0h07");
