@@ -3,6 +3,7 @@ import StoryCalibration from "./sections/StoryCalibration.jsx";
 import StoryCheckpoints from "./sections/StoryCheckpoints.jsx";
 import StoryClimbs from "./sections/StoryClimbs.jsx";
 import StoryGap from "./sections/StoryGap.jsx";
+import StoryHeart from "./sections/StoryHeart.jsx";
 import StoryHero from "./sections/StoryHero.jsx";
 import StoryMap from "./sections/StoryMap.jsx";
 import StoryPace from "./sections/StoryPace.jsx";
@@ -18,6 +19,7 @@ export const STORY_SECTIONS = [
   { id: "map", label: "Map", Component: StoryMap },
   { id: "budget", label: "Time lost", Component: StoryBudget },
   { id: "pace", label: "Pace", Component: StoryPace },
+  { id: "heart", label: "Heart rate", Component: StoryHeart },
   { id: "checkpoints", label: "Checkpoints", Component: StoryCheckpoints },
   { id: "calibration", label: "Next time", Component: StoryCalibration },
 ];

@@ -6,6 +6,7 @@ import {
   climbHalves,
   deviationSpans,
   gapSeries,
+  heartRateSeries,
   isOffTrace,
   paceHalves,
   profileAt,
@@ -241,5 +242,28 @@ describe("stageSpans", () => {
 
   it("is empty for a report without stages", () => {
     expect(stageSpans({ ...report, stages: undefined })).toEqual([]);
+  });
+});
+
+describe("heartRateSeries", () => {
+  it("averages the heart rate within the radius, and breaks inside a detour", () => {
+    // The fixture's profile is every 1000 m, none inside its 2200-2600 m detour; the start
+    // has no heart rate, so it stays null and drops out of its neighbours' means.
+    const series = heartRateSeries(report, 1000);
+    expect(series.map((point) => point.bpm)).toEqual([
+      null,
+      (150 + 145) / 2,
+      (150 + 145 + 140) / 3,
+      (145 + 140 + 138) / 3,
+      (140 + 138) / 2,
+    ]);
+  });
+
+  it("is null inside a detour", () => {
+    const detour = {
+      ...report,
+      profile: [...report.profile.slice(0, 3), { ...report.profile[3], distance_m: 2400 }],
+    };
+    expect(heartRateSeries(detour, 0).at(-1)).toEqual({ distance_m: 2400, bpm: null });
   });
 });

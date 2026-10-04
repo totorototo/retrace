@@ -5,7 +5,7 @@ import { memo, useEffect, useMemo, useState } from "react";
 import { Marker } from "react-map-gl/mapbox";
 
 import useStore from "../../store/store.js";
-import { formatDelta, formatDuration, formatKm } from "../../utils/format.js";
+import { formatClock, formatDelta, formatDuration, formatKm } from "../../utils/format.js";
 import { toneOf } from "../story/debrief.js";
 import OfflineRoutePreview from "./OfflineRoutePreview.jsx";
 import {
@@ -135,6 +135,12 @@ export const ReplayControls = memo(function ReplayControls() {
         />
         <span className="replay-clock" data-testid="replay-clock">
           {formatDuration(replay_s)}
+          <span className="replay-time">
+            {formatClock(
+              model.report.totals.epoch_s_start_actual + replay_s,
+              model.report.totals.utc_offset_s,
+            )}
+          </span>
         </span>
         <button
           type="button"

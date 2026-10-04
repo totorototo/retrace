@@ -4,16 +4,42 @@ import { memo, useId, useMemo } from "react";
 import { createXScale, createYScale } from "../../../helpers/d3.js";
 import { useDistanceCursor } from "../../../hooks/useDistanceCursor.js";
 import useStore from "../../../store/store.js";
-import { formatDelta, formatDuration } from "../../../utils/format.js";
+import { formatClock, formatDelta, formatDuration } from "../../../utils/format.js";
 import { behindFrom, bridges, deviationSpans, gapSeries, profileAt, toneOf } from "../debrief.js";
+import { dayNightRatios, nightSpans } from "../night.js";
 import StorySection from "../StorySection.jsx";
 import AxisNames from "./AxisNames.jsx";
 import DeviationBands from "./DeviationBands.jsx";
+import NightBands from "./NightBands.jsx";
 import style from "./StoryGap.style.js";
 
 const WIDTH = 300;
 const HEIGHT = 110;
 const VPAD = 6;
+
+const times = (ratio) => `${ratio.toFixed(2)}×`;
+
+// By night against by day, when the race had both: how much harder the dark was than the
+// plan assumed (gpxz's plan already slows at night).
+function DayNight({ ratios }) {
+  if (ratios.night == null || ratios.day == null) return null;
+  // Within 5 % of each other (the pace section's "on plan"), one figure says it.
+  if (Math.abs(ratios.night - ratios.day) < 0.05) {
+    return (
+      <>
+        {" "}
+        In the dark as by day: <strong>{times(ratios.night)}</strong> the planned time.
+      </>
+    );
+  }
+  return (
+    <>
+      {" "}
+      In the dark, <strong>{times(ratios.night)}</strong> the planned time; by day,{" "}
+      <strong>{times(ratios.day)}</strong>.
+    </>
+  );
+}
 
 function Lede({ points, finished }) {
   const last = points.at(-1);
@@ -24,22 +50,22 @@ function Lede({ points, finished }) {
 
   if (turn == null) {
     return (
-      <p className="lede">
+      <>
         On or ahead of the plan {where}: {end}.
-      </p>
+      </>
     );
   }
   if (turn === points[0]) {
     return (
-      <p className="lede">
+      <>
         Behind the plan from the start: {end} {where}.
-      </p>
+      </>
     );
   }
   return (
-    <p className="lede">
+    <>
       On or ahead of the plan until {at(turn)}, then behind for good: {end} {where}.
-    </p>
+    </>
   );
 }
 
@@ -100,12 +126,18 @@ const StoryGap = memo(function StoryGap({ className }) {
 
   const { points, bridges: bridgeLines, min, max, scaleX, scaleY, zeroY, areaPath } = chart;
   const { edgePath, checkpoints, deviations } = chart;
+  const night = nightSpans(report);
+  const ratios = useMemo(() => dayNightRatios(report, night), [report, night]);
+  const { epoch_s_start_actual, utc_offset_s } = report.totals;
   const shown = cursor_m == null ? points.at(-1) : profileAt(points, cursor_m);
 
   return (
     <div className={className}>
       <StorySection eyebrow="The gap" title="Behind or ahead">
-        <Lede points={points} finished={report.totals.finished} />
+        <p className="lede">
+          <Lede points={points} finished={report.totals.finished} />
+          <DayNight ratios={ratios} />
+        </p>
         <div className="chart-frame">
           <div className="readout" data-testid="gap-readout">
             <span>
@@ -125,6 +157,10 @@ const StoryGap = memo(function StoryGap({ className }) {
               <>
                 <span>
                   actual <b>{formatDuration(shown.duration_s_actual)}</b>
+                </span>
+                <span>
+                  at{" "}
+                  <b>{formatClock(epoch_s_start_actual + shown.duration_s_actual, utc_offset_s)}</b>
                 </span>
                 <span data-tone={toneOf(shown.delta_s)}>
                   <b>{formatDelta(shown.delta_s)}</b>
@@ -151,6 +187,7 @@ const StoryGap = memo(function StoryGap({ className }) {
                   <rect x={0} y={zeroY} width={WIDTH} height={HEIGHT + VPAD - zeroY} />
                 </clipPath>
               </defs>
+              <NightBands spans={night} scaleX={scaleX} top={-VPAD} height={HEIGHT + VPAD * 2} />
               <DeviationBands
                 spans={deviations}
                 scaleX={scaleX}
@@ -206,12 +243,20 @@ const StoryGap = memo(function StoryGap({ className }) {
           </div>
 
           <AxisNames markers={checkpoints} />
-          {deviations.length > 0 && (
+          {(deviations.length > 0 || night.length > 0) && (
             <div className="legend">
-              <span className="legend-item">
-                <span className="legend-swatch deviation-swatch" />
-                off the planned trace
-              </span>
+              {deviations.length > 0 && (
+                <span className="legend-item">
+                  <span className="legend-swatch deviation-swatch" />
+                  off the planned trace
+                </span>
+              )}
+              {night.length > 0 && (
+                <span className="legend-item">
+                  <span className="legend-swatch night-swatch" />
+                  in the dark
+                </span>
+              )}
             </div>
           )}
         </div>

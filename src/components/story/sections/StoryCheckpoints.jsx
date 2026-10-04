@@ -1,12 +1,14 @@
 import { memo, useMemo } from "react";
 
 import useStore from "../../../store/store.js";
-import { formatDelta, formatDuration } from "../../../utils/format.js";
+import { formatClock, formatDelta, formatDuration } from "../../../utils/format.js";
 import { toneOf } from "../debrief.js";
 import StorySection from "../StorySection.jsx";
 import style from "./StoryCheckpoints.style.js";
 
-const COLUMNS = ["Checkpoint", "km", "Plan", "Actual", "Delta", "Stop", "Margin"];
+// why: the arrival on the clock beside the race time: a runner remembers "Fri 23:05" at
+// Pierrefitte, not "18h02".
+const COLUMNS = ["Checkpoint", "km", "Plan", "Actual", "Arrived", "Delta", "Stop", "Margin"];
 
 // The cutoff buffer at each checkpoint with a cutoff: planned (ring) against actual (dot),
 // the cutoff itself the zero line. Below zero, it was missed.
@@ -75,6 +77,7 @@ function Buffers({ checkpoints }) {
 
 const StoryCheckpoints = memo(function StoryCheckpoints({ className }) {
   const checkpoints = useStore((state) => state.report.checkpoints);
+  const offset = useStore((state) => state.report.totals.utc_offset_s);
 
   const tightest = useMemo(
     () =>
@@ -100,6 +103,9 @@ const StoryCheckpoints = memo(function StoryCheckpoints({ className }) {
                 ? `missed by ${formatDuration(-tightest.margin_s_actual)}`
                 : `${formatDuration(tightest.margin_s_actual)} to spare`}
             </strong>
+            {tightest.epoch_s_cutoff != null && (
+              <> (cutoff {formatClock(tightest.epoch_s_cutoff, offset)})</>
+            )}
             {tightest.margin_s_planned != null && (
               <>, where the plan had {formatDuration(tightest.margin_s_planned)}</>
             )}
@@ -132,13 +138,16 @@ const StoryCheckpoints = memo(function StoryCheckpoints({ className }) {
                   <td role="cell" data-label={COLUMNS[3]}>
                     {formatDuration(checkpoint.duration_s_actual)}
                   </td>
-                  <td role="cell" data-label={COLUMNS[4]} data-tone={toneOf(checkpoint.delta_s)}>
+                  <td role="cell" data-label={COLUMNS[4]}>
+                    {formatClock(checkpoint.epoch_s_arrival_actual, offset)}
+                  </td>
+                  <td role="cell" data-label={COLUMNS[5]} data-tone={toneOf(checkpoint.delta_s)}>
                     {formatDelta(checkpoint.delta_s)}
                   </td>
-                  <td role="cell" data-label={COLUMNS[5]}>
+                  <td role="cell" data-label={COLUMNS[6]}>
                     {formatDuration(checkpoint.stop_s_actual)}
                   </td>
-                  <td role="cell" data-label={COLUMNS[6]}>
+                  <td role="cell" data-label={COLUMNS[7]}>
                     {formatDelta(checkpoint.margin_s_actual)}
                   </td>
                 </tr>

@@ -159,3 +159,62 @@ it("switches the pace between sections and stages", () => {
   pointAt(readout.nextElementSibling, 300);
   expect(readout).toHaveTextContent("Aid → Finish");
 });
+
+it("says when the race was run, on its own clock", () => {
+  useStore.setState({
+    report: {
+      ...report,
+      totals: { ...report.totals, epoch_s_start_actual: 1787281427, utc_offset_s: 7200 },
+    },
+  });
+  renderStory();
+  expect(screen.getByTestId("hero-when")).toHaveTextContent(
+    "Fri 21 Aug, started 05:03, finished Fri 05:50 · UTC+2",
+  );
+});
+
+it("switches the climbs to the descents, and points at one on the terrain", () => {
+  renderStory();
+  const kinds = within(screen.getByRole("radiogroup", { name: "Climbs or descents" }));
+  fireEvent.click(kinds.getByRole("radio", { name: "Descents" }));
+  expect(screen.getByRole("heading", { name: "1 descent" })).toBeInTheDocument();
+  expect(screen.getByText(/lost on the descents/)).toHaveTextContent(
+    "0h01 lost on the descents: +0h01 in the first half, +0h00 in the second.",
+  );
+  const [row] = within(screen.getByTestId("climbs")).getAllByRole("listitem");
+  expect(row).toHaveTextContent("km 1.0 · −100 m");
+  fireEvent.pointerEnter(row);
+  expect(screen.getByTestId("profile-readout")).toHaveTextContent("descent −100 m from 1200 m");
+});
+
+it("keeps a climb with a detour in it out of the totals", () => {
+  renderStory();
+  // The second climb (2000-3000 m) holds the 2200-2600 m detour: lost 5 min, not counted.
+  const rows = within(screen.getByTestId("climbs")).getAllByRole("listitem");
+  expect(rows[1]).toHaveTextContent("off trace");
+  expect(screen.getByText(/on the climbs/)).toHaveTextContent("0h01 gained on the climbs");
+});
+
+it("follows the heart rate along the route, with its section's pace", () => {
+  renderStory();
+  expect(screen.getByText(/bpm on the first section/)).toHaveTextContent(
+    "From 150 bpm on the first section to 140 on the last, while the pace quickened.",
+  );
+  const readout = screen.getByTestId("heart-readout");
+  pointAt(readout.nextElementSibling, 100);
+  expect(readout).toHaveTextContent("km 1.0");
+  expect(readout).toHaveTextContent("148 bpm");
+  expect(readout).toHaveTextContent("Start → Aid");
+  expect(readout).toHaveTextContent("pace 1.50×");
+});
+
+it("says when the recording has no heart rate", () => {
+  useStore.setState({
+    report: {
+      ...report,
+      profile: report.profile.map((point) => ({ ...point, heart_rate_bpm_average: null })),
+    },
+  });
+  renderStory();
+  expect(screen.getByTestId("heart-none")).toBeInTheDocument();
+});

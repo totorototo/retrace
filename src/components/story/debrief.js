@@ -207,14 +207,29 @@ export const climbAt = (climbs, distance_m) =>
       distance_m <= climb.distance_m_start + climb.distance_m,
   ) ?? null;
 
+/** Whether a climb or descent overlaps a stretch run off the planned trace. */
+export const overlapsOffTrace = (spans, slope) =>
+  spans.some(
+    (span) =>
+      span.start_m < slope.distance_m_start + slope.distance_m &&
+      span.end_m > slope.distance_m_start,
+  );
+
 /**
- * Time lost (positive) or gained on the climbs in each half of the route (a climb falls in
- * the half its middle does). Climbs outside the plan or not run count for nothing.
+ * Time lost (positive) or gained on the climbs, or the descents, in each half of the route
+ * (one falls in the half its middle does). `plannedKey` is the field that is null outside the
+ * plan: the climbs' VAM, or the descents' rate. Those outside the plan, not run, or run partly
+ * off the trace (a detour's time isn't the planned ground's) count for nothing.
  */
-export function climbHalves(climbs, distance_m) {
+export function climbHalves(
+  climbs,
+  distance_m,
+  { plannedKey = "vam_m_per_h_planned", deviations = [] } = {},
+) {
   const halves = [0, 0];
   for (const climb of climbs) {
-    if (climb.vam_m_per_h_planned == null || climb.duration_s_actual == null) continue;
+    if (climb[plannedKey] == null || climb.duration_s_actual == null) continue;
+    if (overlapsOffTrace(deviations, climb)) continue;
     const middle_m = climb.distance_m_start + climb.distance_m / 2;
     halves[middle_m < distance_m / 2 ? 0 : 1] += climb.duration_s_actual - climb.duration_s_planned;
   }
@@ -262,4 +277,42 @@ export function stopAverages(checkpoints, key) {
   }
   const average = ([total, count]) => (count > 0 ? total / count : null);
   return { life_base_s: average(sums.life_base), other_s: average(sums.other) };
+}
+
+/**
+ * The heart rate along the route, every profile point (100 m), as a rolling mean over
+ * `radius_m` either side: the trend, not the beat-to-beat noise. Null where the profile has
+ * none, and inside a detour, where the profile's times (and so its heart rate) are the
+ * rejoin's: the line breaks there rather than draw a value nothing measured.
+ */
+export function heartRateSeries(report, radius_m = 1000) {
+  const spans = deviationSpans(report);
+  const raw = report.profile.map((point) =>
+    point.heart_rate_bpm_average == null || isOffTrace(spans, point.distance_m)
+      ? null
+      : point.heart_rate_bpm_average,
+  );
+  const { profile } = report;
+  // A window sliding along the evenly spaced profile: sums in, sums out.
+  let low = 0;
+  let high = -1;
+  let sum = 0;
+  let count = 0;
+  return profile.map((point, index) => {
+    while (
+      high + 1 < profile.length &&
+      profile[high + 1].distance_m <= point.distance_m + radius_m
+    ) {
+      high += 1;
+      if (raw[high] != null) [sum, count] = [sum + raw[high], count + 1];
+    }
+    while (profile[low].distance_m < point.distance_m - radius_m) {
+      if (raw[low] != null) [sum, count] = [sum - raw[low], count - 1];
+      low += 1;
+    }
+    return {
+      distance_m: point.distance_m,
+      bpm: raw[index] == null || count === 0 ? null : sum / count,
+    };
+  });
 }

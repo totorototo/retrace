@@ -3,6 +3,43 @@ import { css } from "styled-components";
 // What the story's distance charts share: an SVG stretched to the frame, HTML labels
 // overlaid so SVG text isn't distorted (as in Terminus's ElevationProfile), a readout line.
 export const chartCss = css`
+  /* A segmented switch over a chart (pace: sections or stages; climbs or descents): the
+     setup's chips, scaled down. */
+  .level-switch {
+    display: inline-flex;
+    margin-bottom: 1rem;
+    border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+    border-radius: var(--border-radius-base);
+    overflow: hidden;
+  }
+
+  .level {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-tiny);
+    font-weight: var(--font-weight-bold);
+    min-height: 32px;
+    padding: 0.25rem 0.875rem;
+    border: none;
+    background: none;
+    color: color-mix(in srgb, var(--color-text) 65%, transparent);
+    cursor: pointer;
+    transition: all var(--transition-base);
+
+    &:hover {
+      color: var(--color-primary);
+    }
+
+    &.active {
+      background: color-mix(in srgb, var(--color-text) 10%, transparent);
+      color: var(--color-text);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: -2px;
+    }
+  }
+
   .readout {
     display: flex;
     flex-wrap: wrap;
@@ -87,6 +124,19 @@ export const chartCss = css`
   .deviation-swatch {
     background: color-mix(in srgb, var(--color-text) 9%, transparent);
     border-top: 3px solid var(--color-accent);
+  }
+
+  .night-band {
+    fill: color-mix(in srgb, var(--color-text) 6%, transparent);
+  }
+
+  .night-strip {
+    fill: color-mix(in srgb, var(--color-text) 55%, transparent);
+  }
+
+  .night-swatch {
+    background: color-mix(in srgb, var(--color-text) 6%, transparent);
+    border-bottom: 3px solid color-mix(in srgb, var(--color-text) 55%, transparent);
   }
 
   .cursor-line {

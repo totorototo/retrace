@@ -7,6 +7,18 @@ const style = (Component) => styled(Component)`
   ${chartCss}
   ${rowsCss}
 
+  /* why: a fixed value column, not the shared rows' max-content one: each row is a grid of
+     its own, so "+1h50 off trace" beside "+5'" would narrow its track and shift its ticks off
+     the axis row's. */
+  .row {
+    grid-template-columns: minmax(6rem, 11rem) 1fr 8rem;
+
+    @media (max-width: 40em) {
+      grid-template-columns: 1fr 6.75rem;
+    }
+  }
+  }
+
   .row {
     cursor: default;
   }
@@ -49,9 +61,12 @@ const style = (Component) => styled(Component)`
     }
   }
 
+  /* why: a fixed width, "off trace" as wide as "−37%" plus room: each row is a grid of its
+     own, so a wider value would narrow that row's track and shift its ticks off the axis. */
   .climb-speed {
     display: inline-block;
-    min-width: 3.5ch;
+    width: 9ch;
+    text-align: right;
     margin-left: 0.6em;
     color: color-mix(in srgb, var(--color-text) 50%, transparent);
   }

@@ -5,8 +5,10 @@ import { useDistanceCursor } from "../../../hooks/useDistanceCursor.js";
 import useStore from "../../../store/store.js";
 import { formatDuration } from "../../../utils/format.js";
 import { paceHalves, sectionSpans, stageSpans, toneOfRatio } from "../debrief.js";
+import { nightSpans } from "../night.js";
 import StorySection from "../StorySection.jsx";
 import AxisNames from "./AxisNames.jsx";
+import NightBands from "./NightBands.jsx";
 import style from "./StoryPace.style.js";
 
 const WIDTH = 300;
@@ -64,10 +66,11 @@ const StoryPace = memo(function StoryPace({ className }) {
 
     // The halves from the sections whatever the grain: a stage is too coarse to split by.
     const halves = paceHalves(sectionSpans(report), distance_m_max);
-    return { spans, bars, names, min, max, oneY, halves };
+    return { spans, bars, names, min, max, oneY, halves, scaleX };
   }, [report, distance_m_max, shownLevel]);
 
-  const { spans, bars, names, min, max, oneY, halves } = chart;
+  const { spans, bars, names, min, max, oneY, halves, scaleX } = chart;
+  const night = nightSpans(report);
   const active =
     cursor_m == null
       ? null
@@ -151,6 +154,7 @@ const StoryPace = memo(function StoryPace({ className }) {
               width="100%"
               style={{ aspectRatio: `${WIDTH} / ${HEIGHT + VPAD * 2}` }}
             >
+              <NightBands spans={night} scaleX={scaleX} top={-VPAD} height={HEIGHT + VPAD * 2} />
               {bars.map((bar, index) => (
                 <rect
                   key={index}
@@ -175,6 +179,14 @@ const StoryPace = memo(function StoryPace({ className }) {
           </div>
 
           <AxisNames markers={names} />
+          {night.length > 0 && (
+            <div className="legend">
+              <span className="legend-item">
+                <span className="legend-swatch night-swatch" />
+                in the dark
+              </span>
+            </div>
+          )}
         </div>
       </StorySection>
     </div>

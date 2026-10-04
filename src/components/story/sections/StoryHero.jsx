@@ -1,9 +1,29 @@
 import { memo } from "react";
 
 import useStore from "../../../store/store.js";
-import { formatDelta, formatDuration, formatKm } from "../../../utils/format.js";
+import {
+  formatClock,
+  formatDay,
+  formatDelta,
+  formatDuration,
+  formatKm,
+  formatUtcOffset,
+} from "../../../utils/format.js";
 import { toneOf } from "../debrief.js";
 import style from "./StoryHero.style.js";
+
+// When it was run, on the race's clock: the start's day, then the start and finish times.
+function When({ totals }) {
+  const offset = totals.utc_offset_s;
+  const start = totals.epoch_s_start_actual;
+  const finish = totals.duration_s_actual == null ? null : start + totals.duration_s_actual;
+  return (
+    <p className="when" data-testid="hero-when">
+      {formatDay(start, offset)}, started {formatClock(start, offset).slice(4)}
+      {finish != null && <>, finished {formatClock(finish, offset)}</>} · {formatUtcOffset(offset)}
+    </p>
+  );
+}
 
 function Stat({ value, label, tone, testId }) {
   return (
@@ -26,6 +46,7 @@ const StoryHero = memo(function StoryHero({ className }) {
     <header className={className}>
       <span className="eyebrow">Plan vs actual</span>
       <h2 className="name">{report.name ?? "Unnamed route"}</h2>
+      <When totals={totals} />
 
       <div className="stat-row stat-row--primary">
         <Stat

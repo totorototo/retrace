@@ -266,6 +266,8 @@ test "analyze: a report with every checkpoint" {
     try testing.expect(root.get("totals").?.object.get("finished").?.bool);
     // The stages the pace chart toggles to: at least one, covering the plan.
     try testing.expect(root.get("stages").?.array.items.len >= 1);
+    // The descents the climbs section lists beside the climbs.
+    try testing.expect(root.get("descents").? == .array);
     // The series the story's profile and map draw.
     try testing.expect(root.get("profile").?.array.items.len >= 2);
     try testing.expect(root.get("track").?.array.items.len >= 2);

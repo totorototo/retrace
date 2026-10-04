@@ -14,9 +14,11 @@ import {
   toneOf,
   toneOfRatio,
 } from "../debrief.js";
+import { nightSpans } from "../night.js";
 import StorySection from "../StorySection.jsx";
 import AxisNames from "./AxisNames.jsx";
 import DeviationBands from "./DeviationBands.jsx";
+import NightBands from "./NightBands.jsx";
 import style from "./StoryProfile.style.js";
 
 const WIDTH = 300;
@@ -79,9 +81,13 @@ const StoryProfile = memo(function StoryProfile({ className }) {
   }, [report, distance_m_max]);
 
   const { min, max, scaleX, scaleY, segments, checkpoints, linePath, deviations } = chart;
+  const night = nightSpans(report);
   const shown = cursor_m == null ? null : profileAt(report.profile, cursor_m);
-  // The climb under the cursor, shaded: pointing at a row in the climbs list lands here.
+  // The climb or descent under the cursor, shaded: pointing at a row in the climbs section
+  // lands here. They never overlap, so at most one is found.
   const climb = cursor_m == null ? null : climbAt(report.climbs, cursor_m);
+  const descent = cursor_m == null || climb ? null : climbAt(report.descents ?? [], cursor_m);
+  const slope = climb ?? descent;
   // Inside a detour, the profile's actual time is the rejoin time: not a time at this point.
   const offTrace = shown != null && isOffTrace(deviations, shown.distance_m);
   const deltaS =
@@ -109,6 +115,12 @@ const StoryProfile = memo(function StoryProfile({ className }) {
                   <span>
                     climb <b>+{Math.round(climb.elevation_gain_m)} m</b> to{" "}
                     {Math.round(climb.elevation_m_summit)} m
+                  </span>
+                )}
+                {descent && (
+                  <span>
+                    descent <b>−{Math.round(descent.elevation_loss_m)} m</b> from{" "}
+                    {Math.round(descent.elevation_m_top)} m
                   </span>
                 )}
                 <span>
@@ -146,6 +158,7 @@ const StoryProfile = memo(function StoryProfile({ className }) {
               width="100%"
               style={{ aspectRatio: `${WIDTH} / ${HEIGHT + VPAD * 2}` }}
             >
+              <NightBands spans={night} scaleX={scaleX} top={-VPAD} height={HEIGHT + VPAD * 2} />
               <DeviationBands
                 spans={deviations}
                 scaleX={scaleX}
@@ -164,14 +177,14 @@ const StoryProfile = memo(function StoryProfile({ className }) {
                   </clipPath>
                 ))}
               </defs>
-              {climb && (
+              {slope && (
                 <rect
                   className="climb-band"
-                  x={scaleX(climb.distance_m_start)}
+                  x={scaleX(slope.distance_m_start)}
                   y={-VPAD}
                   width={
-                    scaleX(climb.distance_m_start + climb.distance_m) -
-                    scaleX(climb.distance_m_start)
+                    scaleX(slope.distance_m_start + slope.distance_m) -
+                    scaleX(slope.distance_m_start)
                   }
                   height={HEIGHT + VPAD * 2}
                 />
@@ -238,6 +251,12 @@ const StoryProfile = memo(function StoryProfile({ className }) {
               <span className="legend-item">
                 <span className="legend-swatch deviation-swatch" />
                 off the planned trace
+              </span>
+            )}
+            {night.length > 0 && (
+              <span className="legend-item">
+                <span className="legend-swatch night-swatch" />
+                in the dark
               </span>
             )}
           </div>

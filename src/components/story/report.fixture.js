@@ -159,6 +159,21 @@ export const report = {
       heart_rate_bpm_average: 140,
     },
   ],
+  // Off the summit at 1000 m down to 2000 m, run slower than planned.
+  descents: [
+    {
+      distance_m_start: 1000,
+      distance_m: 1000,
+      elevation_loss_m: 100,
+      gradient_percent_average: 10,
+      elevation_m_top: 1200,
+      duration_s_planned: 1100,
+      duration_s_actual: 1160,
+      descent_m_per_h_planned: 327.3,
+      descent_m_per_h_actual: 310.3,
+      heart_rate_bpm_average: 145,
+    },
+  ],
   splits: [
     { distance_m: 1000, duration_s_planned: 400, duration_s_actual: 340 },
     { distance_m: 2000, duration_s_planned: 1500, duration_s_actual: 1500 },

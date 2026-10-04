@@ -28,8 +28,15 @@ const style = (Component) => styled(Component)`
     letter-spacing: -0.04em;
     line-height: 0.98;
     color: var(--color-text);
-    margin: 0 0 2.5rem;
+    margin: 0 0 1rem;
     max-width: 20ch;
+  }
+
+  .when {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-small);
+    color: color-mix(in srgb, var(--color-text) 70%, transparent);
+    margin: 0 0 2.5rem;
   }
 
   .stat-row {

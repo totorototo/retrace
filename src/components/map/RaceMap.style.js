@@ -195,6 +195,13 @@ const style = (Component) => styled(Component)`
     color: var(--color-text);
   }
 
+  /* The race's time of day under the race time: where the night falls in the replay. */
+  .replay-time {
+    display: block;
+    font-size: var(--font-size-xxsmall);
+    color: color-mix(in srgb, var(--color-text) 65%, transparent);
+  }
+
   .replay-readout {
     display: flex;
     flex-wrap: wrap;
