@@ -228,3 +228,17 @@ it("gives a detour its own average heart rate, as the plan has no points there",
   pointAt(readout.nextElementSibling, 240);
   expect(readout).toHaveTextContent("off the trace · avg 132 bpm");
 });
+
+it("tells the story in short at the top, each line linked to its section", () => {
+  renderStory();
+  const lines = within(screen.getByTestId("in-short")).getAllByRole("listitem");
+  expect(lines.map((line) => line.textContent)).toEqual([
+    "Moving slower than planned cost +0h10; the stops gave back 0h03. Time lost →",
+    "Going down cost +0h01; going up gave back 0h01. Climbs →",
+    "1.50× the planned pace in the first half, 1.25× in the second; slowest into Aid at 1.50×. Pace →",
+  ]);
+  expect(within(lines[2]).getByRole("link", { name: "Pace →" })).toHaveAttribute(
+    "href",
+    "#story-pace",
+  );
+});

@@ -92,6 +92,59 @@ const style = (Component) => styled(Component)`
     }
   }
 
+  /* The takeaways: the hero's last word, quieter than its figures, the lede's measure. */
+  .in-short {
+    margin-top: 3rem;
+    max-width: 40rem;
+  }
+
+  .in-short-title {
+    display: block;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-tiny);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-text) 85%, transparent);
+    margin-bottom: 1rem;
+  }
+
+  .in-short ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .in-short li {
+    font-family: var(--font-family-sansSerif);
+    font-size: var(--font-size-medium);
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-text) 70%, transparent);
+    padding-left: 1rem;
+    border-left: 2px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+
+    strong {
+      color: var(--color-text);
+      font-weight: var(--font-weight-bold);
+    }
+  }
+
+  .more {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-tiny);
+    color: var(--color-primary-text);
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover,
+    &:focus-visible {
+      text-decoration: underline;
+    }
+  }
+
   .stat-label {
     font-family: var(--font-family-mono);
     font-size: var(--font-size-small);
