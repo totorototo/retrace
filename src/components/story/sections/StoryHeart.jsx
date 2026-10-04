@@ -4,9 +4,16 @@ import { memo, useMemo } from "react";
 import { createXScale, createYScale } from "../../../helpers/d3.js";
 import { useDistanceCursor } from "../../../hooks/useDistanceCursor.js";
 import useStore from "../../../store/store.js";
-import { heartRateSeries, profileAt, sectionSpans } from "../debrief.js";
+import {
+  deviationSpans,
+  heartRateSeries,
+  isOffTrace,
+  profileAt,
+  sectionSpans,
+} from "../debrief.js";
 import StorySection from "../StorySection.jsx";
 import AxisNames from "./AxisNames.jsx";
+import DeviationBands from "./DeviationBands.jsx";
 import style from "./StoryHeart.style.js";
 
 const WIDTH = 300;
@@ -47,7 +54,13 @@ const StoryHeart = memo(function StoryHeart({ className }) {
 
   const chart = useMemo(() => {
     const series = heartRateSeries(report);
-    const rates = series.map((point) => point.bpm).filter((value) => value != null);
+    // Off the trace, the line breaks (the plan has no points there): each stretch shows the
+    // average the watch recorded over it instead, as a level across its width.
+    const deviations = deviationSpans(report);
+    const rates = [
+      ...series.map((point) => point.bpm),
+      ...deviations.map((span) => span.heart_rate_bpm_average),
+    ].filter((value) => value != null);
     if (rates.length < 2) return null;
     const min = Math.min(...rates);
     const max = Math.max(...rates);
@@ -74,6 +87,14 @@ const StoryHeart = memo(function StoryHeart({ className }) {
       path,
       checkpoints,
       spans: sectionSpans(report),
+      deviations,
+      levels: deviations
+        .filter((span) => span.heart_rate_bpm_average != null)
+        .map((span) => ({
+          x1: scaleX(span.start_m),
+          x2: scaleX(span.end_m),
+          y: scaleY(span.heart_rate_bpm_average),
+        })),
     };
   }, [report, distance_m_max]);
 
@@ -89,7 +110,11 @@ const StoryHeart = memo(function StoryHeart({ className }) {
     );
   }
 
-  const { series, min, max, scaleX, scaleY, path, checkpoints, spans } = chart;
+  const { series, min, max, scaleX, scaleY, path, checkpoints, spans, deviations, levels } = chart;
+  const detour =
+    cursor_m == null || !isOffTrace(deviations, cursor_m)
+      ? null
+      : deviations.find((span) => cursor_m > span.start_m && cursor_m < span.end_m);
   const shown = cursor_m == null ? null : profileAt(series, cursor_m);
   const section =
     cursor_m == null
@@ -107,7 +132,17 @@ const StoryHeart = memo(function StoryHeart({ className }) {
                 <span>
                   km <b>{(shown.distance_m / 1000).toFixed(1)}</b>
                 </span>
-                {shown.bpm == null ? (
+                {detour ? (
+                  <span>
+                    off the trace
+                    {detour.heart_rate_bpm_average != null && (
+                      <>
+                        {" "}
+                        · avg <b>{bpm(detour.heart_rate_bpm_average)}</b> bpm
+                      </>
+                    )}
+                  </span>
+                ) : shown.bpm == null ? (
                   <span>no heart rate here</span>
                 ) : (
                   <span>
@@ -154,7 +189,23 @@ const StoryHeart = memo(function StoryHeart({ className }) {
                   y2={HEIGHT + VPAD}
                 />
               ))}
+              <DeviationBands
+                spans={deviations}
+                scaleX={scaleX}
+                top={-VPAD}
+                height={HEIGHT + VPAD * 2}
+              />
               <path className="heart-line" d={path} />
+              {levels.map((level, index) => (
+                <line
+                  key={index}
+                  className="detour-level"
+                  x1={level.x1}
+                  x2={level.x2}
+                  y1={level.y}
+                  y2={level.y}
+                />
+              ))}
               {shown && (
                 <line
                   className="cursor-line"
@@ -183,6 +234,18 @@ const StoryHeart = memo(function StoryHeart({ className }) {
           </div>
 
           <AxisNames markers={checkpoints} />
+          {deviations.length > 0 && (
+            <div className="legend">
+              <span className="legend-item">
+                <span className="legend-swatch deviation-swatch" />
+                off the planned trace
+              </span>
+              <span className="legend-item">
+                <span className="legend-swatch detour-swatch" />
+                its average heart rate
+              </span>
+            </div>
+          )}
         </div>
       </StorySection>
     </div>

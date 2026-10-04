@@ -220,3 +220,11 @@ it("says when the recording has no heart rate", () => {
   renderStory();
   expect(screen.getByTestId("heart-none")).toBeInTheDocument();
 });
+
+it("gives a detour its own average heart rate, as the plan has no points there", () => {
+  renderStory();
+  const readout = screen.getByTestId("heart-readout");
+  // 2400 m, inside the fixture's 2200-2600 m detour.
+  pointAt(readout.nextElementSibling, 240);
+  expect(readout).toHaveTextContent("off the trace · avg 132 bpm");
+});

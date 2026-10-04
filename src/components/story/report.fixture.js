@@ -187,6 +187,7 @@ export const report = {
       duration_s: 240,
       distance_m: 450,
       offset_m_max: 120,
+      heart_rate_bpm_average: 132,
     },
   ],
   calibration: null,
