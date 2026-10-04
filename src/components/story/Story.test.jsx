@@ -131,3 +131,31 @@ it("reads out both plans' misses at the checkpoint under the pointer", () => {
   expect(readout).toHaveTextContent("plan +0h05");
   expect(readout).toHaveTextContent("fitted +0h02");
 });
+
+// The Aid as a LifeBase: two stages, one per section.
+const staged = {
+  ...report,
+  stages: report.sections.map((section, index) => ({
+    ...section,
+    section_index_first: index,
+    section_index_end: index + 1,
+  })),
+};
+
+it("has no stage switch for a single stage", () => {
+  renderStory();
+  expect(screen.queryByRole("radiogroup", { name: "Pace by" })).toBeNull();
+});
+
+it("switches the pace between sections and stages", () => {
+  useStore.setState({ report: staged });
+  renderStory();
+  const level = within(screen.getByRole("radiogroup", { name: "Pace by" }));
+  expect(level.getByRole("radio", { name: "Sections" })).toHaveAttribute("aria-checked", "true");
+  fireEvent.click(level.getByRole("radio", { name: "Stages" }));
+  expect(screen.getByRole("heading", { name: "Stage by stage" })).toBeInTheDocument();
+  expect(screen.getByText(/slowest stage into Aid at/)).toBeInTheDocument();
+  const readout = screen.getByTestId("pace-readout");
+  pointAt(readout.nextElementSibling, 300);
+  expect(readout).toHaveTextContent("Aid → Finish");
+});

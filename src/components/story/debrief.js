@@ -152,6 +152,18 @@ export function sectionSpans(report) {
 }
 
 /**
+ * Stages placed along the route, from the checkpoint opening their first section to the one
+ * closing their last (debriefz's section indices). Empty for a report without stages.
+ */
+export function stageSpans(report) {
+  return (report.stages ?? []).map((stage) => ({
+    ...stage,
+    start_m: report.checkpoints[stage.section_index_first].distance_m,
+    end_m: report.checkpoints[stage.section_index_end].distance_m,
+  }));
+}
+
+/**
  * Checkpoint names under a chart, at `pct` percent across it: truncated, and dropping any
  * that would overlap the previous one kept (as Terminus's ElevationProfile does).
  */

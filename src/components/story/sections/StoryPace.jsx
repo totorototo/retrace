@@ -1,10 +1,10 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 
 import { createXScale, createYScale } from "../../../helpers/d3.js";
 import { useDistanceCursor } from "../../../hooks/useDistanceCursor.js";
 import useStore from "../../../store/store.js";
 import { formatDuration } from "../../../utils/format.js";
-import { paceHalves, sectionSpans, toneOfRatio } from "../debrief.js";
+import { paceHalves, sectionSpans, stageSpans, toneOfRatio } from "../debrief.js";
 import StorySection from "../StorySection.jsx";
 import AxisNames from "./AxisNames.jsx";
 import style from "./StoryPace.style.js";
@@ -15,15 +15,25 @@ const VPAD = 6;
 
 const ratio = (value) => (value == null ? "–" : `${value.toFixed(2)}×`);
 
-// why: bars as wide as their section (a Marimekko) rather than equal-width: a 21 km section
+// The two grains the chart draws: debriefz's sections, or its stages (between LifeBases).
+const LEVELS = {
+  sections: { label: "Sections", title: "Section by section", spans: sectionSpans },
+  stages: { label: "Stages", title: "Stage by stage", spans: stageSpans },
+};
+
+// why: bars as wide as their section or stage (a Marimekko) rather than equal-width: a 21 km section
 // at 1.17× costs far more than a 6 km one at 1.67×, and area is what the eye compares.
 const StoryPace = memo(function StoryPace({ className }) {
   const report = useStore((state) => state.report);
   const distance_m_max = report.totals.distance_m_planned;
   const [cursor_m, cursorHandlers] = useDistanceCursor(distance_m_max);
+  const [level, setLevel] = useState("sections");
+  // why: no switch for a single stage (a race without LifeBases): one bar is the whole race.
+  const hasStages = (report.stages?.length ?? 0) >= 2;
+  const shownLevel = hasStages ? level : "sections";
 
   const chart = useMemo(() => {
-    const spans = sectionSpans(report);
+    const spans = LEVELS[shownLevel].spans(report);
     const ratios = spans.map((span) => span.pace_ratio).filter((value) => value != null);
     const min = Math.min(1, ...ratios);
     const max = Math.max(1, ...ratios);
@@ -46,13 +56,16 @@ const StoryPace = memo(function StoryPace({ className }) {
       };
     });
 
-    const names = report.checkpoints.slice(1, -1).map((checkpoint) => ({
-      pct: (scaleX(checkpoint.distance_m) / WIDTH) * 100,
-      name: checkpoint.name,
+    // The boundaries between the bars: every checkpoint, or only the LifeBases.
+    const names = spans.slice(1).map((span) => ({
+      pct: (scaleX(span.start_m) / WIDTH) * 100,
+      name: span.from,
     }));
 
-    return { spans, bars, names, min, max, oneY, halves: paceHalves(spans, distance_m_max) };
-  }, [report, distance_m_max]);
+    // The halves from the sections whatever the grain: a stage is too coarse to split by.
+    const halves = paceHalves(sectionSpans(report), distance_m_max);
+    return { spans, bars, names, min, max, oneY, halves };
+  }, [report, distance_m_max, shownLevel]);
 
   const { spans, bars, names, min, max, oneY, halves } = chart;
   const active =
@@ -67,18 +80,35 @@ const StoryPace = memo(function StoryPace({ className }) {
 
   return (
     <div className={className}>
-      <StorySection eyebrow="The pace" title="Section by section">
+      <StorySection eyebrow="The pace" title={LEVELS[shownLevel].title}>
         <p className="lede">
           Moving time against the plan, stops left out. First half{" "}
           <strong>{ratio(halves[0])}</strong>, second half <strong>{ratio(halves[1])}</strong>
           {slowest && (
             <>
-              ; slowest into {slowest.to} at <strong>{ratio(slowest.pace_ratio)}</strong>
+              ; slowest {shownLevel === "stages" ? "stage" : "section"} into {slowest.to} at{" "}
+              <strong>{ratio(slowest.pace_ratio)}</strong>
             </>
           )}
           .
         </p>
         <div className="chart-frame">
+          {hasStages && (
+            <div className="level-switch" role="radiogroup" aria-label="Pace by">
+              {Object.entries(LEVELS).map(([key, { label }]) => (
+                <button
+                  key={key}
+                  type="button"
+                  role="radio"
+                  aria-checked={key === shownLevel}
+                  className={key === shownLevel ? "level active" : "level"}
+                  onClick={() => setLevel(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="readout" data-testid="pace-readout">
             {shown ? (
               <>
@@ -108,7 +138,7 @@ const StoryPace = memo(function StoryPace({ className }) {
                 )}
               </>
             ) : (
-              <span>Point at a section for its times.</span>
+              <span>Point at a {shownLevel === "stages" ? "stage" : "section"} for its times.</span>
             )}
           </div>
 

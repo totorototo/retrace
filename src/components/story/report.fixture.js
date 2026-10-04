@@ -114,6 +114,24 @@ export const report = {
       distance_m_off_route: 0,
     },
   ],
+  // No LifeBase: one stage, the whole race, as debriefz groups it.
+  stages: [
+    {
+      from: "Start",
+      to: "Finish",
+      section_index_first: 0,
+      section_index_end: 2,
+      distance_m: 3500,
+      elevation_gain_m: 250,
+      elevation_loss_m: 250,
+      moving_s_planned: 1800,
+      moving_s_actual: 2400,
+      stopped_s_actual: 400,
+      pace_ratio: 1.3333333333333333,
+      heart_rate_bpm_average: 144,
+      distance_m_off_route: 450,
+    },
+  ],
   // One planned climb run faster than planned, one before the plan starts (unplanned).
   climbs: [
     {

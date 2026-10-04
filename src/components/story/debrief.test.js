@@ -11,6 +11,7 @@ import {
   profileAt,
   sectionSpans,
   spacedNames,
+  stageSpans,
   stopAverages,
   timeBudget,
   timeTicks,
@@ -229,5 +230,16 @@ describe("stopAverages", () => {
   it("is null for a kind with no stop", () => {
     const none = checkpoints.map((checkpoint) => ({ ...checkpoint, stop_s_planned: null }));
     expect(stopAverages(none, "stop_s_planned")).toEqual({ life_base_s: null, other_s: null });
+  });
+});
+
+describe("stageSpans", () => {
+  it("places each stage between the checkpoints its sections start and end at", () => {
+    const [stage] = stageSpans(report);
+    expect(stage).toMatchObject({ from: "Start", to: "Finish", start_m: 0, end_m: 3500 });
+  });
+
+  it("is empty for a report without stages", () => {
+    expect(stageSpans({ ...report, stages: undefined })).toEqual([]);
   });
 });
