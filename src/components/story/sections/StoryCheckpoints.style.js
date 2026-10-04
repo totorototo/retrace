@@ -82,9 +82,10 @@ const style = (Component) => styled(Component)`
     color: var(--color-ahead-text);
   }
 
-  /* Phones: seven columns don't fit, and scrolling sideways hides the times, which matter
-     most. Each row is two lines instead: the name and its km, then the five times, each
-     under its column's name. */
+  /* Phones: eight columns don't fit, and scrolling sideways hides the times, which matter
+     most. Each row is a card of three lines instead: the name and its km; the plan, the
+     actual and the delta, the comparison read first; then the clock, the stop and the
+     margin. Each value under its own label. */
   @media (max-width: 40em) {
     .table-wrap {
       overflow-x: visible;
@@ -100,29 +101,35 @@ const style = (Component) => styled(Component)`
       clip-path: inset(50%);
     }
 
+    /* why: three equal columns, placed by hand, not five auto-flowed: six values in five
+       columns left the margin alone on a line. */
     tr {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      column-gap: 0.25rem;
-      padding: 0.75rem 0;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.625rem 0.75rem;
+      padding: 0.875rem 0;
       border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
     }
 
     td {
       padding: 0;
       border-bottom: none;
+      text-align: left;
     }
 
     td:first-child {
-      grid-column: 1 / 5;
+      grid-column: 1 / 3;
+      grid-row: 1;
       overflow: hidden;
       text-overflow: ellipsis;
       font-weight: var(--font-weight-semibold);
     }
 
     td:nth-child(2) {
-      grid-column: 5;
+      grid-column: 3;
+      grid-row: 1;
       align-self: center;
+      text-align: right;
       font-size: var(--font-size-tiny);
       color: color-mix(in srgb, var(--color-text) 55%, transparent);
 
@@ -131,9 +138,27 @@ const style = (Component) => styled(Component)`
       }
     }
 
-    td:nth-child(n + 3) {
-      margin-top: 0.5rem;
+    /* Plan, actual, delta; then arrived, stop, margin. */
+    td:nth-child(3) {
+      grid-area: 2 / 1;
+    }
+    td:nth-child(4) {
+      grid-area: 2 / 2;
+    }
+    td:nth-child(6) {
+      grid-area: 2 / 3;
+    }
+    td:nth-child(5) {
+      grid-area: 3 / 1;
+    }
+    td:nth-child(7) {
+      grid-area: 3 / 2;
+    }
+    td:nth-child(8) {
+      grid-area: 3 / 3;
+    }
 
+    td:nth-child(n + 3) {
       &::before {
         content: attr(data-label);
         display: block;
