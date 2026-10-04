@@ -1,6 +1,7 @@
 import {
   behindFrom,
   bridges,
+  calibrationErrors,
   climbAt,
   climbHalves,
   deviationSpans,
@@ -10,6 +11,7 @@ import {
   profileAt,
   sectionSpans,
   spacedNames,
+  stopAverages,
   timeBudget,
   timeTicks,
   toneOf,
@@ -185,4 +187,47 @@ it("sums the time lost or gained on the climbs in each half", () => {
   expect(second).toBe(900 - 600);
   const unplanned = report.climbs.map((c) => ({ ...c, vam_m_per_h_planned: null }));
   expect(climbHalves(unplanned, 3500)).toEqual([0, 0]);
+});
+
+describe("calibrationErrors", () => {
+  it("is empty without a calibration", () => {
+    expect(calibrationErrors(report)).toEqual([]);
+  });
+
+  it("signs each plan's miss at every checkpoint reached", () => {
+    const calibrated = {
+      ...report,
+      calibration: { duration_s_replanned: [0, 800, 2900] },
+      checkpoints: report.checkpoints.map((checkpoint, index) =>
+        index === 2 ? { ...checkpoint, duration_s_actual: null } : checkpoint,
+      ),
+    };
+    expect(calibrationErrors(calibrated)).toEqual([
+      { name: "Start", distance_m: 0, planned_s: 0, replanned_s: 0 },
+      { name: "Aid", distance_m: 1500, planned_s: 300, replanned_s: 100 },
+    ]);
+  });
+});
+
+describe("stopAverages", () => {
+  const checkpoints = [
+    { type_name: "Start", stop_s_planned: 999 },
+    { type_name: "LifeBase", stop_s_planned: 3600 },
+    { type_name: "TimeBarrier", stop_s_planned: 0 },
+    { type_name: "LifeBase", stop_s_planned: 1800 },
+    { type_name: null, stop_s_planned: 600 },
+    { type_name: "Arrival", stop_s_planned: 999 },
+  ];
+
+  it("splits LifeBases from the rest, start and finish aside", () => {
+    expect(stopAverages(checkpoints, "stop_s_planned")).toEqual({
+      life_base_s: 2700,
+      other_s: 300,
+    });
+  });
+
+  it("is null for a kind with no stop", () => {
+    const none = checkpoints.map((checkpoint) => ({ ...checkpoint, stop_s_planned: null }));
+    expect(stopAverages(none, "stop_s_planned")).toEqual({ life_base_s: null, other_s: null });
+  });
 });

@@ -1,4 +1,5 @@
 import StoryBudget from "./sections/StoryBudget.jsx";
+import StoryCalibration from "./sections/StoryCalibration.jsx";
 import StoryCheckpoints from "./sections/StoryCheckpoints.jsx";
 import StoryClimbs from "./sections/StoryClimbs.jsx";
 import StoryGap from "./sections/StoryGap.jsx";
@@ -18,4 +19,5 @@ export const STORY_SECTIONS = [
   { id: "budget", label: "Time lost", Component: StoryBudget },
   { id: "pace", label: "Pace", Component: StoryPace },
   { id: "checkpoints", label: "Checkpoints", Component: StoryCheckpoints },
+  { id: "calibration", label: "Next time", Component: StoryCalibration },
 ];

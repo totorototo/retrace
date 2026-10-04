@@ -208,3 +208,46 @@ export function climbHalves(climbs, distance_m) {
   }
   return halves;
 }
+
+/**
+ * How far each plan was from the race at every checkpoint reached: the original and the one
+ * debriefz reran with the fitted settings and the actual stops. Signed, actual minus
+ * predicted (positive: the race was slower than predicted), where debriefz's rms and max
+ * count the size alone. Empty without a calibration.
+ */
+export function calibrationErrors(report) {
+  const replanned = report.calibration?.duration_s_replanned;
+  if (!replanned) return [];
+  return report.checkpoints.flatMap((checkpoint, index) =>
+    checkpoint.duration_s_actual == null
+      ? []
+      : [
+          {
+            name: checkpoint.name,
+            distance_m: checkpoint.distance_m,
+            planned_s: checkpoint.duration_s_actual - checkpoint.duration_s_planned,
+            replanned_s: checkpoint.duration_s_actual - replanned[index],
+          },
+        ],
+  );
+}
+
+const LIFE_BASE = "LifeBase";
+
+/**
+ * The average stop at the LifeBases and at the other checkpoints (start and finish aside),
+ * of `key` (stop_s_planned or stop_s_actual): debriefz's split for the fitted stops. Null
+ * for a kind with none.
+ */
+export function stopAverages(checkpoints, key) {
+  const sums = { life_base: [0, 0], other: [0, 0] };
+  for (const checkpoint of checkpoints.slice(1, -1)) {
+    const stop_s = checkpoint[key];
+    if (stop_s == null) continue;
+    const sum = sums[checkpoint.type_name === LIFE_BASE ? "life_base" : "other"];
+    sum[0] += stop_s;
+    sum[1] += 1;
+  }
+  const average = ([total, count]) => (count > 0 ? total / count : null);
+  return { life_base_s: average(sums.life_base), other_s: average(sums.other) };
+}

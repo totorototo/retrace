@@ -78,3 +78,56 @@ it("reads out the section under the pointer", () => {
   expect(readout).toHaveTextContent("Aid → Finish");
   expect(readout).toHaveTextContent("1.25×");
 });
+
+// Three checkpoints are fewer than a real fit needs; the shape is what's under test.
+const calibrated = {
+  ...report,
+  settings: { pace_base_s_per_km: 500, fatigue_coefficient: 0.002, life_base_stop_s: 600 },
+  calibration: {
+    sections_used: 3,
+    sections_off_route: 1,
+    pace_base_s_per_km: 472,
+    fatigue_coefficient: 0.0035,
+    life_base_stop_s: null,
+    checkpoint_stop_s: 400,
+    duration_s_replanned: [0, 800, 2700],
+    error_s_rms_planned: 354,
+    error_s_rms_replanned: 100,
+    error_s_max_planned: 400,
+    error_s_max_replanned: 100,
+  },
+};
+
+it("says when there is no calibration", () => {
+  renderStory();
+  expect(screen.getByTestId("calibration-none")).toHaveTextContent("Not enough of the race");
+});
+
+it("tells the fitted settings, and how much closer they come", () => {
+  useStore.setState({ report: calibrated });
+  renderStory();
+  expect(screen.queryByTestId("calibration-none")).toBeNull();
+  expect(
+    screen.getByText(/Fitted on 3 sections \(1 left out for running off the trace\)/),
+  ).toHaveTextContent(
+    "a base pace of 7:52/km, faster than the plan's 8:20/km, but a fade of 0.0035, steeper " +
+      "than 0.0020. Rerun with those and the actual stops, the plan finishes in 0h45 against " +
+      "0h47 run; its worst miss is 0h02, at Aid.",
+  );
+  const rows = within(screen.getByTestId("calibration-settings")).getAllByRole("row");
+  expect(rows[1]).toHaveTextContent("Base pace8:20/km7:52/km");
+  // The Aid is no LifeBase: its 10 min planned stop counts with the others.
+  expect(rows[3]).toHaveTextContent("LifeBase stop––");
+  expect(rows[4]).toHaveTextContent("Other stops0h100h07");
+});
+
+it("reads out both plans' misses at the checkpoint under the pointer", () => {
+  useStore.setState({ report: calibrated });
+  renderStory();
+  const readout = screen.getByTestId("calibration-readout");
+  expect(readout).toHaveTextContent("0h06 → 0h02 on average");
+  pointAt(readout.nextElementSibling, 150);
+  expect(readout).toHaveTextContent("Aid");
+  expect(readout).toHaveTextContent("plan +0h05");
+  expect(readout).toHaveTextContent("fitted +0h02");
+});
