@@ -279,40 +279,136 @@ export function stopAverages(checkpoints, key) {
   return { life_base_s: average(sums.life_base), other_s: average(sums.other) };
 }
 
+// A step this many times slower than planned holds a stop no checkpoint accounts for (a
+// pause on the trail): left out, as the checkpoints' stops are.
+const STOP_RATIO = 4;
+
 /**
- * The heart rate along the route, every profile point (100 m), as a rolling mean over
- * `radius_m` either side: the trend, not the beat-to-beat noise. Null where the profile has
- * none, and inside a detour, where the profile's times (and so its heart rate) are the
- * rejoin's: the line breaks there rather than draw a value nothing measured.
+ * The heart rate and the pace along the route, every profile point (100 m), each a rolling
+ * ratio of sums over `radius_m` either side, per step: the heart rate weighted by time,
+ * Σ(bpm × actual) / Σ actual; the pace against plan, Σ actual / Σ planned; and their
+ * product, the beats spent per planned minute, Σ(bpm × actual) / Σ planned. The plan stands
+ * in for a grade-adjusted pace: it's slower uphill, so a climb run to plan reads as a flat.
+ * Steps holding a stop or a detour are left out (beats with no progress, or progress the plan
+ * gave stop time for); the line goes on through a stop, and breaks inside a detour, where
+ * nothing measured it. Over 10 km by default: a 100 m step's times are too coarse for less.
+ * why: ratios of sums, not means of ratios: a step weighs its time, so a fast step's ratio
+ * doesn't count as much as a crawl's, and cost = bpm × pace holds at every point.
  */
-export function heartRateSeries(report, radius_m = 1000) {
-  const spans = deviationSpans(report);
-  const raw = report.profile.map((point) =>
-    point.heart_rate_bpm_average == null || isOffTrace(spans, point.distance_m)
-      ? null
-      : point.heart_rate_bpm_average,
-  );
+export function heartPaceSeries(report, radius_m = 5000) {
   const { profile } = report;
+  const spans = deviationSpans(report);
+  const stops = report.checkpoints
+    .filter((checkpoint) => checkpoint.stop_s_planned > 0 || checkpoint.stop_s_actual > 0)
+    .map((checkpoint) => checkpoint.distance_m);
+  const terms = profile.map((point, index) => {
+    const before = profile[index - 1];
+    if (!before) return null;
+    // The step's actual time holds the detour's, which the plan has no time for.
+    if (spans.some((span) => span.start_m < point.distance_m && span.end_m > before.distance_m)) {
+      return null;
+    }
+    const bpm = point.heart_rate_bpm_average;
+    const planned = point.duration_s_planned - before.duration_s_planned;
+    const actual = point.duration_s_actual - before.duration_s_actual;
+    if (bpm == null || !(planned > 0) || !(actual > 0)) return null;
+    if (actual > planned * STOP_RATIO) return null;
+    // A checkpoint at either end: its stop may fall in this step.
+    if (stops.some((at) => at >= before.distance_m && at <= point.distance_m)) return null;
+    return [bpm * actual, actual, planned];
+  });
   // A window sliding along the evenly spaced profile: sums in, sums out.
   let low = 0;
   let high = -1;
-  let sum = 0;
-  let count = 0;
+  let [beats, actual, planned, count] = [0, 0, 0, 0];
+  const add = (term, sign) => {
+    if (term == null) return;
+    beats += sign * term[0];
+    actual += sign * term[1];
+    planned += sign * term[2];
+    count += sign;
+  };
   return profile.map((point, index) => {
     while (
       high + 1 < profile.length &&
       profile[high + 1].distance_m <= point.distance_m + radius_m
     ) {
       high += 1;
-      if (raw[high] != null) [sum, count] = [sum + raw[high], count + 1];
+      add(terms[high], 1);
     }
     while (profile[low].distance_m < point.distance_m - radius_m) {
-      if (raw[low] != null) [sum, count] = [sum - raw[low], count - 1];
+      add(terms[low], -1);
       low += 1;
     }
-    return {
-      distance_m: point.distance_m,
-      bpm: raw[index] == null || count === 0 ? null : sum / count,
-    };
+    const shown = index > 0 && !isOffTrace(spans, point.distance_m) && count > 0;
+    return shown
+      ? {
+          distance_m: point.distance_m,
+          bpm: beats / actual,
+          pace: actual / planned,
+          cost: beats / planned,
+        }
+      : { distance_m: point.distance_m, bpm: null, pace: null, cost: null };
   });
 }
+
+/**
+ * Each half of the route (a section falls in the half its midpoint does), from the sections
+ * with both a heart rate and an actual moving time: the heart rate (weighted by moving time),
+ * the pace against plan, and their product, the beats spent per planned minute. A half with
+ * none is null.
+ * why: cost = bpm × pace exactly, so the drift splits into its two causes, which the lede
+ * names.
+ */
+export function heartHalves(spans, distance_m) {
+  const halves = [
+    { beats: 0, actual: 0, planned: 0 },
+    { beats: 0, actual: 0, planned: 0 },
+  ];
+  for (const span of spans) {
+    if (span.heart_rate_bpm_average == null || span.moving_s_actual == null) continue;
+    const half = halves[(span.start_m + span.end_m) / 2 < distance_m / 2 ? 0 : 1];
+    half.beats += span.heart_rate_bpm_average * span.moving_s_actual;
+    half.actual += span.moving_s_actual;
+    half.planned += span.moving_s_planned;
+  }
+  return halves.map((half) =>
+    half.planned > 0 && half.actual > 0
+      ? {
+          bpm: half.beats / half.actual,
+          pace: half.actual / half.planned,
+          cost: half.beats / half.planned,
+        }
+      : null,
+  );
+}
+
+// Within this share either way, the heart rate or the pace held.
+const HELD = 0.05;
+
+/**
+ * What the second half did against the first, on the heart rate and the pace: the four ways
+ * a long race fades. Null without both halves.
+ * - drift: the heart rate rose, the pace held (heat, dehydration);
+ * - overreach: the heart rate rose and the pace slowed;
+ * - legs: the heart rate fell and the pace slowed (the muscles, or the brain, held back);
+ * - efficient: the heart rate fell, the pace held;
+ * - steady: both held.
+ */
+export function heartQuadrant(first, second) {
+  if (!first || !second) return null;
+  const heart = second.bpm / first.bpm - 1;
+  const pace = second.pace / first.pace - 1;
+  if (Math.abs(heart) < HELD && Math.abs(pace) < HELD) return "steady";
+  if (heart >= 0) return pace >= HELD ? "overreach" : "drift";
+  return pace >= HELD ? "legs" : "efficient";
+}
+
+// What the second half did against the first, in words: the heart section's lede and the
+// story in short.
+export const HEART_VERDICTS = {
+  drift: "the heart drifting",
+  overreach: "overreaching",
+  legs: "the legs tiring, not the heart",
+  efficient: "more efficient",
+};

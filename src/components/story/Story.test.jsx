@@ -197,17 +197,22 @@ it("keeps a climb with a detour in it out of the totals", () => {
   expect(screen.getByText(/on the climbs/)).toHaveTextContent("0h01 gained on the climbs");
 });
 
-it("follows the heart rate along the route, with its section's pace", () => {
+it("follows the heart rate and the pace along the route, against the first half", () => {
   renderStory();
-  expect(screen.getByText(/bpm on the first section/)).toHaveTextContent(
-    "From 150 bpm on the first section to 140 on the last, while the pace quickened.",
+  expect(screen.getByText(/From the first half to the second/)).toHaveTextContent(
+    "From the first half to the second, the pace quickened from 1.50× to 1.25× the plan " +
+      "while the heart rate fell from 150 to 140 bpm: more efficient. Each planned minute " +
+      "cost 22% fewer heartbeats.",
   );
   const readout = screen.getByTestId("heart-readout");
   pointAt(readout.nextElementSibling, 100);
   expect(readout).toHaveTextContent("km 1.0");
-  expect(readout).toHaveTextContent("148 bpm");
+  // Over the 10 km window, the whole race but the stop and the detour: 150 bpm for 340 s and
+  // 138 for 400 s, where 700 s were planned.
+  expect(readout).toHaveTextContent("144 bpm (−4%)");
+  expect(readout).toHaveTextContent("pace 1.06× (−30%)");
+  expect(readout).toHaveTextContent("152 beats / planned min");
   expect(readout).toHaveTextContent("Start → Aid");
-  expect(readout).toHaveTextContent("pace 1.50×");
 });
 
 it("says when the recording has no heart rate", () => {

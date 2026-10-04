@@ -10,7 +10,7 @@ import {
   formatPace,
   formatUtcOffset,
 } from "../../../utils/format.js";
-import { toneOf } from "../debrief.js";
+import { HEART_VERDICTS, toneOf } from "../debrief.js";
 import { takeaways } from "../takeaways.js";
 import style from "./StoryHero.style.js";
 
@@ -95,10 +95,10 @@ function Waterfall({ steps, total_s }) {
 
 /**
  * The story in short, before its sections: where the delta came from, then the pace, the
- * night and what to plan next time, each linked to the section that tells it in full.
+ * heart, the night and what to plan next time, each linked to the section that tells it in full.
  */
 function InShort({ report }) {
-  const { steps, fade, night, next } = takeaways(report);
+  const { steps, fade, heart, night, next } = takeaways(report);
   const facts = [];
   if (fade) {
     facts.push(
@@ -111,6 +111,20 @@ function InShort({ report }) {
           </>
         )}
         . <More id="pace" label="Pace" />
+      </li>,
+    );
+  }
+  if (heart) {
+    facts.push(
+      <li key="heart">
+        Heart rate <strong>{Math.round(heart.first.bpm)}</strong> →{" "}
+        <strong>{Math.round(heart.second.bpm)}</strong> bpm by half
+        {heart.quadrant !== "steady" && (
+          <>
+            : <strong>{HEART_VERDICTS[heart.quadrant]}</strong>
+          </>
+        )}
+        . <More id="heart" label="Heart rate" />
       </li>,
     );
   }

@@ -6,7 +6,9 @@ import {
   climbHalves,
   deviationSpans,
   gapSeries,
-  heartRateSeries,
+  heartHalves,
+  heartPaceSeries,
+  heartQuadrant,
   isOffTrace,
   paceHalves,
   profileAt,
@@ -245,18 +247,41 @@ describe("stageSpans", () => {
   });
 });
 
-describe("heartRateSeries", () => {
-  it("averages the heart rate within the radius, and breaks inside a detour", () => {
-    // The fixture's profile is every 1000 m, none inside its 2200-2600 m detour; the start
-    // has no heart rate, so it stays null and drops out of its neighbours' means.
-    const series = heartRateSeries(report, 1000);
-    expect(series.map((point) => point.bpm)).toEqual([
+describe("heartPaceSeries", () => {
+  it("weighs each step by its time, leaving out stops and detours", () => {
+    // 0-1000 m: 150 bpm for 340 s where 400 were planned. 1000-2000 m holds the Aid's stops,
+    // 2000-3000 m the detour: both left out. 3000-3500 m: 138 bpm for 400 s, 300 planned.
+    const beats = 150 * 340 + 138 * 400;
+    const point = { bpm: beats / 740, pace: 740 / 700, cost: beats / 700 };
+    const series = heartPaceSeries(report);
+    expect(series[0]).toEqual({ distance_m: 0, bpm: null, pace: null, cost: null });
+    expect(series.slice(1)).toEqual(
+      [1000, 2000, 3000, 3500].map((distance_m) => ({ distance_m, ...point })),
+    );
+    // Step by step: a step left out shows nothing when its window holds nothing else.
+    expect(heartPaceSeries(report, 0).map((point) => point.cost)).toEqual([
       null,
-      (150 + 145) / 2,
-      (150 + 145 + 140) / 3,
-      (145 + 140 + 138) / 3,
-      (140 + 138) / 2,
+      (150 * 340) / 400,
+      null,
+      null,
+      (138 * 400) / 300,
     ]);
+  });
+
+  it("leaves out a step far slower than planned: a pause on the trail", () => {
+    const paused = {
+      ...report,
+      checkpoints: report.checkpoints.map((checkpoint) => ({
+        ...checkpoint,
+        stop_s_planned: 0,
+        stop_s_actual: 0,
+      })),
+      deviations: [],
+      profile: report.profile.map((point, index) =>
+        index === 1 ? { ...point, duration_s_actual: 400 * 5 } : point,
+      ),
+    };
+    expect(heartPaceSeries(paused, 0)[1].cost).toBeNull();
   });
 
   it("is null inside a detour", () => {
@@ -264,6 +289,34 @@ describe("heartRateSeries", () => {
       ...report,
       profile: [...report.profile.slice(0, 3), { ...report.profile[3], distance_m: 2400 }],
     };
-    expect(heartRateSeries(detour, 0).at(-1)).toEqual({ distance_m: 2400, bpm: null });
+    expect(heartPaceSeries(detour).at(-1).bpm).toBeNull();
+  });
+});
+
+describe("heartHalves", () => {
+  it("splits each half's beats per planned minute into its heart rate and its pace", () => {
+    const [first, second] = heartHalves(sectionSpans(report), 3500);
+    // Start → Aid: 150 bpm over 900 s moving, 600 planned. Aid → Finish: 140 over 1500, 1200.
+    expect(first).toEqual({ bpm: 150, pace: 1.5, cost: (150 * 900) / 600 });
+    expect(second).toEqual({ bpm: 140, pace: 1.25, cost: (140 * 1500) / 1200 });
+  });
+
+  it("is null for a half without a heart rate", () => {
+    const spans = sectionSpans(report).map((span, index) =>
+      index === 1 ? { ...span, heart_rate_bpm_average: null } : span,
+    );
+    expect(heartHalves(spans, 3500)[1]).toBeNull();
+  });
+});
+
+describe("heartQuadrant", () => {
+  const half = (bpm, pace) => ({ bpm, pace });
+  it("names which way the second half went", () => {
+    expect(heartQuadrant(half(130, 1), half(140, 1))).toBe("drift");
+    expect(heartQuadrant(half(130, 1), half(140, 1.2))).toBe("overreach");
+    expect(heartQuadrant(half(130, 1), half(110, 1.2))).toBe("legs");
+    expect(heartQuadrant(half(130, 1), half(110, 1))).toBe("efficient");
+    expect(heartQuadrant(half(130, 1), half(132, 1.02))).toBe("steady");
+    expect(heartQuadrant(half(130, 1), null)).toBeNull();
   });
 });

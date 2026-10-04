@@ -2,13 +2,22 @@
 // each from the section that shows it in full. Pure, as debrief.js: the hero writes the
 // sentences, as every section writes its own lede.
 
-import { climbHalves, deviationSpans, paceHalves, sectionSpans, timeBudget } from "./debrief.js";
+import {
+  climbHalves,
+  deviationSpans,
+  heartHalves,
+  heartQuadrant,
+  paceHalves,
+  sectionSpans,
+  timeBudget,
+} from "./debrief.js";
 import { dayNightRatios, nightSpans } from "./night.js";
 
 const sum = ([first, second]) => first + second;
 
 /**
- * Null for a question the report can't answer (no descents, no night, no calibration), so
+ * Null for a question the report can't answer (no descents, no heart rate, no night, no
+ * calibration), so
  * the hero leaves its line out rather than print a dash.
  */
 export function takeaways(report) {
@@ -40,6 +49,11 @@ export function takeaways(report) {
   );
   const fade = first != null && second != null ? { first, second, slowest } : null;
 
+  // The heart against the pace, by half: which way the race faded.
+  const [heartFirst, heartSecond] = heartHalves(spans, distance_m);
+  const quadrant = heartQuadrant(heartFirst, heartSecond);
+  const heart = quadrant ? { first: heartFirst, second: heartSecond, quadrant } : null;
+
   // The night, when the race had both.
   const light = dayNightRatios(report, nightSpans(report));
   const night = light.night != null && light.day != null ? light : null;
@@ -49,6 +63,7 @@ export function takeaways(report) {
     terrain,
     steps: waterfall(time, terrain),
     fade,
+    heart,
     night,
     next: report.calibration ?? null,
   };
