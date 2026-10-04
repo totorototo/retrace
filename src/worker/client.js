@@ -18,32 +18,22 @@ export function createAnalysisClient(worker) {
     pending.clear();
   };
 
-  /**
-   * Sends a request. ArrayBuffers in `payload` are copied before transfer, so the caller
-   * keeps its own bytes (the store reuses them when the plan settings change).
-   */
-  function request(type, payload = {}) {
+  function request(type, payload = {}, transfer = []) {
     const id = nextId++;
-    const copied = {};
-    const transfer = [];
-    for (const [key, value] of Object.entries(payload)) {
-      if (value instanceof ArrayBuffer) {
-        copied[key] = value.slice(0);
-        transfer.push(copied[key]);
-      } else {
-        copied[key] = value;
-      }
-    }
     return new Promise((resolve, reject) => {
       pending.set(id, { resolve, reject });
-      worker.postMessage({ id, type, payload: copied }, transfer);
+      worker.postMessage({ id, type, payload }, transfer);
     });
   }
 
+  // The loads transfer the caller's buffer, which is detached (empty) afterwards: the
+  // worker keeps the bytes, and the other requests use them.
   return {
-    summarizePlan: (gpx, settings) => request("summarizePlan", { gpx, settings }),
-    summarizeActivity: (fit) => request("summarizeActivity", { fit }),
-    analyze: (gpx, fit, settings) => request("analyze", { gpx, fit, settings }),
+    loadPlan: (gpx) => request("loadPlan", { gpx }, [gpx]),
+    loadActivity: (fit) => request("loadActivity", { fit }, [fit]),
+    summarizePlan: (settings) => request("summarizePlan", { settings }),
+    summarizeActivity: () => request("summarizeActivity"),
+    analyze: (settings) => request("analyze", { settings }),
     terminate: () => worker.terminate(),
   };
 }

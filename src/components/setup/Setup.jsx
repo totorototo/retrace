@@ -10,7 +10,8 @@ import style from "./Setup.style.js";
 // The loader's label for each step of the work.
 const PHASE_LABELS = {
   reading: "Reading the race files…",
-  parsing: "Parsing the plan and the activity…",
+  // One file in: its summary. Both: straight to the comparison.
+  parsing: "Parsing the race file…",
   analysing: "Comparing the race with the plan…",
 };
 
