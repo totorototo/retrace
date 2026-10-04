@@ -55,11 +55,15 @@ export const chartCss = css`
       color: var(--color-text);
     }
 
-    [data-tone="behind"] {
+    /* The value too: the bold above sets its own colour, which would otherwise win over the
+       tone on the span around it. */
+    [data-tone="behind"],
+    [data-tone="behind"] b {
       color: var(--color-behind-text);
     }
 
-    [data-tone="ahead"] {
+    [data-tone="ahead"],
+    [data-tone="ahead"] b {
       color: var(--color-ahead-text);
     }
   }
