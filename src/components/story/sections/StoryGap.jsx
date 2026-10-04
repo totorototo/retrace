@@ -10,7 +10,6 @@ import { dayNightRatios, nightSpans } from "../night.js";
 import StorySection from "../StorySection.jsx";
 import AxisNames from "./AxisNames.jsx";
 import DeviationBands from "./DeviationBands.jsx";
-import NightBands from "./NightBands.jsx";
 import style from "./StoryGap.style.js";
 
 const WIDTH = 300;
@@ -187,7 +186,6 @@ const StoryGap = memo(function StoryGap({ className }) {
                   <rect x={0} y={zeroY} width={WIDTH} height={HEIGHT + VPAD - zeroY} />
                 </clipPath>
               </defs>
-              <NightBands spans={night} scaleX={scaleX} top={-VPAD} height={HEIGHT + VPAD * 2} />
               <DeviationBands
                 spans={deviations}
                 scaleX={scaleX}
@@ -243,20 +241,12 @@ const StoryGap = memo(function StoryGap({ className }) {
           </div>
 
           <AxisNames markers={checkpoints} />
-          {(deviations.length > 0 || night.length > 0) && (
+          {deviations.length > 0 && (
             <div className="legend">
-              {deviations.length > 0 && (
-                <span className="legend-item">
-                  <span className="legend-swatch deviation-swatch" />
-                  off the planned trace
-                </span>
-              )}
-              {night.length > 0 && (
-                <span className="legend-item">
-                  <span className="legend-swatch night-swatch" />
-                  in the dark
-                </span>
-              )}
+              <span className="legend-item">
+                <span className="legend-swatch deviation-swatch" />
+                off the planned trace
+              </span>
             </div>
           )}
         </div>
