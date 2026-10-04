@@ -41,6 +41,8 @@ export const createStore = (getClient = createWorkerClient) => {
   // The refresh computing, if any, and whether another was asked for meanwhile.
   let running = null;
   let rerun = false;
+  // The settings the results on screen were computed with: a failed pass falls back to them.
+  let applied = null;
 
   return create((set, get) => {
     // One pass of refresh(): what the loaded files allow, written unless a newer pass or a
@@ -54,17 +56,26 @@ export const createStore = (getClient = createWorkerClient) => {
       try {
         let result;
         if (gpx && fit) {
-          result = { report: await worker().analyze(settings) };
+          // The plan's summary isn't rerun once both files are in: dropped, not left stale.
+          result = { report: await worker().analyze(settings), plan: null };
         } else if (gpx) {
           result = { plan: await worker().summarizePlan(settings), report: null };
         } else {
           result = { activity: activity ?? (await worker().summarizeActivity()), report: null };
         }
         if (stale()) return;
+        applied = settings;
         set({ ...result, status: "done", phase: null, ...NO_REPLAY });
       } catch (err) {
         if (stale()) return;
-        set({ status: "error", phase: null, error: err.message });
+        // why: back to the settings the story on screen was made with, so the pickers never
+        // claim settings whose numbers aren't the ones shown. The error still says what failed.
+        set({
+          status: "error",
+          phase: null,
+          error: err.message,
+          ...(applied && applied !== settings && { settings: applied }),
+        });
       }
     }
 
@@ -121,6 +132,11 @@ export const createStore = (getClient = createWorkerClient) => {
             [files.gpx, files.fit].map(async ({ name, url }) => {
               const response = await fetch(url);
               if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
+              // A host that answers every path with the app (an SPA fallback) sends a page,
+              // not the file: say so, rather than let the parser fail on HTML.
+              if (response.headers?.get("content-type")?.includes("text/html")) {
+                throw new Error(`${name}: not found`);
+              }
               return { name, bytes: await response.arrayBuffer() };
             }),
           );
@@ -192,6 +208,7 @@ export const createStore = (getClient = createWorkerClient) => {
 
       reset() {
         generation++;
+        applied = null;
         set({
           gpx: null,
           fit: null,

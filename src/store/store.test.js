@@ -173,6 +173,49 @@ describe("store", () => {
     expect(client.analyze).not.toHaveBeenCalled();
   });
 
+  it("falls back to the settings the story was made with when new ones fail", async () => {
+    const client = fakeClient();
+    const store = createStore(() => client);
+    await store.getState().loadDemo(FILES);
+
+    client.analyze.mockRejectedValueOnce(new Error("TraceTooShort"));
+    await store.getState().setSettings({ pace_base_s_per_km: 300 });
+
+    expect(store.getState().settings).toEqual(DEFAULT_SETTINGS);
+    expect(store.getState().report).toEqual({ checkpoints: [] });
+    expect(store.getState().status).toBe("error");
+    expect(store.getState().error).toBe("TraceTooShort");
+  });
+
+  it("drops the plan's summary once the activity is in, rather than leave it stale", async () => {
+    const client = fakeClient();
+    const store = createStore(() => client);
+    await store.getState().loadFiles({ gpx: file("route.gpx") });
+    expect(store.getState().plan).toEqual({ distance_m: 6000 });
+
+    await store.getState().loadFiles({ fit: file("activity.fit") });
+    expect(store.getState().plan).toBeNull();
+  });
+
+  it("says a file is missing when the host answers with a page", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        status: 200,
+        headers: new Headers({ "content-type": "text/html" }),
+        arrayBuffer: async () => new ArrayBuffer(8),
+      })),
+    );
+    const client = fakeClient();
+    const store = createStore(() => client);
+
+    await store.getState().loadDemo(FILES);
+
+    expect(store.getState().error).toBe("route.gpx: not found");
+    expect(client.loadPlan).not.toHaveBeenCalled();
+  });
+
   it("reports worker errors", async () => {
     const client = fakeClient();
     client.analyze.mockRejectedValue(new Error("ActivityNotOnRoute"));
