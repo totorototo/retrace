@@ -1,10 +1,11 @@
 import styled from "styled-components";
 
-import { chartCss } from "./chart.style.js";
+import { chartCss, readoutLines } from "./chart.style.js";
 
 const style = (Component) => styled(Component)`
   display: block;
   ${chartCss}
+  ${readoutLines(2, 3, 4)}
 
   /* The text's colour, not a tone: a heart rate is neither behind nor ahead of a plan. */
   .heart-line {

@@ -1,10 +1,11 @@
 import styled from "styled-components";
 
-import { chartCss } from "./chart.style.js";
+import { chartCss, readoutLines } from "./chart.style.js";
 
 const style = (Component) => styled(Component)`
   display: block;
   ${chartCss}
+  ${readoutLines(2, 3, 3)}
 
   .pace-bar {
     fill: color-mix(in srgb, var(--color-text) 30%, transparent);

@@ -1,12 +1,13 @@
 import styled from "styled-components";
 
-import { chartCss } from "./chart.style.js";
+import { chartCss, readoutLines } from "./chart.style.js";
 
 // The plan in the text's colour, faded; the fitted one in the primary, as the track that was
 // run is on the map: the line that follows the race.
 const style = (Component) => styled(Component)`
   display: block;
   ${chartCss}
+  ${readoutLines(1, 2, 2)}
 
   .error-line {
     fill: none;

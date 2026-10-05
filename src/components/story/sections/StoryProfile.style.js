@@ -1,10 +1,11 @@
 import styled from "styled-components";
 
-import { chartCss } from "./chart.style.js";
+import { chartCss, readoutLines } from "./chart.style.js";
 
 const style = (Component) => styled(Component)`
   display: block;
   ${chartCss}
+  ${readoutLines(1, 2, 4)}
 
   .profile-area {
     fill: color-mix(in srgb, var(--color-text) 22%, transparent);

@@ -40,15 +40,31 @@ export const chartCss = css`
     }
   }
 
+  /* As many lines as its longest reading takes (readoutLines), whatever is pointed at: a
+     readout that grows and shrinks under the cursor moves the chart below it. */
   .readout {
+    --readout-lines: 1;
     display: flex;
     flex-wrap: wrap;
+    align-content: flex-start;
     gap: 0.25rem 1rem;
-    min-height: 1.5em;
+    min-height: calc(var(--readout-lines) * 1.5em + (var(--readout-lines) - 1) * 0.25rem);
     margin-bottom: 0.75rem;
     font-family: var(--font-family-mono);
     font-size: var(--font-size-tiny);
     color: color-mix(in srgb, var(--color-text) 70%, transparent);
+
+    /* A value whole on one line, so the count of lines holds; the hint alone may wrap. */
+    > span {
+      max-width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    > span:only-child {
+      white-space: normal;
+    }
 
     b {
       font-weight: var(--font-weight-bold);
@@ -183,6 +199,22 @@ export const chartCss = css`
     width: 10px;
     height: 10px;
     border-radius: var(--border-radius-xs);
+  }
+`;
+
+// The lines a chart's readout keeps, wide, under 50em and under 28em: measured on the demo
+// race, sweeping the cursor along the chart at each width.
+export const readoutLines = (wide, narrow, phone) => css`
+  .readout {
+    --readout-lines: ${wide};
+
+    @media (max-width: 50em) {
+      --readout-lines: ${narrow};
+    }
+
+    @media (max-width: 28em) {
+      --readout-lines: ${phone};
+    }
   }
 `;
 
