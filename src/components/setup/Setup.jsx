@@ -1,6 +1,7 @@
 import { memo, useState } from "react";
 
 import useStore from "../../store/store.js";
+import { MARK_PATH } from "../../theme/mark.js";
 import LoadingSpinner from "../loadingSpinner/LoadingSpinner.jsx";
 import { profileOf, stopOf } from "../settingsForm/PaceSettings.constants.js";
 import SettingsForm from "../settingsForm/SettingsForm.jsx";
@@ -57,11 +58,8 @@ const Setup = memo(function Setup({ className }) {
     <div className={className}>
       <div className="setup-inner">
         <header className="masthead">
-          {/* The favicon's mark: the plan as a solid line, the run as a dashed one under it, spread
-              further apart than in the 16px favicon so the pair reads at this size. */}
           <svg className="mark" viewBox="0 0 64 64" aria-hidden="true">
-            <path className="mark-plan" d="M6 38 L20 18 L30 28 L42 8 L58 38" />
-            <path className="mark-run" d="M6 56 L20 38 L30 46 L42 28 L58 56" />
+            <path d={MARK_PATH} fillRule="evenodd" />
           </svg>
           <h1>
             <span className="wordmark-re">re</span>trace

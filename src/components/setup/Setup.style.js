@@ -23,22 +23,11 @@ const style = (Component) => styled(Component)`
       width: 44px;
       height: 44px;
       flex: none;
-      fill: none;
-      stroke-linejoin: round;
-      stroke-linecap: round;
     }
 
-    /* why: the favicon's colours are dark's primary and secondary; the tokens keep the
-       pair in light too (blue plan, orange run). */
-    .mark-plan {
-      stroke: var(--color-primary);
-      stroke-width: 4.5;
-    }
-
-    .mark-run {
-      stroke: var(--color-secondary);
-      stroke-width: 3;
-      stroke-dasharray: 5 5;
+    /* One ink, as the favicon's: dark's primary is its gold, light's its blue. */
+    .mark path {
+      fill: var(--color-primary);
     }
 
     .wordmark-re {
