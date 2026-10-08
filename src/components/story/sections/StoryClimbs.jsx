@@ -159,7 +159,7 @@ const StoryClimbs = memo(function StoryClimbs({ className }) {
               return (
                 <Fragment key={index}>
                   {index === halfway && index > 0 && (
-                    <li role="separator" className="halfway">
+                    <li aria-hidden="true" className="halfway">
                       <span>halfway</span>
                     </li>
                   )}

@@ -67,7 +67,7 @@ const style = (Component) => styled(Component)`
   th {
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-tiny);
-    color: color-mix(in srgb, var(--color-text) 70%, transparent);
+    color: var(--color-text-muted);
   }
 
   td {
@@ -131,7 +131,7 @@ const style = (Component) => styled(Component)`
       align-self: center;
       text-align: right;
       font-size: var(--font-size-tiny);
-      color: color-mix(in srgb, var(--color-text) 55%, transparent);
+      color: var(--color-text-faint);
 
       &::after {
         content: " km";
@@ -165,7 +165,7 @@ const style = (Component) => styled(Component)`
         margin-bottom: 2px;
         font-family: var(--font-family-sansSerif);
         font-size: var(--font-size-xsmall);
-        color: color-mix(in srgb, var(--color-text) 55%, transparent);
+        color: var(--color-text-faint);
       }
     }
   }

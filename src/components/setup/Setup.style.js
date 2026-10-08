@@ -31,7 +31,7 @@ const style = (Component) => styled(Component)`
     }
 
     .wordmark-re {
-      color: color-mix(in srgb, var(--color-text) 55%, transparent);
+      color: color-mix(in srgb, var(--color-text) 70%, transparent);
     }
 
     h1 {
@@ -72,7 +72,7 @@ const style = (Component) => styled(Component)`
 
   .lede {
     font-size: var(--font-size-medium);
-    color: color-mix(in srgb, var(--color-text) 65%, transparent);
+    color: var(--color-text-faint);
     max-width: 38ch;
   }
 
@@ -133,13 +133,13 @@ const style = (Component) => styled(Component)`
   }
 
   .recap-vs {
-    color: color-mix(in srgb, var(--color-text) 55%, transparent);
+    color: color-mix(in srgb, var(--color-text) 85%, transparent);
   }
 
   .row-note {
     margin-top: 0.5rem;
     font-size: var(--font-size-small);
-    color: color-mix(in srgb, var(--color-text) 55%, transparent);
+    color: color-mix(in srgb, var(--color-text) 85%, transparent);
   }
 
   /* Terminus's StoryPace profile buttons: the pickers, and every other action in the rows. */
@@ -154,7 +154,7 @@ const style = (Component) => styled(Component)`
     border-radius: var(--border-radius-base);
     border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
     background: none;
-    color: color-mix(in srgb, var(--color-text) 65%, transparent);
+    color: color-mix(in srgb, var(--color-text) 85%, transparent);
     white-space: nowrap;
     cursor: pointer;
     transition: all var(--transition-base);

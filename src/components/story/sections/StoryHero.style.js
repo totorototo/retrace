@@ -35,7 +35,7 @@ const style = (Component) => styled(Component)`
   .when {
     font-family: var(--font-family-mono);
     font-size: var(--font-size-small);
-    color: color-mix(in srgb, var(--color-text) 70%, transparent);
+    color: var(--color-text-muted);
     margin: 0 0 2.5rem;
   }
 
@@ -179,7 +179,7 @@ const style = (Component) => styled(Component)`
 
   .step .more {
     font-size: var(--font-size-small);
-    color: color-mix(in srgb, var(--color-text) 75%, transparent);
+    color: var(--color-text-muted);
   }
 
   .facts {
@@ -195,7 +195,7 @@ const style = (Component) => styled(Component)`
     font-family: var(--font-family-sansSerif);
     font-size: var(--font-size);
     line-height: 1.5;
-    color: color-mix(in srgb, var(--color-text) 70%, transparent);
+    color: var(--color-text-muted);
 
     strong {
       color: var(--color-text);

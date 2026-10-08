@@ -82,7 +82,7 @@ const style = (Component) => styled(Component)`
   .settings th {
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-tiny);
-    color: color-mix(in srgb, var(--color-text) 70%, transparent);
+    color: var(--color-text-muted);
   }
 
   .settings td {

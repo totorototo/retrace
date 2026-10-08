@@ -47,7 +47,7 @@ const style = (Component) => styled(Component)`
     border-radius: var(--border-radius-base);
     border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
     background: color-mix(in srgb, var(--color-background) 70%, transparent);
-    color: color-mix(in srgb, var(--color-text) 75%, transparent);
+    color: var(--color-text-muted);
     cursor: pointer;
     backdrop-filter: blur(6px);
     transition: all var(--transition-fast);
@@ -199,7 +199,7 @@ const style = (Component) => styled(Component)`
   .replay-time {
     display: block;
     font-size: var(--font-size-xxsmall);
-    color: color-mix(in srgb, var(--color-text) 65%, transparent);
+    color: var(--color-text-faint);
   }
 
   .replay-readout {

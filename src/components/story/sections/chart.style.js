@@ -21,7 +21,7 @@ export const chartCss = css`
     padding: 0.25rem 0.875rem;
     border: none;
     background: none;
-    color: color-mix(in srgb, var(--color-text) 65%, transparent);
+    color: var(--color-text-faint);
     cursor: pointer;
     transition: all var(--transition-base);
 
@@ -52,7 +52,7 @@ export const chartCss = css`
     margin-bottom: 0.75rem;
     font-family: var(--font-family-mono);
     font-size: var(--font-size-tiny);
-    color: color-mix(in srgb, var(--color-text) 70%, transparent);
+    color: var(--color-text-muted);
 
     /* A value whole on one line, so the count of lines holds; the hint alone may wrap. */
     > span {
@@ -100,7 +100,7 @@ export const chartCss = css`
     left: 0;
     font-family: var(--font-family-mono);
     font-size: var(--font-size-xsmall);
-    color: color-mix(in srgb, var(--color-text) 70%, transparent);
+    color: var(--color-text-muted);
     pointer-events: none;
   }
 
@@ -117,7 +117,7 @@ export const chartCss = css`
     white-space: nowrap;
     font-family: var(--font-family-mono);
     font-size: var(--font-size-xxsmall);
-    color: color-mix(in srgb, var(--color-text) 65%, transparent);
+    color: var(--color-text-faint);
   }
 
   .zero-line {
@@ -185,7 +185,7 @@ export const chartCss = css`
     margin-top: 1rem;
     font-family: var(--font-family-mono);
     font-size: var(--font-size-xsmall);
-    color: color-mix(in srgb, var(--color-text) 65%, transparent);
+    color: var(--color-text-faint);
   }
 
   .legend-item {
@@ -256,7 +256,7 @@ export const rowsCss = css`
   .row-value {
     font-family: var(--font-family-mono);
     font-size: var(--font-size-xsmall);
-    color: color-mix(in srgb, var(--color-text) 65%, transparent);
+    color: var(--color-text-faint);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -300,7 +300,7 @@ export const rowsCss = css`
     transform: translateX(-50%);
     font-family: var(--font-family-mono);
     font-size: var(--font-size-xxsmall);
-    color: color-mix(in srgb, var(--color-text) 65%, transparent);
+    color: var(--color-text-faint);
     white-space: nowrap;
   }
 

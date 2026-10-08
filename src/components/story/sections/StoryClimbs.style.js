@@ -53,7 +53,7 @@ const style = (Component) => styled(Component)`
     border-radius: var(--border-radius-xs);
     text-align: center;
     font-weight: var(--font-weight-bold);
-    color: color-mix(in srgb, var(--color-text) 45%, transparent);
+    color: var(--color-text-faint);
 
     &[data-category] {
       border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
@@ -68,7 +68,7 @@ const style = (Component) => styled(Component)`
     width: 9ch;
     text-align: right;
     margin-left: 0.6em;
-    color: color-mix(in srgb, var(--color-text) 50%, transparent);
+    color: var(--color-text-faint);
   }
 
   /* Where the route's second half starts: the lede's two numbers, split in the list. */
@@ -81,7 +81,7 @@ const style = (Component) => styled(Component)`
     font-size: var(--font-size-xxsmall);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: color-mix(in srgb, var(--color-text) 50%, transparent);
+    color: var(--color-text-faint);
 
     &::before,
     &::after {

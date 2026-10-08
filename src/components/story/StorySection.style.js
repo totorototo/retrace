@@ -49,7 +49,7 @@ const style = (Component) => styled(Component)`
   /* Shared by the sections' charts. */
   .lede {
     font-size: var(--font-size-medium);
-    color: color-mix(in srgb, var(--color-text) 65%, transparent);
+    color: var(--color-text-faint);
     max-width: 38ch;
     margin: 0 0 2.5rem;
 

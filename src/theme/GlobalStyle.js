@@ -10,18 +10,25 @@ const toCustomProperties = (entries) =>
 // dark (sage), but light's secondary is orange, which beside the accent's red reads as a
 // second shade of bad: there it is the success green, and its text a darker mix of it
 // (4.8:1 on the background, where the plain green is 1.9:1).
+// Secondary text, in two steps: muted (labels, notes) and faint (ticks, axis names). Each
+// keeps 4.5:1 on its variant's background: dark's has room to fade, light's mid-grey has
+// little (below ~80% of the text colour it fails), so there the two steps sit close.
 const SEMANTIC = {
   dark: {
     "--color-behind": "var(--color-accent)",
     "--color-behind-text": "var(--color-accent-text)",
     "--color-ahead": "var(--color-secondary)",
     "--color-ahead-text": "var(--color-secondary-text)",
+    "--color-text-muted": "color-mix(in srgb, var(--color-text) 75%, transparent)",
+    "--color-text-faint": "color-mix(in srgb, var(--color-text) 65%, transparent)",
   },
   light: {
     "--color-behind": "var(--color-accent)",
     "--color-behind-text": "var(--color-accent-text)",
     "--color-ahead": "var(--color-success)",
     "--color-ahead-text": "color-mix(in srgb, var(--color-success) 30%, var(--color-text))",
+    "--color-text-muted": "color-mix(in srgb, var(--color-text) 88%, transparent)",
+    "--color-text-faint": "color-mix(in srgb, var(--color-text) 82%, transparent)",
   },
 };
 
