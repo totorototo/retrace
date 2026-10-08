@@ -3,7 +3,7 @@
 <p align="left">
 
 <a href="src/"><img src="https://img.shields.io/badge/Frontend-React%2019%20%2B%20Story%20UI-purple" alt="Frontend React"></a>
-<a href="zig/"><img src="https://img.shields.io/badge/Analysis-Zig%200.16.0%20%E2%86%92%20WASM-blue" alt="Zig WASM"></a>
+<a href="zig/"><img src="https://img.shields.io/badge/Analysis-Zig%200.17.0%20%E2%86%92%20WASM-blue" alt="Zig WASM"></a>
 <a href="https://retrace-alpha.netlify.app"><img src="https://img.shields.io/badge/Live%20Demo-retrace--alpha.netlify.app-brightgreen" alt="Live Demo"></a>
 
 </p>
@@ -73,7 +73,7 @@ analysis lives in three libraries, pinned in `zig/build.zig.zon` rather than ven
 
 ## Getting started
 
-Requires **Zig 0.16.0** on `PATH` and Node 22+ (npm 11).
+Requires **Zig 0.17.0** on `PATH` and Node 22+ (npm 11).
 
 ```sh
 npm install

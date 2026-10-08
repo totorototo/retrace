@@ -1,7 +1,7 @@
 # retrace: project rules
 
 Web app (PWA) comparing a trail race plan (GPX) with the race that was run (FIT).
-React 19 + styled-components + zustand, Vite 8, Vitest, Playwright, Zig 0.16 via Zigar.
+React 19 + styled-components + zustand, Vite 8, Vitest, Playwright, Zig 0.17 via Zigar.
 
 ## Zig side (`zig/`)
 

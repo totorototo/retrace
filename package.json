@@ -45,7 +45,7 @@
     "globals": "16.5.0",
     "jsdom": "27.2.0",
     "prettier": "3.7.4",
-    "rollup-plugin-zigar": "^0.16.0",
+    "rollup-plugin-zigar": "^0.17.0",
     "vite": "^8.1.0",
     "vite-plugin-pwa": "1.3.0",
     "vitest": "4.1.9",
