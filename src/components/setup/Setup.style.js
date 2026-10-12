@@ -19,10 +19,12 @@ const style = (Component) => styled(Component)`
     gap: 0.625rem;
     margin-top: calc(env(safe-area-inset-top, 0px) + 1.25rem);
 
+    /* The traces start 6 of the mark's 64 in: pulled back to line up with the text below. */
     .mark {
       width: 44px;
       height: 44px;
       flex: none;
+      margin-left: calc(-44px * 6 / 64);
     }
 
     /* One ink, as the favicon's: dark's primary is its gold, light's its blue. */
