@@ -1,9 +1,9 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import App from "./App.jsx";
 import useStore from "./store/store.js";
 
-// The parts of the page around the story: status, the single-file summaries, theme.
+// The parts of the page around the story: files, status, the single-file summaries, theme.
 const reset = (state) =>
   useStore.setState({
     report: null,
@@ -44,10 +44,15 @@ it("summarises a plan or an activity alone", () => {
   expect(screen.getByText("0h59")).toBeInTheDocument();
 });
 
-it("offers no file pickers: the race is the demo's", () => {
+it("hands a picked file to the store", () => {
+  const loadFile = vi.fn();
+  useStore.setState({ loadFile });
   render(<App />);
-  expect(screen.queryByTestId("gpx-input")).toBeNull();
-  expect(screen.queryByTestId("fit-input")).toBeNull();
+  const file = new File(["<gpx/>"], "route.gpx");
+  fireEvent.change(screen.getByTestId("gpx-input"), { target: { files: [file] } });
+  expect(loadFile).toHaveBeenCalledWith("gpx", file);
+  act(() => useStore.setState({ gpx: { name: "route.gpx" } }));
+  expect(screen.getByTestId("gpx-name")).toHaveTextContent("route.gpx");
 });
 
 it("switches between light and dark", () => {

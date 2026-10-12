@@ -17,9 +17,11 @@ beforeEach(() =>
   }),
 );
 
-it("opens on the intro and the settings, before there is a report", () => {
+it("opens on the intro, the files and the settings, before there is a report", () => {
   render(<Setup />);
-  expect(screen.getByRole("heading", { name: "A race, against its plan" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Your race, against the plan" })).toBeInTheDocument();
+  expect(screen.getByTestId("gpx-input")).toBeInTheDocument();
+  expect(screen.getByTestId("fit-input")).toBeInTheDocument();
   expect(screen.getByRole("form", { name: "Plan settings" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "Change" })).toBeNull();
 });
@@ -35,15 +37,16 @@ it("folds to one row once there is a report, and opens to change it", () => {
   expect(screen.getByText("Default profile · 1 hour at each LifeBase")).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "Change" }));
+  expect(screen.getByTestId("gpx-name")).toHaveTextContent("route.gpx");
   expect(screen.getByRole("form", { name: "Plan settings" })).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "Done" }));
   expect(screen.queryByRole("form", { name: "Plan settings" })).toBeNull();
 });
 
-it("shows the loader in the settings' place while the race first loads", () => {
+it("keeps the files in view while one is read", () => {
   useStore.setState({ status: "working", phase: "reading" });
   render(<Setup />);
-  expect(screen.getByRole("status")).toHaveTextContent("Reading the race files…");
-  expect(screen.queryByRole("form", { name: "Plan settings" })).toBeNull();
+  expect(screen.getByRole("status")).toHaveTextContent("Reading the file…");
+  expect(screen.getByTestId("gpx-input")).toBeInTheDocument();
 });

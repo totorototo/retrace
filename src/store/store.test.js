@@ -1,20 +1,11 @@
 import { createStore, DEFAULT_SETTINGS } from "./store.js";
 
-const FILES = {
-  gpx: { name: "route.gpx", url: "/demo/route.gpx" },
-  fit: { name: "activity.fit", url: "/demo/activity.fit" },
-};
-
-// fetch answering every URL with a few bytes, or with `status` for the ones in `failing`.
-const serve = (failing = [], status = 404) =>
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async (url) => ({
-      ok: !failing.includes(url),
-      status: failing.includes(url) ? status : 200,
-      arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer,
-    })),
-  );
+// A file as the picker hands it over: a name, a size, its bytes.
+const picked = (name, size = 3) => ({
+  name,
+  size,
+  arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer,
+});
 
 function fakeClient() {
   return {
@@ -35,18 +26,19 @@ function deferred() {
 
 const file = (name) => ({ name, bytes: new Uint8Array([1, 2, 3]).buffer });
 
-describe("store", () => {
-  beforeEach(() => serve());
-  afterEach(() => vi.unstubAllGlobals());
+// Both files in, picked one after the other as the app's flow goes.
+const loadBoth = async (store) => {
+  await store.getState().loadFile("gpx", picked("route.gpx"));
+  await store.getState().loadFile("fit", picked("activity.fit"));
+};
 
-  it("fetches the demo race, hands it to the worker, and analyses it", async () => {
+describe("store", () => {
+  it("reads picked files, hands them to the worker, and analyses them", async () => {
     const client = fakeClient();
     const store = createStore(() => client);
 
-    await store.getState().loadDemo(FILES);
+    await loadBoth(store);
 
-    expect(fetch).toHaveBeenCalledWith("/demo/route.gpx");
-    expect(fetch).toHaveBeenCalledWith("/demo/activity.fit");
     expect(client.loadPlan).toHaveBeenCalledWith(expect.any(ArrayBuffer));
     expect(client.loadActivity).toHaveBeenCalledWith(expect.any(ArrayBuffer));
     expect(store.getState().gpx).toEqual({ name: "route.gpx" });
@@ -59,7 +51,9 @@ describe("store", () => {
     const client = fakeClient();
     const store = createStore(() => client);
 
-    await store.getState().loadDemo(FILES);
+    await loadBoth(store);
+    // The plan's summary was shown while it was the only file.
+    client.summarizePlan.mockClear();
     await store.getState().setSettings({ pace_base_s_per_km: 420 });
 
     expect(client.summarizePlan).not.toHaveBeenCalled();
@@ -112,7 +106,9 @@ describe("store", () => {
     const phases = [];
     store.subscribe(({ phase }) => phase !== phases.at(-1) && phases.push(phase));
 
-    const loading = store.getState().loadDemo(FILES);
+    await store.getState().loadFile("gpx", picked("route.gpx"));
+    phases.length = 0;
+    const loading = store.getState().loadFile("fit", picked("activity.fit"));
     await vi.waitFor(() => expect(store.getState().phase).toBe("analysing"));
     answer.resolve({ checkpoints: [] });
     await loading;
@@ -123,7 +119,7 @@ describe("store", () => {
   it("runs settings picked mid-analysis once, on the latest, and drops the stale result", async () => {
     const client = fakeClient();
     const store = createStore(() => client);
-    await store.getState().loadDemo(FILES);
+    await loadBoth(store);
 
     const first = deferred();
     client.analyze.mockReset().mockReturnValueOnce(first.promise);
@@ -146,7 +142,7 @@ describe("store", () => {
   it("drops an analysis still running when new files come in", async () => {
     const client = fakeClient();
     const store = createStore(() => client);
-    await store.getState().loadDemo(FILES);
+    await loadBoth(store);
 
     const stale = deferred();
     client.analyze.mockReturnValueOnce(stale.promise);
@@ -159,24 +155,21 @@ describe("store", () => {
     expect(store.getState().report).toEqual({ checkpoints: [] });
   });
 
-  it("reports a file it could not fetch", async () => {
-    serve(["/demo/activity.fit"]);
+  it("turns away a file too large to read", async () => {
     const client = fakeClient();
     const store = createStore(() => client);
 
-    await store.getState().loadDemo(FILES);
+    await store.getState().loadFile("fit", picked("huge.fit", 300 * 1024 * 1024));
 
     expect(store.getState().status).toBe("error");
-    expect(store.getState().error).toBe("activity.fit: HTTP 404");
-    expect(store.getState().phase).toBeNull();
-    expect(client.loadPlan).not.toHaveBeenCalled();
-    expect(client.analyze).not.toHaveBeenCalled();
+    expect(store.getState().error).toBe("huge.fit is too large");
+    expect(client.loadActivity).not.toHaveBeenCalled();
   });
 
   it("falls back to the settings the story was made with when new ones fail", async () => {
     const client = fakeClient();
     const store = createStore(() => client);
-    await store.getState().loadDemo(FILES);
+    await loadBoth(store);
 
     client.analyze.mockRejectedValueOnce(new Error("TraceTooShort"));
     await store.getState().setSettings({ pace_base_s_per_km: 300 });
@@ -197,31 +190,12 @@ describe("store", () => {
     expect(store.getState().plan).toBeNull();
   });
 
-  it("says a file is missing when the host answers with a page", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        status: 200,
-        headers: new Headers({ "content-type": "text/html" }),
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-    const client = fakeClient();
-    const store = createStore(() => client);
-
-    await store.getState().loadDemo(FILES);
-
-    expect(store.getState().error).toBe("route.gpx: not found");
-    expect(client.loadPlan).not.toHaveBeenCalled();
-  });
-
   it("reports worker errors", async () => {
     const client = fakeClient();
     client.analyze.mockRejectedValue(new Error("ActivityNotOnRoute"));
     const store = createStore(() => client);
 
-    await store.getState().loadDemo(FILES);
+    await loadBoth(store);
 
     expect(store.getState().status).toBe("error");
     expect(store.getState().error).toBe("ActivityNotOnRoute");

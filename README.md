@@ -11,8 +11,8 @@
 **[→ Live Demo](https://retrace-alpha.netlify.app)**
 
 Trail race analysis in the browser: the **plan** (a GPX route with typed checkpoints) against
-what was **actually run** (a FIT activity), shown on one race: the author's Grand Raid des
-Pyrénées 2026 Ultra Tour. The analysis runs locally, as an installable PWA that works offline.
+what was **actually run** (a FIT activity). Everything runs locally, as an installable PWA that
+works offline; files never leave the device.
 
 ## The story
 
@@ -65,7 +65,7 @@ analysis lives in three libraries, pinned in `zig/build.zig.zon` rather than ven
 
 ### Data flow
 
-1. At startup, `main.jsx` fetches the demo race (`public/demo/`) as ArrayBuffers.
+1. `FilePicker` reads the file with `File.arrayBuffer()`: the GPX first, then the FIT.
 2. The store sends the bytes to the worker (copied and transferred, so the store keeps its
    own bytes and can rerun when the settings change).
 3. The worker passes a `Uint8Array` to the Zig export, which parses, compares and returns JSON.
@@ -117,20 +117,18 @@ src/
   components/
     story/           Story.jsx + sections/ (one component per section above)
     map/             RaceMap (Mapbox), Replay, offline SVG fallback
-    setup/, settingsForm/, summary/, …
-  demo.js            the demo race's files, served from public/demo/
+    setup/, filePicker/, settingsForm/, summary/, …
   theme/             Terminus design system (Theme.js copied from Terminus)
   sw.js              Workbox precache → works offline
-e2e/                 Playwright specs (demo URLs routed to the synthetic fixtures)
+e2e/                 Playwright specs (the synthetic fixtures, through the pickers)
 ```
 
-## The demo data
+## Data
 
-`public/demo/` holds the author's GRP 2026 (160 km): the planned GPX and the recorded FIT,
-both already public on Strava and Garmin Connect. The FIT went through `npm run scrub-fit`,
-which keeps the race messages (session, laps, records, events) and drops the rest, so it holds
-the race and not the runner's profile. No other recordings are committed: `.gitignore` blocks
-`*.fit` and `*.gpx` outside `public/demo/` and `zig/testdata/`.
+No recordings are committed: `.gitignore` blocks `*.fit` and `*.gpx` outside `zig/testdata/`,
+which holds the synthetic fixtures. To share a FIT, `npm run scrub-fit` keeps the race messages
+(session, laps, records, events) and drops the rest, so it holds the race and not the runner's
+profile.
 
 ## Updating a Zig dependency
 

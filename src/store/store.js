@@ -1,6 +1,5 @@
 import { create } from "zustand";
 
-import { DEMO_FILES } from "../demo.js";
 import { createWorkerClient } from "../worker/client.js";
 
 // The plan's pace settings (gpxz defaults). They must match the ones the plan was made with.
@@ -13,6 +12,7 @@ export const DEFAULT_SETTINGS = {
 // A replay belongs to the report it was started on.
 const NO_REPLAY = { replay_s: null, replayPlaying: false };
 
+const MAX_FILE_BYTES = 256 * 1024 * 1024;
 const THEME_KEY = "retrace-theme";
 
 // The variant the user last picked, else the system's, as Terminus starts from.
@@ -123,34 +123,19 @@ export const createStore = (getClient = createWorkerClient) => {
         set({ replay_s: null, replayPlaying: false });
       },
 
-      // Fetches the demo race's two files, then analyses them.
-      async loadDemo(files = DEMO_FILES) {
-        set({ status: "working", phase: "reading", error: null });
-        let gpx, fit;
-        try {
-          [gpx, fit] = await Promise.all(
-            [files.gpx, files.fit].map(async ({ name, url }) => {
-              const response = await fetch(url);
-              if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
-              // A host that answers every path with the app (an SPA fallback) sends a page,
-              // not the file: say so, rather than let the parser fail on HTML.
-              if (response.headers?.get("content-type")?.includes("text/html")) {
-                throw new Error(`${name}: not found`);
-              }
-              return { name, bytes: await response.arrayBuffer() };
-            }),
-          );
-        } catch (err) {
-          set({ status: "error", phase: null, error: err.message });
+      // A file picked in Setup: read here, its bytes handed to the worker. Nothing is uploaded.
+      async loadFile(kind, file) {
+        if (file.size > MAX_FILE_BYTES) {
+          set({ status: "error", phase: null, error: `${file.name} is too large` });
           return;
         }
-        await get().loadFiles({ gpx, fit });
+        const bytes = await file.arrayBuffer();
+        await get().loadFiles({ [kind]: { name: file.name, bytes } });
       },
 
       /**
        * Hands the worker a plan, an activity or both ({ name, bytes: ArrayBuffer }, the bytes
-       * transferred), then recomputes. One at a time is the app's flow, plan then activity;
-       * the demo gives both at once.
+       * transferred), then recomputes. One at a time is the app's flow, plan then activity.
        */
       async loadFiles({ gpx, fit }) {
         // Whatever is computing is on the files these replace.
