@@ -25,7 +25,7 @@ const MARK = `<path d="${MARK_PATH}" fill="${INK}" fill-rule="evenodd"/>`;
 const FAVICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${BACKGROUND}"/>${MARK}</svg>\n`;
 
 // why: the PNGs are maskable (vite.config.js), so the launcher may crop them to a circle of
-// 80% of the side. Full-bleed square, and a 96 viewBox puts the mark (its corners about 32
+// 80% of the side. Full-bleed square, and a 96 viewBox puts the mark (its far corner about 30
 // from the centre) inside that circle's radius of 38. iOS rounds the apple-touch-icon's corners itself.
 const TILE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 96 96"><rect x="-16" y="-16" width="96" height="96" fill="${BACKGROUND}"/>${MARK}</svg>`;
 

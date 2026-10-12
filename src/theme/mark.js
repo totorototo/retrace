@@ -1,6 +1,7 @@
-// The app's mark, on a 64 grid: two traces of the same ridge, two peaks and a saddle. The thin
-// one above is the plan, the bold one below the race that retraced it; their ends are cut flat.
-// No holes, unlike waymark's pin, so the silhouette tells the two tabs apart at 16px. Drawn by
-// the masthead (Setup.jsx) and scripts/make-icons.mjs.
+// The app's mark, on a 64 grid: a back arrow whose shaft is a ridge, two peaks then down the
+// slope, the trace read from the finish back to the start. The shaft is a stroke outlined to a
+// fill (its right end cut flat) and the arrowhead a triangle that meets it edge to edge, so the
+// even-odd fill makes no holes and the mark is one colour. Drawn by the masthead (Setup.jsx)
+// and scripts/make-icons.mjs.
 export const MARK_PATH =
-  "M12.4 35.7L25 20.6L32.8 29.2L39.8 22.2L51.3 35.7L57.1 35.7L40.1 15.7L33 22.8L24.9 13.9L6.7 35.7ZM15.6 51.5L25.1 40.2L32.7 48.7L39.7 41.8L48.1 51.5L57.3 51.5L40.1 31.4L33 38.5L24.9 29.4L6.4 51.5Z";
+  "M15.9 39.3L21.1 39.3L27.8 30.3L36 39.4L43.1 29.1L51.2 47.8L58 47.8L44.4 16.2L35.4 29.3L27.4 20.4L17.9 33L15.9 33ZM6 36.1L15.9 27.1L15.9 45.1Z";
