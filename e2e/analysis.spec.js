@@ -13,7 +13,7 @@ test("plan vs actual from a GPX and a FIT", async ({ page }) => {
   await expect(page.getByTestId("plan-distance")).toHaveText("6.0 km");
 
   await page.getByTestId("fit-input").setInputFiles(fixture("activity.fit"));
-  const rows = page.getByTestId("checkpoints").locator("tbody tr");
+  const rows = page.getByTestId("checkpoints").getByRole("listitem");
   await expect(rows).toHaveCount(3);
   await expect(rows.nth(1)).toContainText("Refuge");
   await expect(page.getByTestId("total-actual")).toHaveText("0h59");

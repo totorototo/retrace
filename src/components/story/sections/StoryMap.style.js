@@ -6,7 +6,7 @@ const style = (Component) => styled(Component)`
   .map-frame {
     height: min(70vh, 32rem);
     border-radius: var(--border-radius-lg);
-    border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+    border: 1px solid var(--color-hairline);
     overflow: hidden;
   }
 `;

@@ -31,8 +31,11 @@ const style = (Component) => styled(Component)`
     }
   }
 
+  /* The climb under the pointer is terrain: the design system's mauve, not the brand
+     gold/blue (the plan in these charts). why effort-1 at 35%: the most saturated step in
+     both variants; light's effort-4 at 22% read as grey, the night bands' shade. */
   .climb-band {
-    fill: color-mix(in srgb, var(--color-primary) 22%, transparent);
+    fill: color-mix(in srgb, var(--color-effort-1) 35%, transparent);
   }
 
   .profile-line {

@@ -33,7 +33,7 @@ const style = (Component) => styled(Component)`
     }
 
     .wordmark-re {
-      color: color-mix(in srgb, var(--color-text) 70%, transparent);
+      color: var(--color-text-muted);
     }
 
     h1 {
@@ -80,7 +80,7 @@ const style = (Component) => styled(Component)`
 
   .ledger {
     margin-top: 2rem;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+    border-bottom: 1px solid var(--color-hairline);
   }
 
   .row {
@@ -90,7 +90,7 @@ const style = (Component) => styled(Component)`
     column-gap: 1.5rem;
     row-gap: 0.75rem;
     padding: 1.25rem 0;
-    border-top: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+    border-top: 1px solid var(--color-hairline);
     position: relative;
   }
 
@@ -100,7 +100,7 @@ const style = (Component) => styled(Component)`
 
     &:hover .chip {
       border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
-      color: var(--color-primary);
+      color: var(--color-primary-text);
     }
   }
 
@@ -154,7 +154,7 @@ const style = (Component) => styled(Component)`
     min-height: 44px;
     padding: 0.5rem 1rem;
     border-radius: var(--border-radius-base);
-    border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+    border: 1px solid var(--color-control-border);
     background: none;
     color: color-mix(in srgb, var(--color-text) 85%, transparent);
     white-space: nowrap;
@@ -164,12 +164,14 @@ const style = (Component) => styled(Component)`
     /* Terminus's hover for an outlined button (its retry and fullscreen buttons). */
     &:hover {
       border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
-      color: var(--color-primary);
+      color: var(--color-primary-text);
     }
 
+    /* The picked file: the primary text, which holds its meaning in both themes (the
+       secondary turns from sage to orange). */
     &.active {
-      border-color: var(--color-secondary);
-      color: var(--color-secondary-text);
+      border-color: var(--color-primary-text);
+      color: var(--color-primary-text);
     }
   }
 

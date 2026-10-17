@@ -72,7 +72,7 @@ const style = (Component) => styled(Component)`
     padding: 8px;
     text-align: right;
     white-space: nowrap;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+    border-bottom: 1px solid var(--color-hairline);
   }
 
   .settings th:first-child {

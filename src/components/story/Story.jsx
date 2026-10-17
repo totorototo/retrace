@@ -48,7 +48,13 @@ const Story = memo(function Story({ className }) {
   const contour = useMemo(() => buildContour(gapSeries(report)), [report]);
 
   const jumpToIndex = (index) => {
-    sectionRefs.current[index]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    // why: the global reduced-motion rule only reaches CSS; a JS smooth scroll checks the
+    // preference itself, as the hero's "read the story" link does.
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    sectionRefs.current[index]?.scrollIntoView({
+      behavior: reduce ? "auto" : "smooth",
+      block: "start",
+    });
   };
 
   // A thin band near the top of the viewport decides the current section, and the topmost

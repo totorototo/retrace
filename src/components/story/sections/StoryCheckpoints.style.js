@@ -2,6 +2,7 @@ import styled from "styled-components";
 
 import { chartCss, rowsCss } from "./chart.style.js";
 
+// The suite's checkpoint row (design system CheckpointRow), as Terminus draws it.
 const style = (Component) => styled(Component)`
   display: block;
   ${chartCss}
@@ -40,134 +41,177 @@ const style = (Component) => styled(Component)`
     }
   }
 
-  .table-wrap {
-    overflow-x: auto;
+  /* The rows under the chart, set off from its legend. */
+  .checkpoint-list {
     margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    list-style: none;
   }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
+  .checkpoint-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-hairline);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  .checkpoint-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .checkpoint-name {
+    font-weight: var(--font-weight-bold);
+  }
+
+  .checkpoint-km {
+    margin-top: 0.25rem;
+    font-family: var(--font-family-mono);
     font-size: var(--font-size-small);
-  }
-
-  th,
-  td {
-    padding: 8px;
-    text-align: right;
-    white-space: nowrap;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
-  }
-
-  th:first-child,
-  td:first-child {
-    text-align: left;
-  }
-
-  th {
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-tiny);
     color: var(--color-text-muted);
   }
 
-  td {
-    font-family: var(--font-family-mono);
+  .checkpoint-key {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.375rem;
+    white-space: nowrap;
   }
 
-  td[data-tone="behind"] {
+  .checkpoint-time {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-medium);
+    font-weight: var(--font-weight-bold);
+  }
+
+  /* Outlined, no tint: a 14% fill dropped the label under 4.5:1. The word carries the state. */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1875rem 0.5rem;
+    border: 1px solid currentColor;
+    border-radius: var(--border-radius-lg);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-tiny);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .tier-ok {
+    color: var(--color-success-text);
+  }
+
+  .tier-tight {
+    color: var(--color-primary-text);
+  }
+
+  .tier-over {
     color: var(--color-behind-text);
   }
 
-  td[data-tone="ahead"] {
-    color: var(--color-ahead-text);
+  /* Vs plan and Spare at departure (value over label); Details reuses the grid. */
+  .checkpoint-figures,
+  .checkpoint-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.625rem 1.5rem;
+    margin: 0;
+    padding: 0.75rem;
+    border-radius: var(--border-radius-md);
+    background: color-mix(in srgb, var(--color-text) 3%, transparent);
+
+    > div {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 0.125rem;
+    }
+
+    dt {
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-tiny);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    dd {
+      margin: 0;
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-small);
+      font-weight: var(--font-weight-bold);
+
+      &[data-tone="behind"] {
+        color: var(--color-behind-text);
+      }
+
+      &[data-tone="ahead"] {
+        color: var(--color-ahead-text);
+      }
+    }
   }
 
-  /* Phones: eight columns don't fit, and scrolling sideways hides the times, which matter
-     most. Each row is a card of three lines instead: the name and its km; the plan, the
-     actual and the delta, the comparison read first; then the clock, the stop and the
-     margin. Each value under its own label. */
-  @media (max-width: 40em) {
-    .table-wrap {
-      overflow-x: visible;
-    }
+  .checkpoint-details {
+    grid-template-columns: repeat(3, 1fr);
+  }
 
-    /* why: with fifteen rows, a header row at the top is screens away from the last ones,
-       and a sticky one would slide under the theme toggle. Each time carries its own label. */
-    thead {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-    }
+  .details-toggle,
+  .show-more {
+    align-self: flex-start;
+    min-height: 44px;
+    padding: 0;
+    background: none;
+    border: 0;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary-text);
+    cursor: pointer;
 
-    /* why: three equal columns, placed by hand, not five auto-flowed: six values in five
-       columns left the margin alone on a line. */
-    tr {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.625rem 0.75rem;
-      padding: 0.875rem 0;
-      border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+    &:hover {
+      text-decoration: underline;
     }
+  }
 
-    td {
-      padding: 0;
-      border-bottom: none;
-      text-align: left;
-    }
+  /* The design system's collapse toggle: dashed, the full width. */
+  .show-more {
+    width: 100%;
+    margin-top: 0.5rem;
+    border: 1px dashed var(--color-control-border);
+    border-radius: var(--border-radius-base);
+  }
 
-    td:first-child {
-      grid-column: 1 / 3;
-      grid-row: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-weight: var(--font-weight-semibold);
-    }
+  /* Details fold open: one grid row 0fr -> 1fr, to the content's own height. The negative
+     margin cancels the row's gap while closed; reduced motion is the global rule. */
+  .fold {
+    display: grid;
+    grid-template-rows: 0fr;
+    margin-top: -0.75rem;
+    opacity: 0;
+    transition:
+      grid-template-rows var(--transition-standard),
+      margin-top var(--transition-standard),
+      opacity var(--transition-standard);
 
-    td:nth-child(2) {
-      grid-column: 3;
-      grid-row: 1;
-      align-self: center;
-      text-align: right;
-      font-size: var(--font-size-tiny);
-      color: var(--color-text-faint);
+    &.open {
+      grid-template-rows: 1fr;
+      margin-top: 0;
+      opacity: 1;
+    }
+  }
 
-      &::after {
-        content: " km";
-      }
-    }
-
-    /* Plan, actual, delta; then arrived, stop, margin. */
-    td:nth-child(3) {
-      grid-area: 2 / 1;
-    }
-    td:nth-child(4) {
-      grid-area: 2 / 2;
-    }
-    td:nth-child(6) {
-      grid-area: 2 / 3;
-    }
-    td:nth-child(5) {
-      grid-area: 3 / 1;
-    }
-    td:nth-child(7) {
-      grid-area: 3 / 2;
-    }
-    td:nth-child(8) {
-      grid-area: 3 / 3;
-    }
-
-    td:nth-child(n + 3) {
-      &::before {
-        content: attr(data-label);
-        display: block;
-        margin-bottom: 2px;
-        font-family: var(--font-family-sansSerif);
-        font-size: var(--font-size-xsmall);
-        color: var(--color-text-faint);
-      }
-    }
+  .fold-inner {
+    min-height: 0;
+    overflow: hidden;
   }
 `;
 
