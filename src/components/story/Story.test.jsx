@@ -24,7 +24,9 @@ it("tells the race from the report", { timeout: 20000 }, () => {
   expect(screen.getByTestId("total-delta")).toHaveTextContent("+0h07");
   expect(screen.getByText(/until km 2, then behind for good/)).toBeInTheDocument();
   expect(within(screen.getByTestId("budget")).getAllByRole("listitem")).toHaveLength(2);
-  expect(within(screen.getByTestId("checkpoints")).getAllByRole("row")).toHaveLength(4);
+  expect(within(screen.getByTestId("checkpoints")).getAllByRole("listitem")).toHaveLength(3);
+  // Both views of the cutoffs: the buffers chart (the two with a cutoff) and the rows.
+  expect(within(screen.getByTestId("buffers")).getAllByRole("listitem")).toHaveLength(2);
   expect(screen.getByText(/missed by 0h02/)).toBeInTheDocument();
 });
 

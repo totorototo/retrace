@@ -1,14 +1,11 @@
-import { memo, useMemo } from "react";
+import { memo, useId, useMemo, useState } from "react";
 
 import useStore from "../../../store/store.js";
 import { formatClock, formatDelta, formatDuration } from "../../../utils/format.js";
+import { BADGE_LABELS, marginTier, spareAtDeparture, VISIBLE_ROWS } from "../checkpointRow.js";
 import { toneOf } from "../debrief.js";
 import StorySection from "../StorySection.jsx";
 import style from "./StoryCheckpoints.style.js";
-
-// why: the arrival on the clock beside the race time: a runner remembers "Fri 23:05" at
-// Pierrefitte, not "18h02".
-const COLUMNS = ["Checkpoint", "km", "Plan", "Actual", "Arrived", "Delta", "Stop", "Margin"];
 
 // The cutoff buffer at each checkpoint with a cutoff: planned (ring) against actual (dot),
 // the cutoff itself the zero line. Below zero, it was missed.
@@ -55,8 +52,9 @@ function Buffers({ checkpoints }) {
                   />
                 )}
               </span>
+              {/* The same figure as the row's Spare at departure. */}
               <span className="row-value" data-tone={actual < 0 ? "behind" : undefined}>
-                {formatDelta(actual)}
+                {formatDelta(spareAtDeparture(row) ?? actual)}
               </span>
             </li>
           );
@@ -75,9 +73,84 @@ function Buffers({ checkpoints }) {
   );
 }
 
+// One checkpoint as the suite's checkpoint row (design system CheckpointRow): name and km on
+// the left; the actual arrival on the race's clock and the cutoff badge on the right; vs plan
+// and spare at departure under it. Plan and actual race time and the stop wait behind
+// Details.
+// why the arrival on the clock: a runner remembers "Fri 23:05" at Pierrefitte, not "18h02".
+// The Start shows its time only: its plan and race time are 0 and it has no cutoff.
+function CheckpointRow({ checkpoint, offset, isStart }) {
+  const [open, setOpen] = useState(false);
+  // why useId: aria-controls is a list of ids split on spaces, and names have spaces.
+  const detailsId = useId();
+  const spare = spareAtDeparture(checkpoint);
+  const tier = marginTier(spare);
+
+  return (
+    <li className="checkpoint-row">
+      <div className="checkpoint-top">
+        <div>
+          <div className="checkpoint-name">{checkpoint.name}</div>
+          <div className="checkpoint-km">{(checkpoint.distance_m / 1000).toFixed(1)} km</div>
+        </div>
+        <div className="checkpoint-key">
+          <span className="checkpoint-time">
+            {formatClock(checkpoint.epoch_s_arrival_actual, offset)}
+          </span>
+          {tier && <span className={`badge tier-${tier}`}>{BADGE_LABELS[tier]}</span>}
+        </div>
+      </div>
+      {!isStart && (
+        <>
+          <dl className="checkpoint-figures">
+            <div>
+              <dt>Vs plan</dt>
+              <dd data-tone={toneOf(checkpoint.delta_s)}>{formatDelta(checkpoint.delta_s)}</dd>
+            </div>
+            {spare !== null && (
+              <div>
+                <dt>Spare at departure</dt>
+                <dd data-tone={tier === "over" ? "behind" : undefined}>{formatDuration(spare)}</dd>
+              </div>
+            )}
+          </dl>
+          <button
+            type="button"
+            className="details-toggle"
+            aria-expanded={open}
+            aria-controls={detailsId}
+            onClick={() => setOpen((value) => !value)}
+          >
+            {open ? "Hide details" : "Details"}
+          </button>
+          <div id={detailsId} className={`fold${open ? " open" : ""}`} inert={!open}>
+            <div className="fold-inner">
+              <dl className="checkpoint-details">
+                <div>
+                  <dt>Plan</dt>
+                  <dd>{formatDuration(checkpoint.duration_s_planned)}</dd>
+                </div>
+                <div>
+                  <dt>Actual</dt>
+                  <dd>{formatDuration(checkpoint.duration_s_actual)}</dd>
+                </div>
+                <div>
+                  <dt>Stop</dt>
+                  <dd>{formatDuration(checkpoint.stop_s_actual)}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </>
+      )}
+    </li>
+  );
+}
+
 const StoryCheckpoints = memo(function StoryCheckpoints({ className }) {
   const checkpoints = useStore((state) => state.report.checkpoints);
   const offset = useStore((state) => state.report.totals.utc_offset_s);
+  const [showAll, setShowAll] = useState(false);
 
   const tightest = useMemo(
     () =>
@@ -91,6 +164,9 @@ const StoryCheckpoints = memo(function StoryCheckpoints({ className }) {
       ),
     [checkpoints],
   );
+
+  const hidden = showAll ? 0 : Math.max(0, checkpoints.length - VISIBLE_ROWS);
+  const shown = hidden > 0 ? checkpoints.slice(0, VISIBLE_ROWS) : checkpoints;
 
   return (
     <div className={className}>
@@ -112,49 +188,24 @@ const StoryCheckpoints = memo(function StoryCheckpoints({ className }) {
             .
           </p>
         )}
+        {/* why both: the chart compares the plan's buffer with the race's at a glance, the
+            rows give each checkpoint's figures (the design system's checkpoint row). */}
         <Buffers checkpoints={checkpoints} />
-
-        {/* why: the explicit roles keep it a table for screen readers on phones, where the
-            rows are grids (Safari drops the table semantics of a restyled table). */}
-        <div className="table-wrap">
-          <table data-testid="checkpoints" role="table">
-            <thead role="rowgroup">
-              <tr role="row">
-                {COLUMNS.map((column) => (
-                  <th key={column} role="columnheader">
-                    {column}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody role="rowgroup">
-              {checkpoints.map((checkpoint, index) => (
-                <tr key={`${checkpoint.name}-${index}`} role="row">
-                  <td role="cell">{checkpoint.name}</td>
-                  <td role="cell">{(checkpoint.distance_m / 1000).toFixed(1)}</td>
-                  <td role="cell" data-label={COLUMNS[2]}>
-                    {formatDuration(checkpoint.duration_s_planned)}
-                  </td>
-                  <td role="cell" data-label={COLUMNS[3]}>
-                    {formatDuration(checkpoint.duration_s_actual)}
-                  </td>
-                  <td role="cell" data-label={COLUMNS[4]}>
-                    {formatClock(checkpoint.epoch_s_arrival_actual, offset)}
-                  </td>
-                  <td role="cell" data-label={COLUMNS[5]} data-tone={toneOf(checkpoint.delta_s)}>
-                    {formatDelta(checkpoint.delta_s)}
-                  </td>
-                  <td role="cell" data-label={COLUMNS[6]}>
-                    {formatDuration(checkpoint.stop_s_actual)}
-                  </td>
-                  <td role="cell" data-label={COLUMNS[7]}>
-                    {formatDelta(checkpoint.margin_s_actual)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ol className="checkpoint-list" data-testid="checkpoints">
+          {shown.map((checkpoint, index) => (
+            <CheckpointRow
+              key={`${checkpoint.name}-${index}`}
+              checkpoint={checkpoint}
+              offset={offset}
+              isStart={index === 0}
+            />
+          ))}
+        </ol>
+        {hidden > 0 && (
+          <button type="button" className="show-more" onClick={() => setShowAll(true)}>
+            Show {hidden} more
+          </button>
+        )}
       </StorySection>
     </div>
   );

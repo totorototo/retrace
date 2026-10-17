@@ -111,33 +111,38 @@ const RaceMap = memo(function RaceMap({ className }) {
 
   const cursor = cursor_m == null ? null : profileAt(report.profile, cursor_m);
 
-  // Mapbox paints from values, not CSS custom properties: the theme's, as in Terminus.
-  // The outdoors basemap is light in both variants, so the planned route takes whichever
-  // of the variant's text and background is the dark one.
-  const colors = theme.colors[theme.currentVariant];
-  const plannedColor =
-    colors[theme.currentVariant === "dark" ? "--color-background" : "--color-text"];
-  const trackColor = colors["--color-primary"];
-  const offRouteColor = colors["--color-accent"];
-  const pinColor = colors["--color-secondary"];
-
+  // Mapbox paints from values, not CSS custom properties. The map's own inks (Theme.js
+  // `map`, the design system's Map), the same in both variants since the outdoors basemap is
+  // light in both: the race in gold on a white casing, off-route and the runner in mauve, the
+  // checkpoints in pink. The plan is a quiet ink band under the track: the casing covers it
+  // wherever the runner kept to it, so it shows where they left it.
+  const plannedColor = theme.map.label;
+  const trackColor = theme.map.route;
+  const offRouteColor = theme.map.live;
+  const pinColor = theme.map.pin;
   // Memoised: a new array would make the offline preview project the route again.
   const offlineLines = useMemo(
     () => [
       {
         coordinates: geometry.planned,
-        color: colors["--color-text"],
+        color: plannedColor,
         width: 4,
         opacity: 0.35,
       },
       ...geometry.runs.map((run) => ({
         coordinates: run.coordinates,
+        color: theme.map.casing,
+        width: run.on_route ? 6 : 7,
+        opacity: 1,
+      })),
+      ...geometry.runs.map((run) => ({
+        coordinates: run.coordinates,
         color: run.on_route ? trackColor : offRouteColor,
-        width: run.on_route ? 2 : 3,
+        width: run.on_route ? 3 : 4,
         opacity: 1,
       })),
     ],
-    [geometry, colors, trackColor, offRouteColor],
+    [geometry, theme.map, plannedColor, trackColor, offRouteColor],
   );
 
   const fitToBounds = useCallback(() => {
@@ -208,9 +213,9 @@ const RaceMap = memo(function RaceMap({ className }) {
           lines={offlineLines}
           cursor={cursor}
           colors={{
-            text: colors["--color-text"],
-            background: colors["--color-background"],
-            runner: trackColor,
+            text: theme.map.live,
+            background: theme.map.casing,
+            runner: theme.map.live,
           }}
         />
       </div>,
@@ -248,12 +253,21 @@ const RaceMap = memo(function RaceMap({ className }) {
         </Source>
         <Source id="track" type="geojson" data={geometry.track}>
           <Layer
+            id="track-casing"
+            type="line"
+            layout={{ "line-join": "round", "line-cap": "round" }}
+            paint={{
+              "line-color": theme.map.casing,
+              "line-width": ["case", ["get", "on_route"], 6, 7],
+            }}
+          />
+          <Layer
             id="track-line"
             type="line"
             layout={{ "line-join": "round", "line-cap": "round" }}
             paint={{
               "line-color": ["case", ["get", "on_route"], trackColor, offRouteColor],
-              "line-width": ["case", ["get", "on_route"], 2.5, 4],
+              "line-width": ["case", ["get", "on_route"], 3, 4],
             }}
           />
         </Source>
@@ -279,7 +293,7 @@ const RaceMap = memo(function RaceMap({ className }) {
             <div className="cursor-marker" data-testid="map-cursor" />
           </Marker>
         )}
-        <ReplayMarkers runnerColor={trackColor} planColor={plannedColor} />
+        <ReplayMarkers runnerColor={theme.map.live} planColor={plannedColor} />
       </Map>
     </div>,
   );

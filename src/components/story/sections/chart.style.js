@@ -8,7 +8,7 @@ export const chartCss = css`
   .level-switch {
     display: inline-flex;
     margin-bottom: 1rem;
-    border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+    border: 1px solid var(--color-control-border);
     border-radius: var(--border-radius-base);
     overflow: hidden;
   }
@@ -17,7 +17,7 @@ export const chartCss = css`
     font-family: var(--font-family-mono);
     font-size: var(--font-size-tiny);
     font-weight: var(--font-weight-bold);
-    min-height: 32px;
+    min-height: 44px;
     padding: 0.25rem 0.875rem;
     border: none;
     background: none;
@@ -26,7 +26,7 @@ export const chartCss = css`
     transition: all var(--transition-base);
 
     &:hover {
-      color: var(--color-primary);
+      color: var(--color-primary-text);
     }
 
     &.active {
@@ -35,7 +35,7 @@ export const chartCss = css`
     }
 
     &:focus-visible {
-      outline: 2px solid var(--color-primary);
+      outline: 2px solid var(--color-focus);
       outline-offset: -2px;
     }
   }
@@ -332,8 +332,9 @@ export const rowsCss = css`
       border: 2px solid var(--color-primary);
     }
 
+    /* A mark: color-text-muted holds 3:1 in both variants, text at 55% did not in light. */
     &.actual {
-      background: color-mix(in srgb, var(--color-text) 55%, transparent);
+      background: var(--color-text-muted);
 
       &[data-tone="behind"] {
         background: var(--color-behind);

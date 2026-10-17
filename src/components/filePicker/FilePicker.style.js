@@ -9,8 +9,7 @@ export const FileName = styled.span`
   font-family: ${({ $loaded }) =>
     $loaded ? "var(--font-family-mono)" : "var(--font-family-sansSerif)"};
   font-size: ${({ $loaded }) => ($loaded ? "var(--font-size)" : "var(--font-size-small)")};
-  color: ${({ $loaded }) =>
-    $loaded ? "var(--color-text)" : "color-mix(in srgb, var(--color-text) 55%, transparent)"};
+  color: ${({ $loaded }) => ($loaded ? "var(--color-text)" : "var(--color-text-faint)")};
 `;
 
 // Visually hidden but still in the tab order; the row's chip shows its focus.

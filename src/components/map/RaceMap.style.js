@@ -1,5 +1,7 @@
 import styled from "styled-components";
 
+import THEME from "../../theme/Theme.js";
+
 // Terminus's Map style on the CSS custom properties; its why-comments explain the
 // fullscreen button's safe-area offsets.
 const style = (Component) => styled(Component)`
@@ -45,7 +47,7 @@ const style = (Component) => styled(Component)`
     height: 2.25rem;
     padding: 0;
     border-radius: var(--border-radius-base);
-    border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+    border: 1px solid var(--color-control-border);
     background: color-mix(in srgb, var(--color-background) 70%, transparent);
     color: var(--color-text-muted);
     cursor: pointer;
@@ -54,7 +56,7 @@ const style = (Component) => styled(Component)`
     -webkit-tap-highlight-color: transparent;
 
     &:hover {
-      color: var(--color-primary);
+      color: var(--color-primary-text);
       border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
     }
   }
@@ -138,7 +140,7 @@ const style = (Component) => styled(Component)`
     max-width: 28rem;
     padding: 0.375rem;
     border-radius: var(--border-radius-base);
-    border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+    border: 1px solid var(--color-control-border);
     background: color-mix(in srgb, var(--color-background) 80%, transparent);
     backdrop-filter: blur(6px);
     pointer-events: auto;
@@ -154,7 +156,7 @@ const style = (Component) => styled(Component)`
     padding: 0 0.5rem;
     flex-shrink: 0;
     border-radius: var(--border-radius-base);
-    border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+    border: 1px solid var(--color-control-border);
     background: color-mix(in srgb, var(--color-background) 70%, transparent);
     color: color-mix(in srgb, var(--color-text) 85%, transparent);
     font-family: var(--font-family-mono);
@@ -164,7 +166,7 @@ const style = (Component) => styled(Component)`
     -webkit-tap-highlight-color: transparent;
 
     &:hover {
-      color: var(--color-primary);
+      color: var(--color-primary-text);
       border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
     }
   }
@@ -237,7 +239,7 @@ const style = (Component) => styled(Component)`
     vertical-align: -0.05em;
 
     &.runner {
-      background: var(--color-primary);
+      background: ${THEME.map.live};
     }
 
     &.plan {
@@ -253,7 +255,7 @@ const style = (Component) => styled(Component)`
 
     &.runner {
       background: var(--marker-color);
-      border: 2px solid var(--color-background);
+      border: 2px solid ${THEME.map.casing};
       box-shadow:
         0 0 0 1px var(--marker-color),
         0 1px 3px rgba(0, 0, 0, 0.4);
@@ -266,14 +268,15 @@ const style = (Component) => styled(Component)`
     }
   }
 
-  /* Terminus's runner marker, without the pulse: it marks a place, not a live position. */
+  /* Terminus's runner marker, without the pulse: it marks a place, not a live position. In
+     the map's live ink with a white ring, the same in both variants. */
   .cursor-marker {
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: var(--color-text);
-    border: 2px solid var(--color-background);
-    box-shadow: 0 0 0 2px var(--color-text);
+    background: ${THEME.map.live};
+    border: 2px solid ${THEME.map.casing};
+    box-shadow: 0 0 0 2px ${THEME.map.live};
     pointer-events: none;
   }
 `;

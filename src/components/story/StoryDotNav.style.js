@@ -22,7 +22,7 @@ const style = (Component) => styled(Component)`
     padding: 0.4rem 0.7rem;
     border-radius: var(--border-radius-base);
     background: color-mix(in srgb, var(--color-text) 12%, transparent);
-    border: 1px solid color-mix(in srgb, var(--color-text) 40%, transparent);
+    border: 1px solid var(--color-control-border);
     backdrop-filter: blur(8px);
     font-family: var(--font-family-mono);
     font-size: var(--font-size-small);

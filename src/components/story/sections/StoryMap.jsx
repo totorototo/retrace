@@ -14,8 +14,8 @@ const StoryMap = memo(function StoryMap({ className }) {
     <div className={className}>
       <StorySection eyebrow="The place" title="Where it happened">
         <p className="lede">
-          The planned route under the track that was run, off-trace stretches in red. Point along a
-          chart to place it here.
+          The planned route under the track that was run, off-trace stretches in violet. Point along
+          a chart to place it here.
         </p>
         <div className="map-frame">
           {/* Inside the frame, not around the section: a map chunk that fails to load (a
