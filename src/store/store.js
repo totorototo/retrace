@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { createJSONStorage, devtools, persist } from "zustand/middleware";
 
 import { createWorkerClient } from "../worker/client.js";
 
@@ -13,23 +14,48 @@ export const DEFAULT_SETTINGS = {
 const NO_REPLAY = { replay_s: null, replayPlaying: false };
 
 const MAX_FILE_BYTES = 256 * 1024 * 1024;
-const THEME_KEY = "retrace-theme";
+const STORAGE_KEY = "retrace-storage";
 
-// The variant the user last picked, else the system's, as Terminus starts from.
-// why: localStorage, not zustand's persist middleware: one string is all that survives a
-// reload here, and the store's other state (files, report) must not.
-function initialTheme() {
-  try {
-    const saved = localStorage.getItem(THEME_KEY);
-    if (saved === "dark" || saved === "light") return saved;
-  } catch {
-    // Storage blocked (private mode, a sandbox): fall back to the system.
-  }
+// The system's variant, until the toggle picks one (then persisted), as Terminus starts from.
+function systemTheme() {
   const prefersDark =
     typeof window !== "undefined" &&
     typeof window.matchMedia === "function" &&
     window.matchMedia("(prefers-color-scheme: dark)").matches;
   return prefersDark ? "dark" : "light";
+}
+
+// localStorage for persist, writing only what changed and never throwing.
+// why: persist writes on every set(), the replay's per-frame ones included, and lets a
+// storage error escape the action that set it; blocked storage (private mode, a sandbox)
+// must cost the reload's memory, not the action.
+function guardedStorage() {
+  let written = null;
+  return createJSONStorage(() => ({
+    getItem(name) {
+      try {
+        return localStorage.getItem(name);
+      } catch {
+        return null;
+      }
+    },
+    setItem(name, value) {
+      if (value === written) return;
+      try {
+        localStorage.setItem(name, value);
+        written = value;
+      } catch {
+        // Not remembered across reloads, but still set.
+      }
+    },
+    removeItem(name) {
+      try {
+        localStorage.removeItem(name);
+      } catch {
+        // Nothing to forget.
+      }
+    },
+  }));
 }
 
 export const createStore = (getClient = createWorkerClient) => {
@@ -44,7 +70,7 @@ export const createStore = (getClient = createWorkerClient) => {
   // The settings the results on screen were computed with: a failed pass falls back to them.
   let applied = null;
 
-  return create((set, get) => {
+  const state = (set, get) => {
     // One pass of refresh(): what the loaded files allow, written unless a newer pass or a
     // reset has made it stale.
     async function compute() {
@@ -99,16 +125,10 @@ export const createStore = (getClient = createWorkerClient) => {
       // that select it (the runners' markers, the controls) re-render, not the whole map.
       replay_s: null,
       replayPlaying: false,
-      theme: initialTheme(), // dark | light
+      theme: systemTheme(), // dark | light
 
       toggleTheme() {
-        const theme = get().theme === "dark" ? "light" : "dark";
-        set({ theme });
-        try {
-          localStorage.setItem(THEME_KEY, theme);
-        } catch {
-          // Not remembered across reloads, but still switched.
-        }
+        set({ theme: get().theme === "dark" ? "light" : "dark" });
       },
 
       setCursor(cursor_m) {
@@ -208,7 +228,26 @@ export const createStore = (getClient = createWorkerClient) => {
         });
       },
     };
-  });
+  };
+
+  return create(
+    devtools(
+      persist(state, {
+        name: STORAGE_KEY,
+        storage: guardedStorage(),
+        // why: only the user's choices survive a reload. The files' bytes live in the worker,
+        // so a persisted report or file name would point at nothing.
+        partialize: ({ theme, settings }) => ({ theme, settings }),
+        // Settings saved before a new one was added keep its default.
+        merge: (saved, current) => ({
+          ...current,
+          ...saved,
+          settings: { ...current.settings, ...saved?.settings },
+        }),
+      }),
+      { name: "retrace", enabled: import.meta.env.DEV },
+    ),
+  );
 };
 
 const useStore = createStore();
