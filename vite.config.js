@@ -1,3 +1,4 @@
+import THEME from "@totorototo/trail-tokens";
 import react from "@vitejs/plugin-react";
 import zigar from "rollup-plugin-zigar";
 import { defineConfig } from "vite";
@@ -15,9 +16,28 @@ const zigarOptions = {
   ignoreBuildFile: true,
 };
 
+// The browser chrome takes dark's background, the app's first variant (ThemedApp then follows
+// the toggle). why: injected here, not written in index.html, so the meta, the manifest and the
+// icons share one source.
+const CHROME_COLOR = THEME.colors.dark["--color-background"];
+
+function themeColorPlugin() {
+  return {
+    name: "theme-color",
+    transformIndexHtml: () => [
+      {
+        tag: "meta",
+        attrs: { name: "theme-color", content: CHROME_COLOR },
+        injectTo: "head",
+      },
+    ],
+  };
+}
+
 export default defineConfig({
   plugins: [
     react(),
+    themeColorPlugin(),
     zigar(zigarOptions),
     VitePWA({
       strategies: "injectManifest",
@@ -35,8 +55,8 @@ export default defineConfig({
         name: "Retrace: trail race plan vs actual",
         short_name: "Retrace",
         description: "Compare a trail race plan (GPX) with what was run (FIT), offline.",
-        theme_color: "#3A3335",
-        background_color: "#3A3335",
+        theme_color: CHROME_COLOR,
+        background_color: CHROME_COLOR,
         display: "standalone",
         start_url: "/",
         scope: "/",
