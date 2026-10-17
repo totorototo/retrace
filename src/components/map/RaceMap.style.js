@@ -104,12 +104,39 @@ const style = (Component) => styled(Component)`
     white-space: nowrap;
   }
 
+  /* Terminus's and Waymark's pin, in the map's fixed inks: numbered, the same in both
+     variants. */
   .waypoint-marker {
-    fill: var(--waypoint-color);
-    stroke: var(--color-background);
-    stroke-width: 1.5px;
+    position: relative;
+    display: block;
+    color: ${THEME.map.casing};
+    font-family: var(--font-family-mono);
+    font-weight: var(--font-weight-bold);
     cursor: pointer;
+  }
+
+  .waypoint-marker svg {
+    display: block;
+    fill: ${THEME.map.pin};
+    stroke: ${THEME.map.casing};
+    stroke-width: 1.5px;
     filter: drop-shadow(0 1px 2px ${THEME.map.shadow});
+  }
+
+  /* The number takes the place of the pin's inner circle. */
+  .waypoint-marker svg circle {
+    display: none;
+  }
+
+  /* Over the pin's head: Feather's MapPin circle is at (12, 10) of 24. */
+  .waypoint-marker .number {
+    position: absolute;
+    top: 41.7%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: var(--font-size-tiny);
+    line-height: 1;
+    pointer-events: none;
   }
 
   /* The replay's controls: the fullscreen button's frosted look, clear of it on the right. */

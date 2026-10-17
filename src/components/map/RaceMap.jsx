@@ -119,7 +119,6 @@ const RaceMap = memo(function RaceMap({ className }) {
   const plannedColor = theme.map.label;
   const trackColor = theme.map.route;
   const offRouteColor = theme.map.live;
-  const pinColor = theme.map.pin;
   // Memoised: a new array would make the offline preview project the route again.
   const offlineLines = useMemo(
     () => [
@@ -278,14 +277,15 @@ const RaceMap = memo(function RaceMap({ className }) {
             latitude={checkpoint.latitude}
             anchor="bottom"
           >
-            <MapPin
+            <div
               className="waypoint-marker"
-              size={24}
-              style={{ "--waypoint-color": pinColor }}
               role="img"
-              aria-label={checkpoint.name}
+              aria-label={`${checkpoint.name}, checkpoint ${index + 1}`}
               title={checkpoint.name}
-            />
+            >
+              <MapPin size={30} aria-hidden="true" />
+              <span className="number">{index + 1}</span>
+            </div>
           </Marker>
         ))}
         {cursor && (
