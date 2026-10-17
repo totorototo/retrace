@@ -118,7 +118,7 @@ src/
     story/           Story.jsx + sections/ (one component per section above)
     map/             RaceMap (Mapbox), Replay, offline SVG fallback
     setup/, filePicker/, settingsForm/, summary/, …
-  theme/             Terminus design system (Theme.js copied from Terminus)
+  theme/             Trail Suite design system (tokens from @totorototo/trail-tokens)
   sw.js              Workbox precache → works offline
 e2e/                 Playwright specs (the synthetic fixtures, through the pickers)
 ```

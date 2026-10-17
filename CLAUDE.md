@@ -21,10 +21,12 @@ React 19 + styled-components + zustand, Vite 8, Vitest, Playwright, Zig 0.17 via
 - Files are picked in Setup (GPX, then FIT), read in JS and posted as ArrayBuffers. Nothing is
   uploaded or stored remotely. The one network use is the map: Mapbox tiles for the race area, with `VITE_MAPBOX_KEY` from
   a local `.env` (never committed; see `.env.example`). Offline, it falls back to an SVG.
-- Design system (Trail Suite): `src/theme/Theme.js` is Terminus's colour tokens plus the map
-  inks (`map`, fixed across themes: the basemap stays light; Mapbox and the map's markers read
-  them as JS values). Use the CSS custom properties. Component styles go in `*.style.js` next
-  to the component.
+- Design system (Trail Suite): tokens come from `@totorototo/trail-tokens` (shared with Terminus
+  and Waymark); `src/theme/Theme.js` only re-exports it. To change a token, change it in the
+  Trail Suite design-system artifact first, then in the package, then bump the tag here. Never
+  edit values in this repo. The theme holds the colour tokens plus the map inks (`map`, fixed
+  across themes: the basemap stays light; Mapbox and the map's markers read them as JS values).
+  Use the CSS custom properties. Component styles go in `*.style.js` next to the component.
 - Light and dark, as in Terminus: the system's variant until the toggle picks one. Colour
   that means behind or ahead of the plan uses `--color-behind(-text)` / `--color-ahead(-text)`,
   never the raw tokens: light's secondary is orange, not green. Text steps down through

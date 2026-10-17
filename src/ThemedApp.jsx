@@ -6,7 +6,7 @@ import useStore from "./store/store.js";
 import GlobalStyle from "./theme/GlobalStyle.js";
 import THEME from "./theme/Theme.js";
 
-// Same design system as Terminus (src/theme/Theme.js is copied from it), light or dark as
+// Same design system as Terminus (@totorototo/trail-tokens, via src/theme/Theme.js), light or dark as
 // the store says: the system's variant until the toggle picks one.
 export default function ThemedApp() {
   const variant = useStore((state) => state.theme);
