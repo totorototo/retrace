@@ -109,7 +109,7 @@ const style = (Component) => styled(Component)`
     stroke: var(--color-background);
     stroke-width: 1.5px;
     cursor: pointer;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+    filter: drop-shadow(0 1px 2px ${THEME.map.shadow});
   }
 
   /* The replay's controls: the fullscreen button's frosted look, clear of it on the right. */
@@ -258,12 +258,12 @@ const style = (Component) => styled(Component)`
       border: 2px solid ${THEME.map.casing};
       box-shadow:
         0 0 0 1px var(--marker-color),
-        0 1px 3px rgba(0, 0, 0, 0.4);
+        0 1px 3px ${THEME.map.shadow};
     }
 
-    /* The basemap is light in both variants: a white fill in the planned route's colour. */
+    /* The basemap is light in both variants: a casing fill in the planned route's colour. */
     &.plan {
-      background: rgba(255, 255, 255, 0.85);
+      background: color-mix(in srgb, ${THEME.map.casing} 85%, transparent);
       border: 3px solid var(--marker-color);
     }
   }
