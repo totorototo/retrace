@@ -32,6 +32,9 @@ const loadBoth = async (store) => {
   await store.getState().loadFile("fit", picked("activity.fit"));
 };
 
+// The store persists the user's choices: each test starts without any.
+afterEach(() => localStorage.clear());
+
 describe("store", () => {
   it("reads picked files, hands them to the worker, and analyses them", async () => {
     const client = fakeClient();
@@ -206,10 +209,7 @@ describe("theme", () => {
   const prefers = (dark) =>
     vi.stubGlobal("matchMedia", (query) => ({ matches: dark && query.includes("dark") }));
 
-  afterEach(() => {
-    localStorage.clear();
-    vi.unstubAllGlobals();
-  });
+  afterEach(() => vi.unstubAllGlobals());
 
   it("starts from the system's variant", () => {
     prefers(true);
@@ -235,5 +235,29 @@ describe("theme", () => {
     store.getState().toggleTheme();
     expect(store.getState().theme).toBe("dark");
     vi.restoreAllMocks();
+  });
+});
+
+describe("persistence", () => {
+  it("remembers the settings picked, not the files or what they made", async () => {
+    const store = createStore(fakeClient);
+    await loadBoth(store);
+    await store.getState().setSettings({ pace_base_s_per_km: 420 });
+
+    const next = createStore(fakeClient).getState();
+    expect(next.settings).toEqual({ ...DEFAULT_SETTINGS, pace_base_s_per_km: 420 });
+    expect(next.gpx).toBeNull();
+    expect(next.report).toBeNull();
+  });
+
+  it("keeps a new setting's default over settings saved without it", () => {
+    localStorage.setItem(
+      "retrace-storage",
+      JSON.stringify({ state: { settings: { pace_base_s_per_km: 420 } }, version: 0 }),
+    );
+    expect(createStore(fakeClient).getState().settings).toEqual({
+      ...DEFAULT_SETTINGS,
+      pace_base_s_per_km: 420,
+    });
   });
 });
