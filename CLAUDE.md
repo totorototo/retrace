@@ -18,7 +18,14 @@ React 19 + styled-components + zustand, Vite 8, Vitest, Playwright, Zig 0.17 via
 
 - Only the worker imports `.zig` files. Unit tests mock them (`vi.mock`); vitest.config.js
   stubs `.zig` loads so Vitest never compiles Zig. The real WASM path is covered by e2e.
-- Files are picked in Setup (GPX, then FIT), read in JS and posted as ArrayBuffers. Nothing is
+- The plan's model comes from a plan.json when one is loaded (Setup's optional "Plan" row,
+  made in Regimen or with `gpxz --plan`): `retrace.zig` reads it with debriefz's `plan_file`,
+  refuses it for another route (`CourseMismatch`) or when gpxz no longer reproduces it
+  (`PlanStale`), and the pickers give way to it. Without one, the pickers' settings are used,
+  and must match the plan's by hand. gpxz's pin must stay the one debriefz pins, or the two
+  build separate gpxz types. `zig/testdata/route.plan.json` is regenerated with
+  `gpxz --plan --pace 450 --life-base-stop 600 zig/testdata/route.gpx`.
+- Files are picked in Setup (GPX, plan.json, FIT), read in JS and posted as ArrayBuffers. Nothing is
   uploaded or stored remotely. The one network use is the map: Mapbox tiles for the race area, with `VITE_MAPBOX_KEY` from
   a local `.env` (never committed; see `.env.example`). Offline, it falls back to an SVG.
 - Design system (Trail Suite): tokens come from `@totorototo/trail-tokens` (shared with Terminus

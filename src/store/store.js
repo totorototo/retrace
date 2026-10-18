@@ -3,7 +3,8 @@ import { createJSONStorage, devtools, persist } from "zustand/middleware";
 
 import { createWorkerClient } from "../worker/client.js";
 
-// The plan's pace settings (gpxz defaults). They must match the ones the plan was made with.
+// The plan's pace settings (gpxz defaults). Used without a plan.json, and then they must
+// match the ones the plan was made with.
 export const DEFAULT_SETTINGS = {
   pace_base_s_per_km: 500,
   fatigue_coefficient: 0.002,
@@ -14,6 +15,24 @@ export const DEFAULT_SETTINGS = {
 const NO_REPLAY = { replay_s: null, replayPlaying: false };
 
 const MAX_FILE_BYTES = 256 * 1024 * 1024;
+
+// What to do about a plan.json gpxz or debriefz refused, by the Zig error's name. Zigar
+// reports it as words ("Course mismatch"): match either form.
+const PLAN_FILE_ERRORS = {
+  CourseMismatch:
+    "This plan.json was made for another GPX, or for this one before it was edited. Open the plan made for this route, or remove it to use the settings below.",
+  PlanStale:
+    "This plan.json's times no longer match what its model gives on this route: gpxz has changed since. Rebuild it in Regimen.",
+  PlanInvalid: "This plan.json's numbers don't add up. Was it edited by hand?",
+  SchemaVersionUnsupported: "This plan.json is from a newer Regimen. Update Retrace.",
+};
+
+const squash = (text) => String(text).replace(/\s+/g, "").toLowerCase();
+
+export function errorMessage(error) {
+  const known = Object.keys(PLAN_FILE_ERRORS).find((name) => squash(name) === squash(error));
+  return known ? PLAN_FILE_ERRORS[known] : error;
+}
 const STORAGE_KEY = "retrace-storage";
 
 // The system's variant, until the toggle picks one (then persisted), as Terminus starts from.
@@ -99,7 +118,7 @@ export const createStore = (getClient = createWorkerClient) => {
         set({
           status: "error",
           phase: null,
-          error: err.message,
+          error: errorMessage(err.message),
           ...(applied && applied !== settings && { settings: applied }),
         });
       }
@@ -109,6 +128,8 @@ export const createStore = (getClient = createWorkerClient) => {
       // The files loaded, by name: their bytes live in the worker (loadFiles).
       gpx: null, // { name }
       fit: null,
+      // The plan.json, if one is loaded: its model replaces the settings below.
+      planFile: null, // { name }
       settings: DEFAULT_SETTINGS,
       plan: null,
       activity: null,
@@ -154,10 +175,11 @@ export const createStore = (getClient = createWorkerClient) => {
       },
 
       /**
-       * Hands the worker a plan, an activity or both ({ name, bytes: ArrayBuffer }, the bytes
-       * transferred), then recomputes. One at a time is the app's flow, plan then activity.
+       * Hands the worker a plan, an activity, a plan.json or several ({ name, bytes:
+       * ArrayBuffer }, the bytes transferred), then recomputes. One at a time is the app's
+       * flow: route, plan.json if there is one, activity.
        */
-      async loadFiles({ gpx, fit }) {
+      async loadFiles({ gpx, fit, planFile }) {
         // Whatever is computing is on the files these replace.
         generation++;
         set({ status: "working", phase: "reading", error: null, report: null, ...NO_REPLAY });
@@ -165,6 +187,7 @@ export const createStore = (getClient = createWorkerClient) => {
           await Promise.all([
             gpx && worker().loadPlan(gpx.bytes),
             fit && worker().loadActivity(fit.bytes),
+            planFile && worker().loadPlanFile(planFile.bytes),
           ]);
         } catch (err) {
           set({ status: "error", phase: null, error: err.message });
@@ -174,7 +197,17 @@ export const createStore = (getClient = createWorkerClient) => {
           ...(gpx && { gpx: { name: gpx.name }, plan: null }),
           // The activity's summary doesn't depend on the settings: computed once per file.
           ...(fit && { fit: { name: fit.name }, activity: null }),
+          ...(planFile && { planFile: { name: planFile.name } }),
         });
+        await get().refresh();
+      },
+
+      // Back to the pickers' settings.
+      async removePlanFile() {
+        if (!get().planFile) return;
+        generation++;
+        await worker().loadPlanFile(null);
+        set({ planFile: null });
         await get().refresh();
       },
 
@@ -214,9 +247,17 @@ export const createStore = (getClient = createWorkerClient) => {
       reset() {
         generation++;
         applied = null;
+        // The worker keeps the files until replaced, but a plan.json is optional: left there,
+        // it would be checked against the next route.
+        // why not awaited: the worker answers in order, so the next load comes after it.
+        if (get().planFile)
+          worker()
+            .loadPlanFile(null)
+            .catch(() => {});
         set({
           gpx: null,
           fit: null,
+          planFile: null,
           plan: null,
           activity: null,
           report: null,

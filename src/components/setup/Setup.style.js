@@ -118,6 +118,15 @@ const style = (Component) => styled(Component)`
     grid-column: 2 / -1;
   }
 
+  .row-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .row-actions label.chip {
+    position: relative;
+  }
+
   .ledger-end {
     display: flex;
     justify-content: flex-end;

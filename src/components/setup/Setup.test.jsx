@@ -13,6 +13,7 @@ beforeEach(() =>
     error: null,
     gpx: null,
     fit: null,
+    planFile: null,
     settings: DEFAULT_SETTINGS,
   }),
 );
@@ -22,6 +23,9 @@ it("opens on the intro, the files and the settings, before there is a report", (
   expect(screen.getByRole("heading", { name: "Your race, against the plan" })).toBeInTheDocument();
   expect(screen.getByTestId("gpx-input")).toBeInTheDocument();
   expect(screen.getByTestId("fit-input")).toBeInTheDocument();
+  expect(screen.getByTestId("planFile-input")).toBeInTheDocument();
+  expect(screen.getByTestId("planFile-name")).toHaveTextContent("(optional)");
+  expect(screen.queryByRole("button", { name: "Remove" })).toBeNull();
   expect(screen.getByRole("form", { name: "Plan settings" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "Change" })).toBeNull();
 });

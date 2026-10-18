@@ -1,4 +1,4 @@
-import { createStore, DEFAULT_SETTINGS } from "./store.js";
+import { createStore, DEFAULT_SETTINGS, errorMessage } from "./store.js";
 
 // A file as the picker hands it over: a name, a size, its bytes.
 const picked = (name, size = 3) => ({
@@ -11,6 +11,7 @@ function fakeClient() {
   return {
     loadPlan: vi.fn().mockResolvedValue(null),
     loadActivity: vi.fn().mockResolvedValue(null),
+    loadPlanFile: vi.fn().mockResolvedValue(null),
     summarizePlan: vi.fn().mockResolvedValue({ distance_m: 6000 }),
     summarizeActivity: vi.fn().mockResolvedValue({ samples: 10 }),
     analyze: vi.fn().mockResolvedValue({ checkpoints: [] }),
@@ -202,6 +203,54 @@ describe("store", () => {
 
     expect(store.getState().status).toBe("error");
     expect(store.getState().error).toBe("ActivityNotOnRoute");
+  });
+
+  it("hands a plan.json to the worker, and takes it back on remove", async () => {
+    const client = fakeClient();
+    const store = createStore(() => client);
+    await store.getState().loadFile("gpx", picked("route.gpx"));
+    await store.getState().loadFile("planFile", picked("route.plan.json"));
+
+    expect(client.loadPlanFile).toHaveBeenCalledWith(expect.any(ArrayBuffer));
+    expect(store.getState().planFile).toEqual({ name: "route.plan.json" });
+    // The plan's summary is recomputed with it.
+    expect(client.summarizePlan).toHaveBeenCalledTimes(2);
+
+    await store.getState().removePlanFile();
+    expect(client.loadPlanFile).toHaveBeenLastCalledWith(null);
+    expect(store.getState().planFile).toBeNull();
+    expect(client.summarizePlan).toHaveBeenCalledTimes(3);
+  });
+
+  it("explains a plan.json for another route", async () => {
+    const client = fakeClient();
+    client.summarizePlan.mockRejectedValue(new Error("Course mismatch"));
+    const store = createStore(() => client);
+    await store.getState().loadFile("planFile", picked("other.plan.json"));
+    await store.getState().loadFile("gpx", picked("route.gpx"));
+    expect(store.getState().error).toMatch(/made for another GPX/);
+  });
+
+  it("forgets the plan.json in the worker on reset", async () => {
+    const client = fakeClient();
+    const store = createStore(() => client);
+    await store.getState().loadFile("planFile", picked("route.plan.json"));
+    store.getState().reset();
+    expect(client.loadPlanFile).toHaveBeenLastCalledWith(null);
+    expect(store.getState().planFile).toBeNull();
+  });
+});
+
+describe("errorMessage", () => {
+  it("explains the plan.json errors by name, as Zig or as Zigar's words", () => {
+    expect(errorMessage("CourseMismatch")).toBe(errorMessage("Course mismatch"));
+    expect(errorMessage("PlanStale")).toMatch(/Rebuild it in Regimen/);
+    expect(errorMessage("Plan invalid")).toMatch(/edited by hand/);
+    expect(errorMessage("SchemaVersionUnsupported")).toMatch(/newer Regimen/);
+  });
+
+  it("passes any other error through", () => {
+    expect(errorMessage("ActivityNotOnRoute")).toBe("ActivityNotOnRoute");
   });
 });
 

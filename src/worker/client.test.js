@@ -24,6 +24,20 @@ describe("analysis client", () => {
     expect(worker.lastTransfer).toEqual([gpx]);
   });
 
+  it("transfers a plan.json, and sends nothing to remove it", async () => {
+    const worker = fakeWorker(({ id }) => ({ id, result: null }));
+    const client = createAnalysisClient(worker);
+    const plan = new Uint8Array([123, 125]).buffer;
+
+    await client.loadPlanFile(plan);
+    expect(worker.lastMessage).toMatchObject({ type: "loadPlanFile", payload: { plan } });
+    expect(worker.lastTransfer).toEqual([plan]);
+
+    await client.loadPlanFile(null);
+    expect(worker.lastMessage.payload).toEqual({ plan: null });
+    expect(worker.lastTransfer).toEqual([]);
+  });
+
   it("sends only the settings once the files are loaded", async () => {
     const worker = fakeWorker(({ id, payload }) => ({ id, result: payload.settings }));
     const client = createAnalysisClient(worker);

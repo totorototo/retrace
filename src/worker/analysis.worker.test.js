@@ -29,9 +29,11 @@ describe("analysis worker", () => {
     });
 
     expect(response).toEqual({ id: 7, result: { distance_m: 6000 } });
-    const [bytes, settings] = summarizePlan.mock.calls[0];
+    const [bytes, planFile, settings] = summarizePlan.mock.calls[0];
     expect(bytes).toBeInstanceOf(Uint8Array);
     expect([...bytes]).toEqual([1, 2, 3]);
+    // No plan.json: an empty one, which tells Zig to use the settings.
+    expect(planFile).toHaveLength(0);
     expect(settings).toEqual({ pace_base_s_per_km: 450 });
   });
 
@@ -40,6 +42,24 @@ describe("analysis worker", () => {
       id: 3,
       error: "No FIT loaded",
     });
+  });
+
+  it("passes a loaded plan.json to Zig, until it is removed", async () => {
+    summarizePlan.mockResolvedValue(slice({}));
+    analyze.mockResolvedValue(slice({}));
+    await handleMessage({ id: 1, type: "loadPlan", payload: { gpx: new ArrayBuffer(2) } });
+    await handleMessage({ id: 2, type: "loadActivity", payload: { fit: new ArrayBuffer(3) } });
+    const plan = new Uint8Array([123, 125]).buffer;
+    await handleMessage({ id: 3, type: "loadPlanFile", payload: { plan } });
+
+    await handleMessage({ id: 4, type: "summarizePlan", payload: { settings: {} } });
+    await handleMessage({ id: 5, type: "analyze", payload: { settings: {} } });
+    expect([...summarizePlan.mock.calls[0][1]]).toEqual([123, 125]);
+    expect([...analyze.mock.calls[0][2]]).toEqual([123, 125]);
+
+    await handleMessage({ id: 6, type: "loadPlanFile", payload: { plan: null } });
+    await handleMessage({ id: 7, type: "summarizePlan", payload: { settings: {} } });
+    expect(summarizePlan.mock.calls[1][1]).toHaveLength(0);
   });
 
   it("turns a Zig error into an error response", async () => {

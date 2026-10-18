@@ -20,7 +20,8 @@ export const Input = styled.input`
   opacity: 0;
   pointer-events: none;
 
-  label:has(&:focus-visible) .chip {
+  label:has(&:focus-visible) .chip,
+  label.chip:has(&:focus-visible) {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }

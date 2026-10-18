@@ -1,8 +1,8 @@
 // Analysis web worker: owns the Zig/WASM module and keeps parsing off the main thread.
 //
 // Protocol: the page posts { id, type, payload } and gets back { id, result } or
-// { id, error }. Each file arrives once, transferred (loadPlan, loadActivity), and stays
-// here: the requests after it send only the settings. The Zig side returns JSON (see
+// { id, error }. Each file arrives once, transferred (loadPlan, loadActivity, loadPlanFile),
+// and stays here: the requests after it send only the settings. The Zig side returns JSON (see
 // zig/retrace.zig for why), which is parsed here so the page receives plain objects.
 
 import { __zigar, analyze, summarizeActivity, summarizePlan } from "../../zig/retrace.zig";
@@ -20,7 +20,9 @@ const decode = (slice) => JSON.parse(slice.string);
 // The files loaded, as bytes.
 // why: kept here, not posted with every request: the page would copy them each time (the
 // FIT runs to 11 MB), and a settings change only needs the settings to cross.
-const files = { gpx: null, fit: null };
+// planFile is the plan.json, or null: without one, the settings come from the pickers.
+const files = { gpx: null, fit: null, planFile: null };
+const NO_PLAN_FILE = new Uint8Array(0);
 
 function loaded(kind) {
   if (!files[kind]) throw new Error(`No ${kind.toUpperCase()} loaded`);
@@ -36,14 +38,21 @@ export const handlers = {
     files.fit = new Uint8Array(fit);
     return null;
   },
+  // A plan.json, or null to go back to the pickers' settings.
+  loadPlanFile({ plan }) {
+    files.planFile = plan ? new Uint8Array(plan) : null;
+    return null;
+  },
   async summarizePlan({ settings }) {
-    return decode(await summarizePlan(loaded("gpx"), settings ?? {}));
+    const planFile = files.planFile ?? NO_PLAN_FILE;
+    return decode(await summarizePlan(loaded("gpx"), planFile, settings ?? {}));
   },
   async summarizeActivity() {
     return decode(await summarizeActivity(loaded("fit")));
   },
   async analyze({ settings }) {
-    return decode(await analyze(loaded("gpx"), loaded("fit"), settings ?? {}));
+    const planFile = files.planFile ?? NO_PLAN_FILE;
+    return decode(await analyze(loaded("gpx"), loaded("fit"), planFile, settings ?? {}));
   },
 };
 
