@@ -32,9 +32,9 @@ export function createAnalysisClient(worker) {
     loadPlan: (gpx) => request("loadPlan", { gpx }, [gpx]),
     loadActivity: (fit) => request("loadActivity", { fit }, [fit]),
     loadPlanFile: (plan) => request("loadPlanFile", { plan }, plan ? [plan] : []),
-    summarizePlan: (settings) => request("summarizePlan", { settings }),
+    summarizePlan: () => request("summarizePlan"),
     summarizeActivity: () => request("summarizeActivity"),
-    analyze: (settings) => request("analyze", { settings }),
+    analyze: () => request("analyze"),
     terminate: () => worker.terminate(),
   };
 }

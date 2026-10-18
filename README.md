@@ -65,9 +65,10 @@ analysis lives in three libraries, pinned in `zig/build.zig.zon` rather than ven
 
 ### Data flow
 
-1. `FilePicker` reads the file with `File.arrayBuffer()`: the GPX first, then the FIT.
-2. The store sends the bytes to the worker (copied and transferred, so the store keeps its
-   own bytes and can rerun when the settings change).
+1. `FilePicker` reads the file with `File.arrayBuffer()`: the GPX, its plan.json from
+   [Regimen](https://github.com/totorototo/regimen), then the FIT.
+2. The store transfers the bytes to the worker, which keeps them: the comparison runs once
+   the three are in, on the plan.json's model (retrace never defines a plan of its own).
 3. The worker passes a `Uint8Array` to the Zig export, which parses, compares and returns JSON.
 4. The worker posts the parsed object back and the store updates.
 
@@ -113,11 +114,11 @@ zig/
   testdata/          synthetic route.gpx + activity.fit (scripts/make-fixtures.mjs)
 src/
   worker/            analysis.worker.js (owns WASM) + client.js (promise RPC)
-  store/             zustand: files, settings, results, replay
+  store/             zustand: files, results, replay
   components/
     story/           Story.jsx + sections/ (one component per section above)
     map/             RaceMap (Mapbox), Replay, offline SVG fallback
-    setup/, filePicker/, settingsForm/, summary/, …
+    setup/, filePicker/, planModel/, summary/, …
   theme/             Trail Suite design system (tokens from @totorototo/trail-tokens)
   sw.js              Workbox precache → works offline
 e2e/                 Playwright specs (the synthetic fixtures, through the pickers)

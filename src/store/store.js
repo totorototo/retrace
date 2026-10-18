@@ -3,14 +3,6 @@ import { createJSONStorage, devtools, persist } from "zustand/middleware";
 
 import { createWorkerClient } from "../worker/client.js";
 
-// The plan's pace settings (gpxz defaults). Used without a plan.json, and then they must
-// match the ones the plan was made with.
-export const DEFAULT_SETTINGS = {
-  pace_base_s_per_km: 500,
-  fatigue_coefficient: 0.002,
-  life_base_stop_s: 3600,
-};
-
 // A replay belongs to the report it was started on.
 const NO_REPLAY = { replay_s: null, replayPlaying: false };
 
@@ -20,11 +12,12 @@ const MAX_FILE_BYTES = 256 * 1024 * 1024;
 // reports it as words ("Course mismatch"): match either form.
 const PLAN_FILE_ERRORS = {
   CourseMismatch:
-    "This plan.json was made for another GPX, or for this one before it was edited. Open the plan made for this route, or remove it to use the settings below.",
+    "This plan.json was made for another GPX, or for this one before it was edited. Open the plan made for this route in Regimen.",
   PlanStale:
     "This plan.json's times no longer match what its model gives on this route: gpxz has changed since. Rebuild it in Regimen.",
   PlanInvalid: "This plan.json's numbers don't add up. Was it edited by hand?",
   SchemaVersionUnsupported: "This plan.json is from a newer Regimen. Update Retrace.",
+  PlanFileMissing: "Add the route's plan.json to compare the race with it.",
 };
 
 const squash = (text) => String(text).replace(/\s+/g, "").toLowerCase();
@@ -86,41 +79,36 @@ export const createStore = (getClient = createWorkerClient) => {
   // The refresh computing, if any, and whether another was asked for meanwhile.
   let running = null;
   let rerun = false;
-  // The settings the results on screen were computed with: a failed pass falls back to them.
-  let applied = null;
 
   const state = (set, get) => {
     // One pass of refresh(): what the loaded files allow, written unless a newer pass or a
     // reset has made it stale.
+    // The report once the route, its plan.json and the activity are in; until then, what each
+    // file says on its own. The model is the plan.json's, never one of retrace's.
     async function compute() {
-      const { gpx, fit, settings, activity } = get();
+      const { gpx, fit, planFile, activity } = get();
       if (!gpx && !fit) return;
       const current = generation;
       const stale = () => current !== generation || rerun;
-      set({ status: "working", phase: gpx && fit ? "analysing" : "parsing", error: null });
+      const complete = gpx && fit && planFile;
+      set({ status: "working", phase: complete ? "analysing" : "parsing", error: null });
       try {
         let result;
-        if (gpx && fit) {
-          // The plan's summary isn't rerun once both files are in: dropped, not left stale.
-          result = { report: await worker().analyze(settings), plan: null };
-        } else if (gpx) {
-          result = { plan: await worker().summarizePlan(settings), report: null };
+        if (complete) {
+          // The summaries aren't rerun once all three are in: dropped, not left stale.
+          result = { report: await worker().analyze(), plan: null };
         } else {
-          result = { activity: activity ?? (await worker().summarizeActivity()), report: null };
+          result = {
+            plan: gpx ? await worker().summarizePlan() : null,
+            activity: fit ? (activity ?? (await worker().summarizeActivity())) : null,
+            report: null,
+          };
         }
         if (stale()) return;
-        applied = settings;
         set({ ...result, status: "done", phase: null, ...NO_REPLAY });
       } catch (err) {
         if (stale()) return;
-        // why: back to the settings the story on screen was made with, so the pickers never
-        // claim settings whose numbers aren't the ones shown. The error still says what failed.
-        set({
-          status: "error",
-          phase: null,
-          error: errorMessage(err.message),
-          ...(applied && applied !== settings && { settings: applied }),
-        });
+        set({ status: "error", phase: null, error: errorMessage(err.message) });
       }
     }
 
@@ -128,9 +116,8 @@ export const createStore = (getClient = createWorkerClient) => {
       // The files loaded, by name: their bytes live in the worker (loadFiles).
       gpx: null, // { name }
       fit: null,
-      // The plan.json, if one is loaded: its model replaces the settings below.
+      // The route's plan.json from Regimen: the model the race is compared with.
       planFile: null, // { name }
-      settings: DEFAULT_SETTINGS,
       plan: null,
       activity: null,
       report: null,
@@ -195,31 +182,17 @@ export const createStore = (getClient = createWorkerClient) => {
         }
         set({
           ...(gpx && { gpx: { name: gpx.name }, plan: null }),
-          // The activity's summary doesn't depend on the settings: computed once per file.
+          // The activity's summary doesn't depend on the plan: computed once per file.
           ...(fit && { fit: { name: fit.name }, activity: null }),
           ...(planFile && { planFile: { name: planFile.name } }),
         });
         await get().refresh();
       },
 
-      // Back to the pickers' settings.
-      async removePlanFile() {
-        if (!get().planFile) return;
-        generation++;
-        await worker().loadPlanFile(null);
-        set({ planFile: null });
-        await get().refresh();
-      },
-
-      async setSettings(partial) {
-        set({ settings: { ...get().settings, ...partial } });
-        await get().refresh();
-      },
-
       /**
-       * Recomputes what the screen shows: the report once both files are in, else the summary
-       * of the one there is. A refresh asked for while one computes runs once it's done, on
-       * the latest settings, however many were asked for.
+       * Recomputes what the screen shows: the report once the three files are in, else the
+       * summaries of those there are. A refresh asked for while one computes runs once it's done, on
+       * the latest files, however many were asked for.
        * why: the worker can't drop a request it has started (a WASM call runs to the end), so
        * queueing one per click would run every analysis in turn; and its result would be
        * stale, so it isn't written either.
@@ -246,9 +219,8 @@ export const createStore = (getClient = createWorkerClient) => {
 
       reset() {
         generation++;
-        applied = null;
-        // The worker keeps the files until replaced, but a plan.json is optional: left there,
-        // it would be checked against the next route.
+        // The worker keeps the files until replaced, and the next route may come before its
+        // plan.json: left there, the old one would be checked against it.
         // why not awaited: the worker answers in order, so the next load comes after it.
         if (get().planFile)
           worker()
@@ -278,13 +250,10 @@ export const createStore = (getClient = createWorkerClient) => {
         storage: guardedStorage(),
         // why: only the user's choices survive a reload. The files' bytes live in the worker,
         // so a persisted report or file name would point at nothing.
-        partialize: ({ theme, settings }) => ({ theme, settings }),
-        // Settings saved before a new one was added keep its default.
-        merge: (saved, current) => ({
-          ...current,
-          ...saved,
-          settings: { ...current.settings, ...saved?.settings },
-        }),
+        partialize: ({ theme }) => ({ theme }),
+        // why only the theme: pace settings saved by an earlier retrace (from its pickers) must
+        // not come back as a field nothing reads.
+        merge: (saved, current) => ({ ...current, theme: saved?.theme ?? current.theme }),
       }),
       { name: "retrace", enabled: import.meta.env.DEV },
     ),

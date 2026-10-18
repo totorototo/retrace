@@ -1,4 +1,4 @@
-import { createStore, DEFAULT_SETTINGS, errorMessage } from "./store.js";
+import { createStore, errorMessage } from "./store.js";
 
 // A file as the picker hands it over: a name, a size, its bytes.
 const picked = (name, size = 3) => ({
@@ -27,9 +27,10 @@ function deferred() {
 
 const file = (name) => ({ name, bytes: new Uint8Array([1, 2, 3]).buffer });
 
-// Both files in, picked one after the other as the app's flow goes.
-const loadBoth = async (store) => {
+// The three files in, picked one after the other as the app's flow goes.
+const loadAll = async (store) => {
   await store.getState().loadFile("gpx", picked("route.gpx"));
+  await store.getState().loadFile("planFile", picked("route.plan.json"));
   await store.getState().loadFile("fit", picked("activity.fit"));
 };
 
@@ -41,62 +42,58 @@ describe("store", () => {
     const client = fakeClient();
     const store = createStore(() => client);
 
-    await loadBoth(store);
+    await loadAll(store);
 
     expect(client.loadPlan).toHaveBeenCalledWith(expect.any(ArrayBuffer));
+    expect(client.loadPlanFile).toHaveBeenCalledWith(expect.any(ArrayBuffer));
     expect(client.loadActivity).toHaveBeenCalledWith(expect.any(ArrayBuffer));
     expect(store.getState().gpx).toEqual({ name: "route.gpx" });
+    expect(store.getState().planFile).toEqual({ name: "route.plan.json" });
     expect(store.getState().report).toEqual({ checkpoints: [] });
     expect(store.getState().status).toBe("done");
-    expect(client.analyze).toHaveBeenCalledWith(DEFAULT_SETTINGS);
+    // The model is the plan.json's, in the worker: nothing crosses with the request.
+    expect(client.analyze).toHaveBeenCalledWith();
   });
 
-  it("with both files in, computes only the report", async () => {
+  it("with the three files in, computes only the report", async () => {
     const client = fakeClient();
     const store = createStore(() => client);
 
-    await loadBoth(store);
-    // The plan's summary was shown while it was the only file.
+    await loadAll(store);
     client.summarizePlan.mockClear();
-    await store.getState().setSettings({ pace_base_s_per_km: 420 });
+    await store.getState().refresh();
 
     expect(client.summarizePlan).not.toHaveBeenCalled();
-    expect(client.summarizeActivity).not.toHaveBeenCalled();
-    expect(client.analyze).toHaveBeenLastCalledWith({
-      ...DEFAULT_SETTINGS,
-      pace_base_s_per_km: 420,
-    });
+    expect(client.analyze).toHaveBeenCalledTimes(2);
     // The bytes went to the worker once, not with every request.
     expect(client.loadPlan).toHaveBeenCalledTimes(1);
     expect(client.loadActivity).toHaveBeenCalledTimes(1);
   });
 
-  it("one file at a time: the plan's summary, then the report", async () => {
+  it("without the plan.json, shows each file's summary and no report", async () => {
     const client = fakeClient();
     const store = createStore(() => client);
 
     await store.getState().loadFiles({ gpx: file("route.gpx") });
-    expect(store.getState().plan).toEqual({ distance_m: 6000 });
-    expect(store.getState().report).toBeNull();
-    expect(client.analyze).not.toHaveBeenCalled();
-
-    await store.getState().setSettings({ pace_base_s_per_km: 420 });
-    expect(client.summarizePlan).toHaveBeenLastCalledWith({
-      ...DEFAULT_SETTINGS,
-      pace_base_s_per_km: 420,
-    });
-
     await store.getState().loadFiles({ fit: file("activity.fit") });
+
+    expect(client.analyze).not.toHaveBeenCalled();
+    expect(store.getState().plan).toEqual({ distance_m: 6000 });
+    expect(store.getState().activity).toEqual({ samples: 10 });
+    expect(store.getState().report).toBeNull();
+    expect(store.getState().status).toBe("done");
+
+    await store.getState().loadFiles({ planFile: file("route.plan.json") });
     expect(store.getState().report).toEqual({ checkpoints: [] });
-    expect(client.summarizeActivity).not.toHaveBeenCalled();
+    expect(store.getState().plan).toBeNull();
   });
 
-  it("summarizes an activity on its own once, whatever the settings", async () => {
+  it("summarizes an activity on its own once", async () => {
     const client = fakeClient();
     const store = createStore(() => client);
 
     await store.getState().loadFiles({ fit: file("activity.fit") });
-    await store.getState().setSettings({ life_base_stop_s: 1800 });
+    await store.getState().loadFiles({ gpx: file("route.gpx") });
 
     expect(store.getState().activity).toEqual({ samples: 10 });
     expect(client.summarizeActivity).toHaveBeenCalledTimes(1);
@@ -111,6 +108,7 @@ describe("store", () => {
     store.subscribe(({ phase }) => phase !== phases.at(-1) && phases.push(phase));
 
     await store.getState().loadFile("gpx", picked("route.gpx"));
+    await store.getState().loadFile("planFile", picked("route.plan.json"));
     phases.length = 0;
     const loading = store.getState().loadFile("fit", picked("activity.fit"));
     await vi.waitFor(() => expect(store.getState().phase).toBe("analysing"));
@@ -120,25 +118,21 @@ describe("store", () => {
     expect(phases).toEqual(["reading", "analysing", null]);
   });
 
-  it("runs settings picked mid-analysis once, on the latest, and drops the stale result", async () => {
+  it("runs refreshes asked for mid-analysis once, and drops the stale result", async () => {
     const client = fakeClient();
     const store = createStore(() => client);
-    await loadBoth(store);
+    await loadAll(store);
 
     const first = deferred();
     client.analyze.mockReset().mockReturnValueOnce(first.promise);
     client.analyze.mockResolvedValue({ checkpoints: ["latest"] });
-    const done = store.getState().setSettings({ pace_base_s_per_km: 365 });
-    store.getState().setSettings({ pace_base_s_per_km: 330 });
-    store.getState().setSettings({ pace_base_s_per_km: 300 });
+    const done = store.getState().refresh();
+    store.getState().refresh();
+    store.getState().refresh();
     first.resolve({ checkpoints: ["stale"] });
     await done;
 
     expect(client.analyze).toHaveBeenCalledTimes(2);
-    expect(client.analyze).toHaveBeenLastCalledWith({
-      ...DEFAULT_SETTINGS,
-      pace_base_s_per_km: 300,
-    });
     expect(store.getState().report).toEqual({ checkpoints: ["latest"] });
     expect(store.getState().status).toBe("done");
   });
@@ -146,11 +140,11 @@ describe("store", () => {
   it("drops an analysis still running when new files come in", async () => {
     const client = fakeClient();
     const store = createStore(() => client);
-    await loadBoth(store);
+    await loadAll(store);
 
     const stale = deferred();
     client.analyze.mockReturnValueOnce(stale.promise);
-    store.getState().setSettings({ pace_base_s_per_km: 365 });
+    store.getState().refresh();
     const loading = store.getState().loadFiles({ fit: file("other.fit") });
     stale.resolve({ checkpoints: ["old files"] });
     await loading;
@@ -170,56 +164,15 @@ describe("store", () => {
     expect(client.loadActivity).not.toHaveBeenCalled();
   });
 
-  it("falls back to the settings the story was made with when new ones fail", async () => {
-    const client = fakeClient();
-    const store = createStore(() => client);
-    await loadBoth(store);
-
-    client.analyze.mockRejectedValueOnce(new Error("TraceTooShort"));
-    await store.getState().setSettings({ pace_base_s_per_km: 300 });
-
-    expect(store.getState().settings).toEqual(DEFAULT_SETTINGS);
-    expect(store.getState().report).toEqual({ checkpoints: [] });
-    expect(store.getState().status).toBe("error");
-    expect(store.getState().error).toBe("TraceTooShort");
-  });
-
-  it("drops the plan's summary once the activity is in, rather than leave it stale", async () => {
-    const client = fakeClient();
-    const store = createStore(() => client);
-    await store.getState().loadFiles({ gpx: file("route.gpx") });
-    expect(store.getState().plan).toEqual({ distance_m: 6000 });
-
-    await store.getState().loadFiles({ fit: file("activity.fit") });
-    expect(store.getState().plan).toBeNull();
-  });
-
   it("reports worker errors", async () => {
     const client = fakeClient();
     client.analyze.mockRejectedValue(new Error("ActivityNotOnRoute"));
     const store = createStore(() => client);
 
-    await loadBoth(store);
+    await loadAll(store);
 
     expect(store.getState().status).toBe("error");
     expect(store.getState().error).toBe("ActivityNotOnRoute");
-  });
-
-  it("hands a plan.json to the worker, and takes it back on remove", async () => {
-    const client = fakeClient();
-    const store = createStore(() => client);
-    await store.getState().loadFile("gpx", picked("route.gpx"));
-    await store.getState().loadFile("planFile", picked("route.plan.json"));
-
-    expect(client.loadPlanFile).toHaveBeenCalledWith(expect.any(ArrayBuffer));
-    expect(store.getState().planFile).toEqual({ name: "route.plan.json" });
-    // The plan's summary is recomputed with it.
-    expect(client.summarizePlan).toHaveBeenCalledTimes(2);
-
-    await store.getState().removePlanFile();
-    expect(client.loadPlanFile).toHaveBeenLastCalledWith(null);
-    expect(store.getState().planFile).toBeNull();
-    expect(client.summarizePlan).toHaveBeenCalledTimes(3);
   });
 
   it("explains a plan.json for another route", async () => {
@@ -288,25 +241,29 @@ describe("theme", () => {
 });
 
 describe("persistence", () => {
-  it("remembers the settings picked, not the files or what they made", async () => {
+  it("remembers the theme, not the files or what they made", async () => {
     const store = createStore(fakeClient);
-    await loadBoth(store);
-    await store.getState().setSettings({ pace_base_s_per_km: 420 });
+    await loadAll(store);
+    store.getState().toggleTheme();
+    const theme = store.getState().theme;
 
     const next = createStore(fakeClient).getState();
-    expect(next.settings).toEqual({ ...DEFAULT_SETTINGS, pace_base_s_per_km: 420 });
+    expect(next.theme).toBe(theme);
     expect(next.gpx).toBeNull();
+    expect(next.planFile).toBeNull();
     expect(next.report).toBeNull();
   });
 
-  it("keeps a new setting's default over settings saved without it", () => {
+  it("drops the pickers' settings an earlier retrace saved", () => {
     localStorage.setItem(
       "retrace-storage",
-      JSON.stringify({ state: { settings: { pace_base_s_per_km: 420 } }, version: 0 }),
+      JSON.stringify({
+        state: { theme: "dark", settings: { pace_base_s_per_km: 420 } },
+        version: 0,
+      }),
     );
-    expect(createStore(fakeClient).getState().settings).toEqual({
-      ...DEFAULT_SETTINGS,
-      pace_base_s_per_km: 420,
-    });
+    const state = createStore(fakeClient).getState();
+    expect(state.theme).toBe("dark");
+    expect(state).not.toHaveProperty("settings");
   });
 });

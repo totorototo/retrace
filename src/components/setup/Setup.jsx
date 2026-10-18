@@ -4,9 +4,8 @@ import useStore from "../../store/store.js";
 import { MARK_PATH } from "../../theme/mark.js";
 import FilePicker from "../filePicker/FilePicker.jsx";
 import LoadingSpinner from "../loadingSpinner/LoadingSpinner.jsx";
-import { modelText } from "../settingsForm/modelText.js";
-import { profileOf, stopOf } from "../settingsForm/PaceSettings.constants.js";
-import SettingsForm from "../settingsForm/SettingsForm.jsx";
+import { modelText } from "../planModel/modelText.js";
+import PlanModel from "../planModel/PlanModel.jsx";
 import Summary from "../summary/Summary.jsx";
 import style from "./Setup.style.js";
 
@@ -18,18 +17,12 @@ const PHASE_LABELS = {
   analysing: "Comparing the race with the plan…",
 };
 
-// The files and the settings the story is made from, folded to one row once it is there.
+// The files the story is made from, folded to one row once it is there.
 function Recap({ onChange }) {
   const gpx = useStore((state) => state.gpx);
   const fit = useStore((state) => state.fit);
-  const settings = useStore((state) => state.settings);
   const planFile = useStore((state) => state.planFile);
-  const reportSettings = useStore((state) => state.report?.settings);
-  const profile = profileOf(settings);
-  const stop = stopOf(settings);
-  const note = planFile
-    ? `${planFile.name}: ${modelText(reportSettings)}`
-    : `${profile?.label ?? "Custom"} profile · ${stop?.label ?? "custom"} at each LifeBase`;
+  const settings = useStore((state) => state.report?.settings);
 
   return (
     <div className="ledger">
@@ -39,7 +32,9 @@ function Recap({ onChange }) {
           <span className="recap-files">
             {gpx?.name} <span className="recap-vs">vs</span> {fit?.name}
           </span>
-          <p className="row-note">{note}</p>
+          <p className="row-note">
+            {planFile?.name}: {modelText(settings)}
+          </p>
         </div>
         <button type="button" className="chip" onClick={onChange} aria-expanded="false">
           Change
@@ -54,6 +49,7 @@ const Setup = memo(function Setup({ className }) {
   const status = useStore((state) => state.status);
   const phase = useStore((state) => state.phase);
   const error = useStore((state) => state.error);
+  const missingPlan = useStore((state) => state.gpx && state.fit && !state.planFile);
   // why: folded by default once there is a report, so the story's hero opens the page; kept
   // open while changing, since swapping a file drops the report until the new one is in.
   const [changing, setChanging] = useState(false);
@@ -77,8 +73,8 @@ const Setup = memo(function Setup({ className }) {
             <span className="eyebrow">Plan vs actual</span>
             <h2 className="title">Your race, against the plan</h2>
             <p className="lede">
-              The route, its plan.json from Regimen (or the settings it was planned with), and the
-              activity from your watch. Nothing leaves this device.
+              The route, the plan.json you made for it in Regimen, and the activity from your watch.
+              Nothing leaves this device.
             </p>
           </div>
         )}
@@ -88,7 +84,7 @@ const Setup = memo(function Setup({ className }) {
           <>
             <div className="ledger">
               <FilePicker />
-              <SettingsForm />
+              <PlanModel />
             </div>
             {report && (
               <div className="ledger-end">
@@ -108,6 +104,11 @@ const Setup = memo(function Setup({ className }) {
         )}
 
         {working && <LoadingSpinner label={PHASE_LABELS[phase] ?? "Working…"} />}
+        {missingPlan && status === "done" && (
+          <p className="status" data-testid="missing-plan">
+            Add the route&apos;s plan.json from Regimen to compare the race with it.
+          </p>
+        )}
         {status === "error" && (
           <p className="status" role="alert" data-testid="error">
             {error}

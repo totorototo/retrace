@@ -14,7 +14,7 @@ const slice = (value) => ({ string: JSON.stringify(value) });
 describe("analysis worker", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("keeps a loaded file, and passes it with the settings to Zig", async () => {
+  it("keeps a loaded file, and passes it to Zig", async () => {
     summarizePlan.mockResolvedValue(slice({ distance_m: 6000 }));
     const gpx = new Uint8Array([1, 2, 3]).buffer;
 
@@ -25,16 +25,15 @@ describe("analysis worker", () => {
     const response = await handleMessage({
       id: 7,
       type: "summarizePlan",
-      payload: { settings: { pace_base_s_per_km: 450 } },
+      payload: {},
     });
 
     expect(response).toEqual({ id: 7, result: { distance_m: 6000 } });
-    const [bytes, planFile, settings] = summarizePlan.mock.calls[0];
+    const [bytes, planFile] = summarizePlan.mock.calls[0];
     expect(bytes).toBeInstanceOf(Uint8Array);
     expect([...bytes]).toEqual([1, 2, 3]);
-    // No plan.json: an empty one, which tells Zig to use the settings.
+    // No plan.json yet: an empty one, and the route's stats only.
     expect(planFile).toHaveLength(0);
-    expect(settings).toEqual({ pace_base_s_per_km: 450 });
   });
 
   it("asks for a file it hasn't been given", async () => {
@@ -52,22 +51,28 @@ describe("analysis worker", () => {
     const plan = new Uint8Array([123, 125]).buffer;
     await handleMessage({ id: 3, type: "loadPlanFile", payload: { plan } });
 
-    await handleMessage({ id: 4, type: "summarizePlan", payload: { settings: {} } });
-    await handleMessage({ id: 5, type: "analyze", payload: { settings: {} } });
+    await handleMessage({ id: 4, type: "summarizePlan" });
+    await handleMessage({ id: 5, type: "analyze" });
     expect([...summarizePlan.mock.calls[0][1]]).toEqual([123, 125]);
     expect([...analyze.mock.calls[0][2]]).toEqual([123, 125]);
 
     await handleMessage({ id: 6, type: "loadPlanFile", payload: { plan: null } });
-    await handleMessage({ id: 7, type: "summarizePlan", payload: { settings: {} } });
+    await handleMessage({ id: 7, type: "summarizePlan" });
     expect(summarizePlan.mock.calls[1][1]).toHaveLength(0);
+    // And no comparison without it.
+    expect(await handleMessage({ id: 8, type: "analyze" })).toEqual({
+      id: 8,
+      error: "No plan.json loaded",
+    });
   });
 
   it("turns a Zig error into an error response", async () => {
     analyze.mockRejectedValue(new Error("ActivityNotOnRoute"));
     await handleMessage({ id: 1, type: "loadPlan", payload: { gpx: new ArrayBuffer(1) } });
     await handleMessage({ id: 2, type: "loadActivity", payload: { fit: new ArrayBuffer(1) } });
+    await handleMessage({ id: 3, type: "loadPlanFile", payload: { plan: new ArrayBuffer(1) } });
 
-    const response = await handleMessage({ id: 4, type: "analyze", payload: { settings: {} } });
+    const response = await handleMessage({ id: 4, type: "analyze" });
 
     expect(response).toEqual({ id: 4, error: "ActivityNotOnRoute" });
   });

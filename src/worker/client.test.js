@@ -38,13 +38,12 @@ describe("analysis client", () => {
     expect(worker.lastTransfer).toEqual([]);
   });
 
-  it("sends only the settings once the files are loaded", async () => {
-    const worker = fakeWorker(({ id, payload }) => ({ id, result: payload.settings }));
+  it("sends nothing once the files are loaded", async () => {
+    const worker = fakeWorker(({ id, payload }) => ({ id, result: payload }));
     const client = createAnalysisClient(worker);
 
-    await expect(client.analyze({ pace_base_s_per_km: 450 })).resolves.toEqual({
-      pace_base_s_per_km: 450,
-    });
+    await expect(client.analyze()).resolves.toEqual({});
+    expect(worker.lastMessage.type).toBe("analyze");
     expect(worker.lastTransfer).toEqual([]);
   });
 
