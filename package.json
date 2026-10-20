@@ -2,6 +2,7 @@
   "name": "retrace",
   "private": true,
   "version": "0.1.0",
+  "license": "MIT",
   "description": "Trail race analysis: plan vs actual, in the browser (Zig/WASM via Zigar).",
   "type": "module",
   "scripts": {
