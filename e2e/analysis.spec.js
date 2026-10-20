@@ -35,6 +35,27 @@ test("plan vs actual from a GPX, its plan.json and a FIT", async ({ page }) => {
   await expect(page.getByTestId("gap-readout")).toContainText("km 6.0");
 });
 
+// zig/testdata/route.plan.v2.json is the same plan with fueling, as Regimen writes it (v2).
+// A Zig test keeps it byte for byte what gpxz writes. Retrace reads its model and ignores the
+// fueling, so the comparison is the v1 one.
+test("a v2 plan.json with fueling, from Regimen, compares the same", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("gpx-input").setInputFiles(fixture("route.gpx"));
+  await page.getByTestId("planFile-input").setInputFiles(fixture("route.plan.v2.json"));
+  await expect(page.getByTestId("error")).toHaveCount(0);
+  await expect(page.getByTestId("planFile-name")).toHaveText("route.plan.v2.json");
+  await expect(page.getByTestId("plan-model")).toHaveText(
+    "7:30/km flat · fatigue 0.002 · 0h10 at each LifeBase",
+  );
+
+  await page.getByTestId("fit-input").setInputFiles(fixture("activity.fit"));
+  const rows = page.getByTestId("checkpoints").getByRole("listitem");
+  await expect(rows).toHaveCount(3);
+  await expect(rows.nth(1)).toContainText("Refuge");
+  await expect(page.getByTestId("total-actual")).toHaveText("0h59");
+  await expect(page.getByTestId("gap-readout")).toContainText("km 6.0");
+});
+
 test("without the plan.json, the race isn't compared until it is in", async ({ page }) => {
   await page.goto("/");
   await page.getByTestId("gpx-input").setInputFiles(fixture("route.gpx"));

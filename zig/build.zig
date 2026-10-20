@@ -31,6 +31,9 @@ pub fn build(b: *std.Build) void {
     retrace.addAnonymousImport("fixture.plan.json", .{
         .root_source_file = b.path("testdata/route.plan.json"),
     });
+    retrace.addAnonymousImport("fixture.plan.v2.json", .{
+        .root_source_file = b.path("testdata/route.plan.v2.json"),
+    });
 
     const tests = b.addTest(.{ .root_module = retrace });
     const test_step = b.step("test", "Run retrace's Zig tests");
