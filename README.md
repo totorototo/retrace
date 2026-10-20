@@ -139,3 +139,9 @@ zig fetch --save=debriefz git+https://github.com/totorototo/debriefz#<commit>
 ```
 
 Keep gpxz and fitz on the commits debriefz pins, so they share one set of types.
+
+## License
+
+MIT, see `LICENSE`. The WASM build includes fitz's FIT profile tables, which stay under Garmin's
+FIT Protocol License. That license forbids putting them under a copyleft license (its §2.d), so
+Retrace can't move to the GPL or AGPL while it bundles fitz.
