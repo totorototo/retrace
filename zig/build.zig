@@ -28,6 +28,9 @@ pub fn build(b: *std.Build) void {
     // are named imports (same approach as debriefz).
     retrace.addAnonymousImport("fixture.gpx", .{ .root_source_file = b.path("testdata/route.gpx") });
     retrace.addAnonymousImport("fixture.fit", .{ .root_source_file = b.path("testdata/activity.fit") });
+    retrace.addAnonymousImport("fixture.plan.json", .{
+        .root_source_file = b.path("testdata/route.plan.json"),
+    });
 
     const tests = b.addTest(.{ .root_module = retrace });
     const test_step = b.step("test", "Run retrace's Zig tests");
