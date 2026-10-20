@@ -271,17 +271,49 @@ const testing = std.testing;
 const fixture_gpx = @embedFile("fixture.gpx");
 const fixture_fit = @embedFile("fixture.fit");
 
-/// plan.json for the fixture route with `settings`, as gpxz writes it (Regimen's file).
+/// The plan.json the e2e tests pick: a v1 file, written before gpxz added fueling.
+const fixture_plan_v1 = @embedFile("fixture.plan.json");
+
+/// plan.json for the fixture route with `settings`, as gpxz writes it (Regimen's file), with
+/// fueling at gpxz's default supplies when `fueling_planned`.
 fn plan_file_test(settings: *const gpxz.Settings) ![]u8 {
+    return plan_file_fueling_test(settings, false);
+}
+
+fn plan_file_fueling_test(settings: *const gpxz.Settings, fueling_planned: bool) ![]u8 {
     var data = try gpxz.parse(testing.allocator, fixture_gpx, settings);
     defer data.deinit(testing.allocator);
+    const entries = data.plan.?;
+
+    const supplies = try testing.allocator.alloc(gpxz.fueling.Supply, entries.len);
+    defer testing.allocator.free(supplies);
+    gpxz.fueling.supplies_default(entries, supplies);
+    const times = try testing.allocator.alloc(gpxz.fueling.Times, entries.len);
+    defer testing.allocator.free(times);
+    gpxz.fueling.times_from_entries(entries, times);
+    const carry = try testing.allocator.alloc(?gpxz.fueling.Carry, entries.len);
+    defer testing.allocator.free(carry);
+    const fuel_plan: gpxz.fueling.FuelPlan = .{
+        .fueling = .{
+            .carbs_g_per_h = 60,
+            .fluid_ml_per_h = 500,
+            .sodium_mg_per_h = 400,
+            .reserve_s = 600,
+            .supplies = supplies,
+        },
+        .carry = carry,
+    };
+    gpxz.fueling.carry_compute(times, &fuel_plan.fueling, carry);
+
     const plan = gpxz.plan_build(
         fixture_gpx,
         data.metadata.name,
         data.trace.distance_m,
-        data.plan.?,
+        entries,
         settings,
+        if (fueling_planned) &fuel_plan else null,
     );
+    assert((plan.model.fueling != null) == fueling_planned);
     var out: std.Io.Writer.Allocating = .init(testing.allocator);
     errdefer out.deinit();
     try gpxz.plan_write(&out.writer, &plan);
@@ -357,6 +389,56 @@ test "analyze: a report with every checkpoint, on the plan.json's model" {
     // The series the story's profile and map draw.
     try testing.expect(root.get("profile").?.array.items.len >= 2);
     try testing.expect(root.get("track").?.array.items.len >= 2);
+}
+
+test "analyze: Regimen's v2 plan.json with fueling, on the same model as without" {
+    const settings: gpxz.Settings = .{ .pace_base_s_per_km = 450, .life_base_stop_s = 600 };
+    const plan_bytes = try plan_file_fueling_test(&settings, true);
+    defer testing.allocator.free(plan_bytes);
+    try testing.expect(std.mem.indexOf(u8, plan_bytes, "\"schema_version\": 2") != null);
+    try testing.expect(std.mem.indexOf(u8, plan_bytes, "\"carbs_g_per_h\": 60") != null);
+
+    const inputs: Inputs = .{ .gpx = fixture_gpx, .fit = fixture_fit, .plan = plan_bytes };
+    const json = try analysis_json(testing.allocator, testing.allocator, &inputs);
+    defer testing.allocator.free(json);
+    const parsed = try json_parse(json);
+    defer parsed.deinit();
+    const root = parsed.value.object;
+    try testing.expect(root.get("checkpoints").?.array.items.len >= 2);
+    try testing.expectEqual(@as(f64, 450), settings_number(root, "pace_base_s_per_km"));
+    try testing.expectEqual(@as(f64, 600), settings_number(root, "life_base_stop_s"));
+}
+
+test "analyze: the v1 fixture plan.json, from before fueling, still compares" {
+    try testing.expect(std.mem.indexOf(u8, fixture_plan_v1, "\"schema_version\": 1") != null);
+    const inputs: Inputs = .{ .gpx = fixture_gpx, .fit = fixture_fit, .plan = fixture_plan_v1 };
+    const json = try analysis_json(testing.allocator, testing.allocator, &inputs);
+    defer testing.allocator.free(json);
+    const parsed = try json_parse(json);
+    defer parsed.deinit();
+    const root = parsed.value.object;
+    try testing.expect(root.get("checkpoints").?.array.items.len >= 2);
+    // 7:30/km and a 10 min stop, as e2e/analysis.spec.js reads it.
+    try testing.expectEqual(@as(f64, 450), settings_number(root, "pace_base_s_per_km"));
+    try testing.expectEqual(@as(f64, 600), settings_number(root, "life_base_stop_s"));
+}
+
+test "summarizePlan: a plan.json newer than gpxz reads is refused" {
+    const plan_bytes = try plan_file_test(&.{});
+    defer testing.allocator.free(plan_bytes);
+    const v3 = try std.mem.replaceOwned(
+        u8,
+        testing.allocator,
+        plan_bytes,
+        "\"schema_version\": 2",
+        "\"schema_version\": 3",
+    );
+    defer testing.allocator.free(v3);
+    try testing.expect(!std.mem.eql(u8, v3, plan_bytes));
+    try testing.expectError(
+        error.SchemaVersionUnsupported,
+        plan_json(testing.allocator, testing.allocator, fixture_gpx, v3),
+    );
 }
 
 test "analyze: no plan.json is PlanFileMissing, never a model of retrace's own" {
