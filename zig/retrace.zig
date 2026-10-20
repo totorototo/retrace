@@ -274,6 +274,10 @@ const fixture_fit = @embedFile("fixture.fit");
 /// The plan.json the e2e tests pick: a v1 file, written before gpxz added fueling.
 const fixture_plan_v1 = @embedFile("fixture.plan.json");
 
+/// The v2 plan.json the e2e tests pick: fueling planned, as Regimen writes it. The test below
+/// keeps it byte for byte what gpxz writes, so the browser test can't pass on a stale file.
+const fixture_plan_v2 = @embedFile("fixture.plan.v2.json");
+
 /// plan.json for the fixture route with `settings`, as gpxz writes it (Regimen's file), with
 /// fueling at gpxz's default supplies when `fueling_planned`.
 fn plan_file_test(settings: *const gpxz.Settings) ![]u8 {
@@ -407,6 +411,16 @@ test "analyze: Regimen's v2 plan.json with fueling, on the same model as without
     try testing.expect(root.get("checkpoints").?.array.items.len >= 2);
     try testing.expectEqual(@as(f64, 450), settings_number(root, "pace_base_s_per_km"));
     try testing.expectEqual(@as(f64, 600), settings_number(root, "life_base_stop_s"));
+}
+
+test "the v2 fixture plan.json is what gpxz writes with fueling" {
+    const settings: gpxz.Settings = .{ .pace_base_s_per_km = 450, .life_base_stop_s = 600 };
+    const plan_bytes = try plan_file_fueling_test(&settings, true);
+    defer testing.allocator.free(plan_bytes);
+    try testing.expect(std.mem.indexOf(u8, fixture_plan_v2, "\"schema_version\": 2") != null);
+    try testing.expect(std.mem.indexOf(u8, fixture_plan_v2, "\"fueling\": {") != null);
+    // A mismatch prints both: regenerate testdata/route.plan.v2.json from the expected bytes.
+    try testing.expectEqualStrings(plan_bytes, fixture_plan_v2);
 }
 
 test "analyze: the v1 fixture plan.json, from before fueling, still compares" {

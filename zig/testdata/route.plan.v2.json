@@ -1,0 +1,86 @@
+{
+  "schema_version": 2,
+  "course": {
+    "name": "Synthetic 6K",
+    "sha256": "3bb72e9ecaad31d63c5ea7241d7dc5e1f4c4608c43731d8169e710ef874a22ea",
+    "distance_m": 5993.261992737858
+  },
+  "model": {
+    "pace_base_s_per_km": 450,
+    "fatigue_coefficient": 0.002,
+    "life_base_stop_s": 600,
+    "fueling": {
+      "carbs_g_per_h": 60,
+      "fluid_ml_per_h": 500,
+      "sodium_mg_per_h": 400,
+      "reserve_s": 600,
+      "supplies": [
+        "full",
+        "none",
+        "none"
+      ]
+    }
+  },
+  "entries": [
+    {
+      "name": "Start",
+      "type_name": "Start",
+      "index": 0,
+      "latitude": 42.73,
+      "longitude": -0.01,
+      "elevation_m": 1400,
+      "distance_m": 0,
+      "elevation_gain_m": 0,
+      "elevation_loss_m": 0,
+      "duration_s_arrival": 0,
+      "stop_s": 0,
+      "duration_s_departure": 0,
+      "epoch_s_arrival": 1780725600,
+      "epoch_s_cutoff": 1780725600,
+      "margin_s": 0
+    },
+    {
+      "name": "Refuge",
+      "type_name": "TimeBarrier",
+      "index": 150,
+      "latitude": 42.7569493,
+      "longitude": -0.01,
+      "elevation_m": 1650,
+      "distance_m": 2996.6254366230723,
+      "elevation_gain_m": 247.79999999999995,
+      "elevation_loss_m": 0,
+      "duration_s_arrival": 2100.471705073209,
+      "stop_s": 0,
+      "duration_s_departure": 2100.471705073209,
+      "epoch_s_arrival": 1780727700,
+      "epoch_s_cutoff": 1780732800,
+      "margin_s": 5099.528294926791
+    },
+    {
+      "name": "Finish",
+      "type_name": "Arrival",
+      "index": 300,
+      "latitude": 42.7838987,
+      "longitude": -0.01,
+      "elevation_m": 1400,
+      "distance_m": 5993.261992737858,
+      "elevation_gain_m": 247.79999999999995,
+      "elevation_loss_m": 245.5999999999999,
+      "duration_s_arrival": 3012.207956437043,
+      "stop_s": 0,
+      "duration_s_departure": 3012.207956437043,
+      "epoch_s_arrival": 1780728612,
+      "epoch_s_cutoff": 1780740000,
+      "margin_s": 11387.792043562957
+    }
+  ],
+  "carry": [
+    {
+      "fluid_ml": 502,
+      "carbs_g": 61,
+      "sodium_mg": 402
+    },
+    null,
+    null
+  ]
+}
