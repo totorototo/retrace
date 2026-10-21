@@ -13,8 +13,8 @@
             .hash = "fitz-0.2.0-K1sZO2WKCAD1Blvupxjghf4OmFLYetqSrGS8jHZe-Fkf",
         },
         .debriefz = .{
-            .url = "git+https://github.com/totorototo/debriefz#45388644740fcf138e35a01069f8364c7cd0c89f",
-            .hash = "debriefz-0.1.0-6BJ5Db_2AgCD9S1kYlA0S0SQBxlNTdD-oBZxj1ABq8sc",
+            .url = "git+https://github.com/totorototo/debriefz?ref=v0.2.0#2757ae086c0462c5dff2396cefa813afa5ea7a5e",
+            .hash = "debriefz-0.2.0-6BJ5Db_2AgCCt6YGLGaUiMaR_IF1gqh1bVO8RNFyAR8w",
         },
     },
     .paths = .{

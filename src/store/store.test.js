@@ -200,6 +200,10 @@ describe("errorMessage", () => {
     expect(errorMessage("PlanStale")).toMatch(/Rebuild it in Regimen/);
     expect(errorMessage("Plan invalid")).toMatch(/edited by hand/);
     expect(errorMessage("SchemaVersionUnsupported")).toMatch(/newer Regimen/);
+    // gpxz's caps on the route, rather than the raw error name.
+    expect(errorMessage("File too large")).toMatch(/over 64 MB/);
+    expect(errorMessage("PointsTooMany")).toMatch(/million points/);
+    expect(errorMessage("Waypoints too many")).toMatch(/10,000 waypoints/);
   });
 
   it("passes any other error through", () => {
