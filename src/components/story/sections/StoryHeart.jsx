@@ -10,6 +10,7 @@ import {
   heartHalves,
   heartPaceSeries,
   heartQuadrant,
+  held,
   isOffTrace,
   profileAt,
   sectionSpans,
@@ -29,6 +30,30 @@ const percent = (value) =>
   `${value > 0 ? "+" : value < 0 ? "−" : "±"}${Math.abs(Math.round(value * 100))}%`;
 
 /**
+ * Which way a figure went from the first half to the second, in words. Within the quadrants'
+ * threshold it held, whichever way the last digit moved: "slowed from 1.10× to 1.10×" says
+ * a change the verdict next to it doesn't count.
+ */
+function Move({ from, to, show, up, down }) {
+  if (held(from, to)) {
+    return show(from) === show(to) ? (
+      <>
+        held at <strong>{show(to)}</strong>
+      </>
+    ) : (
+      <>
+        held, from <strong>{show(from)}</strong> to <strong>{show(to)}</strong>
+      </>
+    );
+  }
+  return (
+    <>
+      {to > from ? up : down} from <strong>{show(from)}</strong> to <strong>{show(to)}</strong>
+    </>
+  );
+}
+
+/**
  * The second half against the first: the pace and the heart rate, which way they went, and
  * what the plan cost in heartbeats as a result.
  * why: the cost alone can hide its causes: a pace 14% slower at a heart rate 16% lower costs
@@ -42,10 +67,9 @@ function Lede({ halves }) {
   return (
     <p className="lede">
       From the first half to the second, the pace{" "}
-      {second.pace > first.pace ? "slowed" : "quickened"} from <strong>{ratio(first.pace)}</strong>{" "}
-      to <strong>{ratio(second.pace)}</strong> the plan while the heart rate{" "}
-      {second.bpm > first.bpm ? "rose" : "fell"} from <strong>{bpm(first.bpm)}</strong> to{" "}
-      <strong>{bpm(second.bpm)}</strong> bpm
+      <Move from={first.pace} to={second.pace} show={ratio} up="slowed" down="quickened" /> the plan
+      while the heart rate{" "}
+      <Move from={first.bpm} to={second.bpm} show={bpm} up="rose" down="fell" /> bpm
       {quadrant !== "steady" && (
         <>
           : <strong>{HEART_VERDICTS[quadrant]}</strong>

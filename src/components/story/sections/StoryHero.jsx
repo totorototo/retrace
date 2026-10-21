@@ -93,6 +93,19 @@ function Waterfall({ steps, total_s }) {
   );
 }
 
+/** A figure by half: "1.10× → 1.25×", or "held at 1.10×" when both halves print the same. */
+function Halves({ first, second, show }) {
+  return show(first) === show(second) ? (
+    <>
+      held at <strong>{show(second)}</strong>
+    </>
+  ) : (
+    <>
+      <strong>{show(first)}</strong> → <strong>{show(second)}</strong>
+    </>
+  );
+}
+
 /**
  * The story in short, before its sections: where the delta came from, then the pace, the
  * heart, the night and what to plan next time, each linked to the section that tells it in full.
@@ -103,8 +116,7 @@ function InShort({ report }) {
   if (fade) {
     facts.push(
       <li key="fade">
-        Pace <strong>{times(fade.first)}</strong> → <strong>{times(fade.second)}</strong> the plan
-        by half
+        Pace <Halves first={fade.first} second={fade.second} show={times} /> the plan by half
         {fade.slowest && (
           <>
             ; slowest into {fade.slowest.to}, <strong>{times(fade.slowest.pace_ratio)}</strong>
@@ -117,8 +129,8 @@ function InShort({ report }) {
   if (heart) {
     facts.push(
       <li key="heart">
-        Heart rate <strong>{Math.round(heart.first.bpm)}</strong> →{" "}
-        <strong>{Math.round(heart.second.bpm)}</strong> bpm by half
+        Heart rate <Halves first={heart.first.bpm} second={heart.second.bpm} show={Math.round} />{" "}
+        bpm by half
         {heart.quadrant !== "steady" && (
           <>
             : <strong>{HEART_VERDICTS[heart.quadrant]}</strong>

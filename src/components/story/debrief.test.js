@@ -9,6 +9,7 @@ import {
   heartHalves,
   heartPaceSeries,
   heartQuadrant,
+  held,
   isOffTrace,
   paceHalves,
   profileAt,
@@ -309,13 +310,23 @@ describe("heartHalves", () => {
   });
 });
 
+describe("held", () => {
+  it("is a change within 5% either way", () => {
+    expect(held(1.1, 1.104)).toBe(true);
+    expect(held(124, 120)).toBe(true);
+    expect(held(124, 104)).toBe(false);
+    expect(held(1.5, 1.25)).toBe(false);
+  });
+});
+
 describe("heartQuadrant", () => {
   const half = (bpm, pace) => ({ bpm, pace });
   it("names which way the second half went", () => {
     expect(heartQuadrant(half(130, 1), half(140, 1))).toBe("drift");
     expect(heartQuadrant(half(130, 1), half(140, 1.2))).toBe("overreach");
     expect(heartQuadrant(half(130, 1), half(110, 1.2))).toBe("legs");
-    expect(heartQuadrant(half(130, 1), half(110, 1))).toBe("efficient");
+    expect(heartQuadrant(half(130, 1), half(110, 1))).toBe("suppressed");
+    expect(heartQuadrant(half(130, 1), half(110, 0.9))).toBe("efficient");
     expect(heartQuadrant(half(130, 1), half(132, 1.02))).toBe("steady");
     expect(heartQuadrant(half(130, 1), null)).toBeNull();
   });

@@ -386,13 +386,20 @@ export function heartHalves(spans, distance_m) {
 // Within this share either way, the heart rate or the pace held.
 const HELD = 0.05;
 
+/** Whether a figure held from the first half to the second, by the quadrants' measure. */
+export function held(first, second) {
+  return Math.abs(second / first - 1) < HELD;
+}
+
 /**
  * What the second half did against the first, on the heart rate and the pace: the four ways
  * a long race fades. Null without both halves.
  * - drift: the heart rate rose, the pace held (heat, dehydration);
  * - overreach: the heart rate rose and the pace slowed;
  * - legs: the heart rate fell and the pace slowed (the muscles, or the brain, held back);
- * - efficient: the heart rate fell, the pace held;
+ * - suppressed: the heart rate fell, the pace held. Late in a long race that is mostly
+ *   fatigue or lost sleep keeping the heart rate down, rarely fitness gained in a day;
+ * - efficient: the heart rate fell and the pace quickened: more for fewer beats;
  * - steady: both held.
  */
 export function heartQuadrant(first, second) {
@@ -401,7 +408,8 @@ export function heartQuadrant(first, second) {
   const pace = second.pace / first.pace - 1;
   if (Math.abs(heart) < HELD && Math.abs(pace) < HELD) return "steady";
   if (heart >= 0) return pace >= HELD ? "overreach" : "drift";
-  return pace >= HELD ? "legs" : "efficient";
+  if (pace >= HELD) return "legs";
+  return pace <= -HELD ? "efficient" : "suppressed";
 }
 
 // What the second half did against the first, in words: the heart section's lede and the
@@ -410,5 +418,6 @@ export const HEART_VERDICTS = {
   drift: "the heart drifting",
   overreach: "overreaching",
   legs: "the legs tiring, not the heart",
+  suppressed: "the heart held down, more often by fatigue than by fitness",
   efficient: "more efficient",
 };
