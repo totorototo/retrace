@@ -31,6 +31,9 @@ pub fn build(b: *std.Build) void {
     retrace.addAnonymousImport("fixture.plan.json", .{
         .root_source_file = b.path("testdata/route.plan.json"),
     });
+    retrace.addAnonymousImport("fixture.coros.fit", .{
+        .root_source_file = b.path("testdata/coros.fit"),
+    });
     retrace.addAnonymousImport("fixture.plan.v2.json", .{
         .root_source_file = b.path("testdata/route.plan.v2.json"),
     });
