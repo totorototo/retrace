@@ -217,6 +217,28 @@ it("follows the heart rate and the pace along the route, against the first half"
   expect(readout).toHaveTextContent("Start → Aid");
 });
 
+it("says a pace that held held, and doesn't call a lower heart rate fitness", () => {
+  // The second half at the first's 1.50x the plan, on a heart rate 17% lower.
+  useStore.setState({
+    report: {
+      ...report,
+      sections: [
+        report.sections[0],
+        { ...report.sections[1], moving_s_actual: 1800, heart_rate_bpm_average: 125 },
+      ],
+    },
+  });
+  renderStory();
+  expect(screen.getByText(/From the first half to the second/)).toHaveTextContent(
+    "From the first half to the second, the pace held at 1.50× the plan while the heart rate " +
+      "fell from 150 to 125 bpm: the heart held down, more often by fatigue than by fitness. " +
+      "Each planned minute cost 17% fewer heartbeats.",
+  );
+  expect(screen.getByText(/the plan\s+by half/)).toHaveTextContent(
+    "Pace held at 1.50× the plan by half",
+  );
+});
+
 it("says when the recording has no heart rate", () => {
   useStore.setState({
     report: {
