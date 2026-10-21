@@ -186,9 +186,12 @@ fn activity_json(
 }
 
 /// Counts data messages by type with fitz directly: debriefz only keeps records and the
-/// session, and this shows what else the device wrote.
+/// session, and this shows what else the device wrote. Lenient, as debriefz reads the file: a
+/// Coros field of the wrong size must not refuse a file debriefz has just read.
 fn messages_count(allocator: std.mem.Allocator, fit_bytes: []const u8) ![]MessageCount {
-    var parser = try fitz.Parser.init(allocator, fit_bytes);
+    var parser = try fitz.Parser.init_options(allocator, fit_bytes, .{
+        .field_size_mismatch = .bytes,
+    });
     defer parser.deinit();
 
     var counts: std.ArrayList(MessageCount) = .empty;
@@ -270,6 +273,8 @@ fn json_stringify(allocator: std.mem.Allocator, value: anytype) ![]u8 {
 const testing = std.testing;
 const fixture_gpx = @embedFile("fixture.gpx");
 const fixture_fit = @embedFile("fixture.fit");
+/// From python-fitparse's tests (MIT), through fitz: a Coros file with a mis-sized field.
+const fixture_coros_fit = @embedFile("fixture.coros.fit");
 
 /// The plan.json the e2e tests pick: a v1 file, written before gpxz added fueling.
 const fixture_plan_v1 = @embedFile("fixture.plan.json");
@@ -453,6 +458,15 @@ test "summarizePlan: a plan.json newer than gpxz reads is refused" {
         error.SchemaVersionUnsupported,
         plan_json(testing.allocator, testing.allocator, fixture_gpx, v3),
     );
+}
+
+test "messages_count: a Coros file with a mis-sized field reads, as fitparse counts it" {
+    const counts = try messages_count(testing.allocator, fixture_coros_fit);
+    defer testing.allocator.free(counts);
+    var total: u32 = 0;
+    for (counts) |count| total += count.count;
+    // fitparse's and the FIT SDK's message count for this file.
+    try testing.expectEqual(@as(u32, 11293), total);
 }
 
 test "analyze: no plan.json is PlanFileMissing, never a model of retrace's own" {

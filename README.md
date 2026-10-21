@@ -111,7 +111,8 @@ zig/
   build.extra.zig    Zigar hook: hands those modules to the WASM build
   build.zig          native build for `zig build test` (Zigar ignores it)
   retrace.zig        the JS API: summarizePlan, summarizeActivity, analyze → JSON
-  testdata/          synthetic route.gpx + activity.fit (scripts/make-fixtures.mjs)
+  testdata/          synthetic route.gpx + activity.fit (scripts/make-fixtures.mjs), their plan.json
+                     v1 and v2, and coros.fit (python-fitparse's tests, MIT): a mis-sized field
 src/
   worker/            analysis.worker.js (owns WASM) + client.js (promise RPC)
   store/             zustand: files, results, replay
