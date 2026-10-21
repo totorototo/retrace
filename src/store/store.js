@@ -18,6 +18,12 @@ const PLAN_FILE_ERRORS = {
   PlanInvalid: "This plan.json's numbers don't add up. Was it edited by hand?",
   SchemaVersionUnsupported: "This plan.json is from a newer Regimen. Update Retrace.",
   PlanFileMissing: "Add the route's plan.json to compare the race with it.",
+  // gpxz's caps on the route (gpx.zig bytes_max, points_max, waypoints_max).
+  FileTooLarge: "The file is over 64 MB, more than any race route needs.",
+  PointsTooMany:
+    "The track has over a million points, far more than any race needs. Simplify it and export it again.",
+  WaypointsTooMany:
+    "The file has over 10,000 waypoints, more than any race has. Is it a course, or a waypoint library?",
 };
 
 const squash = (text) => String(text).replace(/\s+/g, "").toLowerCase();
