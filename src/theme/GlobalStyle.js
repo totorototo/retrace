@@ -27,13 +27,28 @@ const GlobalStyle = createGlobalStyle`
     padding: 0;
   }
 
+  /* A column: the footer at the window's foot on a short page, as the other apps'.
+     why flex: a flex item's margins stay inside it, so the masthead's top margin no longer
+     runs through to the body and pushes the page 20px past the window. */
   body {
+    display: flex;
+    flex-direction: column;
     min-height: 100vh;
     min-width: 320px;
     background-color: var(--color-background);
     padding:
       env(safe-area-inset-top) env(safe-area-inset-right)
       env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  #root {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  main {
+    flex: 1;
   }
 
   :focus-visible {
