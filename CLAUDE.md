@@ -18,7 +18,7 @@ React 19 + styled-components + zustand, Vite 8, Vitest, Playwright, Zig 0.17 via
 
 - Only the worker imports `.zig` files. Unit tests mock them (`vi.mock`); vitest.config.js
   stubs `.zig` loads so Vitest never compiles Zig. The real WASM path is covered by e2e.
-- The plan's model comes from the route's plan.json only (Setup's "Plan" row, made in
+- The plan's model comes from the route's plan.json only (Setup's "Open plan.json" row, made in
   Regimen or with `gpxz --plan`): retrace never defines a plan, so it has no pace pickers and
   persists no settings. `retrace.zig` reads the file with debriefz's `plan_file`, refuses it
   for another route (`CourseMismatch`) or when gpxz no longer reproduces it (`PlanStale`), and

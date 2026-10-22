@@ -82,10 +82,10 @@ const Setup = memo(function Setup({ className }) {
         {/* The rows stay while a file is read: the loader goes below them. */}
         {open ? (
           <>
-            <div className="ledger">
+            <div className="choices">
               <FilePicker />
-              <PlanModel />
             </div>
+            <PlanModel />
             {report && (
               <div className="ledger-end">
                 <button
