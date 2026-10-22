@@ -46,8 +46,9 @@ const style = (Component) => styled(Component)`
     }
   }
 
+  /* The suite's start: the eyebrow as far under the masthead as in the other apps. */
   .intro {
-    padding: clamp(3rem, 10vh, 5rem) 0 0.5rem;
+    padding: clamp(3rem, 12vh, 6rem) 0 0.5rem;
   }
 
   .eyebrow {
@@ -58,7 +59,7 @@ const style = (Component) => styled(Component)`
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: color-mix(in srgb, var(--color-text) 85%, transparent);
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
   }
 
   .title {
@@ -68,7 +69,7 @@ const style = (Component) => styled(Component)`
     letter-spacing: -0.03em;
     line-height: 1;
     color: var(--color-text);
-    margin: 0 0 1.5rem;
+    margin: 0 0 1rem;
     max-width: 16ch;
   }
 
