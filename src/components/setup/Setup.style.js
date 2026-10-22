@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 // On the story's measure and gutters (StorySection, StoryHero), so the setup and the story
 // share a left edge. The rows are styled here, as StorySection styles its sections' charts:
-// FilePicker and SettingsForm only emit the class names.
+// FilePicker and PlanModel only emit the class names.
 const style = (Component) => styled(Component)`
   padding: 0 var(--gutter);
 
@@ -74,9 +74,77 @@ const style = (Component) => styled(Component)`
   }
 
   .lede {
-    font-size: var(--font-size-medium);
-    color: var(--color-text-faint);
+    color: var(--color-text-muted);
     max-width: 38ch;
+  }
+
+  /* The files, as Terminus's and Waymark's start: one narrow list of rows, each an icon and
+     what it opens, the file's name once it is in. */
+  .choices {
+    max-width: 28rem;
+    /* 2.5rem under the lede, with the intro's 0.5rem. */
+    margin-top: 2rem;
+    border-top: 1px solid var(--color-hairline);
+  }
+
+  .choice {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    min-height: 44px;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-hairline);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-bold);
+    line-height: normal;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: color var(--transition-base);
+    -webkit-tap-highlight-color: transparent;
+
+    svg {
+      flex: none;
+    }
+
+    &:hover {
+      color: var(--color-primary-text);
+    }
+
+    &:active {
+      opacity: 0.7;
+    }
+  }
+
+  .choice-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The plan's model under the list, in the start's note type. */
+  .model {
+    max-width: 40ch;
+    margin-top: 1.25rem;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-tiny);
+    line-height: 1.5;
+    color: var(--color-text-muted);
+
+    [data-testid="plan-model"] {
+      color: var(--color-text);
+    }
+  }
+
+  .model-label {
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .model-source {
+    display: block;
   }
 
   .ledger {
@@ -95,16 +163,6 @@ const style = (Component) => styled(Component)`
     position: relative;
   }
 
-  /* A file row is one big label: hovering anywhere on it is hovering its chip. */
-  label.row {
-    cursor: pointer;
-
-    &:hover .chip {
-      border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
-      color: var(--color-primary-text);
-    }
-  }
-
   .row-label {
     font-family: var(--font-family-mono);
     font-size: var(--font-size-tiny);
@@ -112,11 +170,6 @@ const style = (Component) => styled(Component)`
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: color-mix(in srgb, var(--color-text) 85%, transparent);
-  }
-
-  /* A row whose body is wide (the pickers) gives it the action column too. */
-  .row-body--wide {
-    grid-column: 2 / -1;
   }
 
   .ledger-end {
@@ -167,13 +220,6 @@ const style = (Component) => styled(Component)`
       border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
       color: var(--color-primary-text);
     }
-
-    /* The picked file: the primary text, which holds its meaning in both themes (the
-       secondary turns from sage to orange). */
-    &.active {
-      border-color: var(--color-primary-text);
-      color: var(--color-primary-text);
-    }
   }
 
   .status {
@@ -194,10 +240,6 @@ const style = (Component) => styled(Component)`
     }
 
     .row-label {
-      grid-column: 1 / -1;
-    }
-
-    .row-body--wide {
       grid-column: 1 / -1;
     }
   }

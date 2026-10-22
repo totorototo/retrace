@@ -22,7 +22,7 @@ it("opens on the intro and the three files, before there is a report", () => {
   expect(screen.getByRole("heading", { name: "Your race, against the plan" })).toBeInTheDocument();
   expect(screen.getByTestId("gpx-input")).toBeInTheDocument();
   expect(screen.getByTestId("planFile-input")).toBeInTheDocument();
-  expect(screen.getByTestId("planFile-name")).toHaveTextContent("plan.json from Regimen");
+  expect(screen.getByTestId("planFile-name")).toHaveTextContent("Open plan.json");
   expect(screen.getByTestId("fit-input")).toBeInTheDocument();
   // Nothing to pick: the model is the plan.json's.
   expect(screen.queryByRole("radiogroup")).toBeNull();
