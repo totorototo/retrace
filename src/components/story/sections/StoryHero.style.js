@@ -6,8 +6,8 @@ const style = (Component) => styled(Component)`
   flex-direction: column;
   min-height: 70vh;
   justify-content: center;
-  padding: clamp(3rem, 10vh, 6rem) clamp(1.5rem, 6vw, 4rem);
-  max-width: calc(46rem + 2 * clamp(1.5rem, 6vw, 4rem));
+  padding: clamp(3rem, 10vh, 6rem) var(--gutter);
+  max-width: calc(var(--measure) + 2 * var(--gutter));
   margin: 0 auto;
 
   .eyebrow {
