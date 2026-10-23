@@ -4,7 +4,7 @@ import styled from "styled-components";
 export const Cards = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: clamp(1.5rem, 5vw, 3rem);
+  gap: var(--stat-gap);
 `;
 
 export const Card = styled.div`
@@ -18,7 +18,7 @@ export const Card = styled.div`
     font-size: var(--font-size-tiny);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-top: 0.375rem;
+    margin-top: var(--space-2);
     color: color-mix(in srgb, var(--color-text) 85%, transparent);
   }
 
@@ -33,7 +33,7 @@ export const Card = styled.div`
 `;
 
 export const Section = styled.section`
-  margin-top: 2.5rem;
+  margin-top: var(--space-10);
 
   h2 {
     font-family: var(--font-family-mono);
@@ -42,6 +42,6 @@ export const Section = styled.section`
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: color-mix(in srgb, var(--color-text) 85%, transparent);
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-4);
   }
 `;

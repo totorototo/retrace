@@ -37,8 +37,8 @@ const style = (Component) => styled(Component)`
 
   .fullscreen-btn {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
+    top: var(--space-3);
+    right: var(--space-3);
     z-index: 1;
     display: flex;
     align-items: center;
@@ -64,8 +64,8 @@ const style = (Component) => styled(Component)`
   &:fullscreen .fullscreen-btn,
   &:-webkit-full-screen .fullscreen-btn,
   &.is-fullscreen .fullscreen-btn {
-    top: max(calc(env(safe-area-inset-top, 0px) + 0.75rem), 3.25rem);
-    right: calc(env(safe-area-inset-right, 0px) + 0.75rem);
+    top: max(calc(env(safe-area-inset-top, 0px) + var(--space-3)), 3.25rem);
+    right: calc(env(safe-area-inset-right, 0px) + var(--space-3));
   }
 
   .map-message {
@@ -74,7 +74,7 @@ const style = (Component) => styled(Component)`
     justify-content: center;
     width: 100%;
     height: 100%;
-    padding: 1rem;
+    padding: var(--space-4);
     text-align: center;
     font-family: var(--font-family-mono);
     font-size: var(--font-size-small);
@@ -90,10 +90,10 @@ const style = (Component) => styled(Component)`
 
   .offline-badge {
     position: absolute;
-    bottom: 0.5rem;
+    bottom: var(--space-2);
     left: 50%;
     transform: translateX(-50%);
-    padding: 0.25rem 0.6rem;
+    padding: var(--space-1) var(--space-3);
     border-radius: var(--border-radius-sm);
     background: var(--color-background);
     opacity: 0.85;
@@ -142,9 +142,9 @@ const style = (Component) => styled(Component)`
   /* The replay's controls: the fullscreen button's frosted look, clear of it on the right. */
   .replay {
     position: absolute;
-    top: 0.75rem;
-    left: 0.75rem;
-    right: 3.75rem;
+    top: var(--space-3);
+    left: var(--space-3);
+    right: var(--space-16);
     z-index: 1;
     display: flex;
     pointer-events: none;
@@ -157,15 +157,15 @@ const style = (Component) => styled(Component)`
   &:fullscreen .replay,
   &:-webkit-full-screen .replay,
   &.is-fullscreen .replay {
-    top: max(calc(env(safe-area-inset-top, 0px) + 0.75rem), 3.25rem);
-    left: calc(env(safe-area-inset-left, 0px) + 0.75rem);
+    top: max(calc(env(safe-area-inset-top, 0px) + var(--space-3)), 3.25rem);
+    left: calc(env(safe-area-inset-left, 0px) + var(--space-3));
   }
 
   .replay.is-active {
     flex-direction: column;
-    gap: 0.375rem;
+    gap: var(--space-2);
     max-width: 28rem;
-    padding: 0.375rem;
+    padding: var(--space-2);
     border-radius: var(--border-radius-base);
     border: 1px solid var(--color-control-border);
     background: color-mix(in srgb, var(--color-background) 80%, transparent);
@@ -177,10 +177,10 @@ const style = (Component) => styled(Component)`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.375rem;
+    gap: var(--space-2);
     min-width: 2rem;
     height: 2rem;
-    padding: 0 0.5rem;
+    padding: 0 var(--space-2);
     flex-shrink: 0;
     border-radius: var(--border-radius-base);
     border: 1px solid var(--color-control-border);
@@ -206,7 +206,7 @@ const style = (Component) => styled(Component)`
   .replay-bar {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
+    gap: var(--space-2);
   }
 
   .replay-scrubber {
@@ -234,9 +234,9 @@ const style = (Component) => styled(Component)`
   .replay-readout {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.125rem 0.75rem;
+    gap: var(--space-hair) var(--space-3);
     margin: 0;
-    padding: 0 0.25rem 0.125rem;
+    padding: 0 var(--space-1) var(--space-hair);
     font-family: var(--font-family-mono);
     font-size: var(--font-size-tiny);
     font-variant-numeric: tabular-nums;
@@ -261,7 +261,7 @@ const style = (Component) => styled(Component)`
     display: inline-block;
     width: 0.625rem;
     height: 0.625rem;
-    margin-right: 0.125rem;
+    margin-right: var(--space-hair);
     border-radius: 50%;
     vertical-align: -0.05em;
 

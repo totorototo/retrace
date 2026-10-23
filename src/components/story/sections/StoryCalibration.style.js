@@ -28,7 +28,7 @@ const style = (Component) => styled(Component)`
     position: absolute;
     width: 6px;
     height: 6px;
-    margin: -3px 0 0 -3px;
+    margin: calc(-1 * var(--space-1)) 0 0 calc(-1 * var(--space-1));
     border-radius: 50%;
     pointer-events: none;
 
@@ -43,7 +43,7 @@ const style = (Component) => styled(Component)`
     &.active {
       width: 9px;
       height: 9px;
-      margin: -4.5px 0 0 -4.5px;
+      margin: calc(-1 * var(--space-2)) 0 0 calc(-1 * var(--space-2));
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-background) 65%, transparent);
     }
   }
@@ -62,14 +62,14 @@ const style = (Component) => styled(Component)`
   .settings {
     width: 100%;
     max-width: 28rem;
-    margin-top: 2.5rem;
+    margin-top: var(--space-10);
     border-collapse: collapse;
     font-size: var(--font-size-small);
   }
 
   .settings th,
   .settings td {
-    padding: 8px;
+    padding: var(--space-2);
     text-align: right;
     white-space: nowrap;
     border-bottom: 1px solid var(--color-hairline);

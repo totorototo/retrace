@@ -11,7 +11,7 @@ const style = (Component) => styled(Component)`
   /* why: a mark sits centred on its value, so one at either end of the scale (the plan's
      zero buffer at the start) would hang half outside the track. */
   [data-testid="buffers"] .row-track {
-    margin-inline: 6px;
+    margin-inline: var(--space-2);
   }
 
   /* Phones: name and margin on one line, the track the full width under them. The shared
@@ -19,12 +19,12 @@ const style = (Component) => styled(Component)`
      buffers: Budget and Climbs line their rows up with a tick axis. */
   @media (max-width: 40em) {
     [data-testid="buffers"] {
-      gap: 0.75rem;
+      gap: var(--space-3);
     }
 
     [data-testid="buffers"] .row {
       grid-template-columns: minmax(0, 1fr) max-content;
-      gap: 0.375rem 0.75rem;
+      gap: var(--space-2) var(--space-3);
 
       .row-label {
         grid-column: 1;
@@ -43,7 +43,7 @@ const style = (Component) => styled(Component)`
 
   /* The rows under the chart, set off from its legend. */
   .checkpoint-list {
-    margin-top: 2.5rem;
+    margin-top: var(--space-10);
     display: flex;
     flex-direction: column;
     list-style: none;
@@ -52,8 +52,8 @@ const style = (Component) => styled(Component)`
   .checkpoint-row {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem 0;
+    gap: var(--space-3);
+    padding: var(--space-4) 0;
     border-bottom: 1px solid var(--color-hairline);
 
     &:last-child {
@@ -65,7 +65,7 @@ const style = (Component) => styled(Component)`
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 1rem;
+    gap: var(--space-4);
   }
 
   .checkpoint-name {
@@ -73,7 +73,7 @@ const style = (Component) => styled(Component)`
   }
 
   .checkpoint-km {
-    margin-top: 0.25rem;
+    margin-top: var(--space-1);
     font-family: var(--font-family-mono);
     font-size: var(--font-size-small);
     color: var(--color-text-muted);
@@ -83,7 +83,7 @@ const style = (Component) => styled(Component)`
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 0.375rem;
+    gap: var(--space-2);
     white-space: nowrap;
   }
 
@@ -97,7 +97,7 @@ const style = (Component) => styled(Component)`
   .badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.1875rem 0.5rem;
+    padding: var(--space-1) var(--space-2);
     border: 1px solid currentColor;
     border-radius: var(--border-radius-lg);
     font-family: var(--font-family-mono);
@@ -124,16 +124,16 @@ const style = (Component) => styled(Component)`
   .checkpoint-details {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.625rem 1.5rem;
+    gap: var(--space-3) var(--space-6);
     margin: 0;
-    padding: 0.75rem;
+    padding: var(--space-3);
     border-radius: var(--border-radius-md);
     background: color-mix(in srgb, var(--color-text) 3%, transparent);
 
     > div {
       display: flex;
       flex-direction: column-reverse;
-      gap: 0.125rem;
+      gap: var(--space-hair);
     }
 
     dt {
@@ -185,7 +185,7 @@ const style = (Component) => styled(Component)`
   /* The design system's collapse toggle: dashed, the full width. */
   .show-more {
     width: 100%;
-    margin-top: 0.5rem;
+    margin-top: var(--space-2);
     border: 1px dashed var(--color-control-border);
     border-radius: var(--border-radius-base);
   }
@@ -195,7 +195,7 @@ const style = (Component) => styled(Component)`
   .fold {
     display: grid;
     grid-template-rows: 0fr;
-    margin-top: -0.75rem;
+    margin-top: calc(-1 * var(--space-3));
     opacity: 0;
     transition:
       grid-template-rows var(--transition-standard),

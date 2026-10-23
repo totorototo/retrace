@@ -16,8 +16,8 @@ const style = (Component) => styled(Component)`
     display: flex;
     align-items: center;
     min-height: 44px;
-    gap: 0.625rem;
-    margin-top: calc(env(safe-area-inset-top, 0px) + 1.25rem);
+    gap: var(--space-3);
+    margin-top: calc(env(safe-area-inset-top, 0px) + var(--space-5));
 
     /* The arrowhead starts 6 of the mark's 64 in: pulled back to line up with the text below. */
     .mark {
@@ -48,7 +48,7 @@ const style = (Component) => styled(Component)`
 
   /* The suite's start: the eyebrow as far under the masthead as in the other apps. */
   .intro {
-    padding: clamp(3rem, 12vh, 6rem) 0 0.5rem;
+    padding: var(--start-gap) 0 var(--space-2);
   }
 
   .eyebrow {
@@ -59,7 +59,7 @@ const style = (Component) => styled(Component)`
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: color-mix(in srgb, var(--color-text) 85%, transparent);
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-4);
   }
 
   .title {
@@ -69,30 +69,30 @@ const style = (Component) => styled(Component)`
     letter-spacing: -0.03em;
     line-height: 1;
     color: var(--color-text);
-    margin: 0 0 1rem;
+    margin: 0 0 var(--space-4);
     max-width: 16ch;
   }
 
   .lede {
     color: var(--color-text-muted);
-    max-width: 38ch;
+    max-width: var(--measure-lede);
   }
 
   /* The files, as Terminus's and Waymark's start: one narrow list of rows, each an icon and
      what it opens, the file's name once it is in. */
   .choices {
-    max-width: 28rem;
+    max-width: var(--measure-list);
     /* 2.5rem under the lede, with the intro's 0.5rem. */
-    margin-top: 2rem;
+    margin-top: var(--space-8);
     border-top: 1px solid var(--color-hairline);
   }
 
   .choice {
     display: flex;
     align-items: center;
-    gap: 0.875rem;
+    gap: var(--space-4);
     min-height: 44px;
-    padding: 1rem 0;
+    padding: var(--space-4) 0;
     border-bottom: 1px solid var(--color-hairline);
     font-family: var(--font-family-mono);
     font-size: var(--font-size-small);
@@ -126,7 +126,7 @@ const style = (Component) => styled(Component)`
   /* The plan's model under the list, in the start's note type. */
   .model {
     max-width: 40ch;
-    margin-top: 1.25rem;
+    margin-top: var(--space-5);
     font-family: var(--font-family-mono);
     font-size: var(--font-size-tiny);
     line-height: 1.5;
@@ -148,7 +148,7 @@ const style = (Component) => styled(Component)`
   }
 
   .ledger {
-    margin-top: 2rem;
+    margin-top: var(--space-8);
     border-bottom: 1px solid var(--color-hairline);
   }
 
@@ -156,9 +156,9 @@ const style = (Component) => styled(Component)`
     display: grid;
     grid-template-columns: 9rem minmax(0, 1fr) auto;
     align-items: center;
-    column-gap: 1.5rem;
-    row-gap: 0.75rem;
-    padding: 1.25rem 0;
+    column-gap: var(--space-6);
+    row-gap: var(--space-3);
+    padding: var(--space-5) 0;
     border-top: 1px solid var(--color-hairline);
     position: relative;
   }
@@ -175,7 +175,7 @@ const style = (Component) => styled(Component)`
   .ledger-end {
     display: flex;
     justify-content: flex-end;
-    margin-top: 1rem;
+    margin-top: var(--space-4);
   }
 
   .recap-files {
@@ -193,7 +193,7 @@ const style = (Component) => styled(Component)`
   }
 
   .row-note {
-    margin-top: 0.5rem;
+    margin-top: var(--space-2);
     font-size: var(--font-size-small);
     color: color-mix(in srgb, var(--color-text) 85%, transparent);
   }
@@ -206,7 +206,7 @@ const style = (Component) => styled(Component)`
     font-size: var(--font-size-small);
     font-weight: var(--font-weight-bold);
     min-height: 44px;
-    padding: 0.5rem 1rem;
+    padding: var(--space-2) var(--space-4);
     border-radius: var(--border-radius-base);
     border: 1px solid var(--color-control-border);
     background: none;
@@ -223,7 +223,7 @@ const style = (Component) => styled(Component)`
   }
 
   .status {
-    margin-top: 1rem;
+    margin-top: var(--space-4);
     font-family: var(--font-family-mono);
     font-size: var(--font-size-small);
     color: color-mix(in srgb, var(--color-text) 85%, transparent);
