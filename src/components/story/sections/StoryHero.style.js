@@ -18,7 +18,7 @@ const style = (Component) => styled(Component)`
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: color-mix(in srgb, var(--color-text) 85%, transparent);
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-4);
   }
 
   .name {
@@ -28,7 +28,7 @@ const style = (Component) => styled(Component)`
     letter-spacing: -0.04em;
     line-height: 0.98;
     color: var(--color-text);
-    margin: 0 0 1rem;
+    margin: 0 0 var(--space-4);
     max-width: 20ch;
   }
 
@@ -36,17 +36,17 @@ const style = (Component) => styled(Component)`
     font-family: var(--font-family-mono);
     font-size: var(--font-size-small);
     color: var(--color-text-muted);
-    margin: 0 0 2.5rem;
+    margin: 0 0 var(--space-10);
   }
 
   .stat-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.25rem clamp(1.5rem, 5vw, 3.5rem);
+    gap: var(--space-5) var(--stat-gap);
   }
 
   .stat-row + .stat-row {
-    margin-top: 2rem;
+    margin-top: var(--space-8);
   }
 
   /* Phones: three columns, so a wrapped row lines up with the one above. */
@@ -94,7 +94,7 @@ const style = (Component) => styled(Component)`
 
   /* The takeaways: the hero's last word, quieter than its figures, the lede's measure. */
   .in-short {
-    margin-top: 3rem;
+    margin-top: var(--space-12);
     max-width: 40rem;
   }
 
@@ -106,7 +106,7 @@ const style = (Component) => styled(Component)`
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: color-mix(in srgb, var(--color-text) 85%, transparent);
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-4);
   }
 
   /* The waterfall: label, track, value, in fixed columns so every bar shares one scale. */
@@ -116,19 +116,19 @@ const style = (Component) => styled(Component)`
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-2);
   }
 
   .step {
     display: grid;
     grid-template-columns: 6.5rem 1fr 4rem;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--space-3);
   }
 
   .step-total {
-    margin-top: 0.25rem;
-    padding-top: 0.75rem;
+    margin-top: var(--space-1);
+    padding-top: var(--space-3);
     border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
   }
 
@@ -139,8 +139,8 @@ const style = (Component) => styled(Component)`
 
   .step-zero {
     position: absolute;
-    top: -4px;
-    bottom: -4px;
+    top: calc(-1 * var(--space-1));
+    bottom: calc(-1 * var(--space-1));
     width: 1px;
     background: color-mix(in srgb, var(--color-text) 35%, transparent);
   }
@@ -184,11 +184,11 @@ const style = (Component) => styled(Component)`
 
   .facts {
     list-style: none;
-    margin: 1.75rem 0 0;
+    margin: var(--space-7) 0 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-2);
   }
 
   .facts li {
@@ -225,7 +225,7 @@ const style = (Component) => styled(Component)`
     font-size: var(--font-size-small);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-top: 0.375rem;
+    margin-top: var(--space-2);
     color: color-mix(in srgb, var(--color-text) 85%, transparent);
   }
 `;

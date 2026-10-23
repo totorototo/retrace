@@ -75,8 +75,8 @@ const style = (Component) => styled(Component)`
   .halfway {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin: 0.25rem 0;
+    gap: var(--space-3);
+    margin: var(--space-1) 0;
     font-family: var(--font-family-mono);
     font-size: var(--font-size-xxsmall);
     letter-spacing: 0.1em;

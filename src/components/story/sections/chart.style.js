@@ -7,7 +7,7 @@ export const chartCss = css`
      setup's chips, scaled down. */
   .level-switch {
     display: inline-flex;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-4);
     border: 1px solid var(--color-control-border);
     border-radius: var(--border-radius-base);
     overflow: hidden;
@@ -18,7 +18,7 @@ export const chartCss = css`
     font-size: var(--font-size-tiny);
     font-weight: var(--font-weight-bold);
     min-height: 44px;
-    padding: 0.25rem 0.875rem;
+    padding: var(--space-1) var(--space-4);
     border: none;
     background: none;
     color: var(--color-text-faint);
@@ -47,9 +47,9 @@ export const chartCss = css`
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
-    gap: 0.25rem 1rem;
+    gap: var(--space-1) var(--space-4);
     min-height: calc(var(--readout-lines) * 1.5em + (var(--readout-lines) - 1) * 0.25rem);
-    margin-bottom: 0.75rem;
+    margin-bottom: var(--space-3);
     font-family: var(--font-family-mono);
     font-size: var(--font-size-tiny);
     color: var(--color-text-muted);
@@ -107,7 +107,7 @@ export const chartCss = css`
   .axis-names {
     position: relative;
     height: 1.25rem;
-    margin-top: 0.375rem;
+    margin-top: var(--space-2);
   }
 
   .axis-name {
@@ -171,7 +171,7 @@ export const chartCss = css`
     position: absolute;
     width: 8px;
     height: 8px;
-    margin: -4px 0 0 -4px;
+    margin: calc(-1 * var(--space-1)) 0 0 calc(-1 * var(--space-1));
     border-radius: 50%;
     background: var(--color-text);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-background) 65%, transparent);
@@ -181,8 +181,8 @@ export const chartCss = css`
   .legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
-    margin-top: 1rem;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
     font-family: var(--font-family-mono);
     font-size: var(--font-size-xsmall);
     color: var(--color-text-faint);
@@ -191,7 +191,7 @@ export const chartCss = css`
   .legend-item {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: var(--space-2);
   }
 
   .legend-swatch {
@@ -226,14 +226,14 @@ export const rowsCss = css`
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-2);
   }
 
   .row {
     display: grid;
     grid-template-columns: minmax(6rem, 11rem) 1fr minmax(3.5rem, max-content);
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--space-3);
     border-radius: var(--border-radius-xs);
 
     &.active {
@@ -244,7 +244,7 @@ export const rowsCss = css`
     /* Phone width: the label on its own line, so the track keeps the width. */
     @media (max-width: 40em) {
       grid-template-columns: 1fr minmax(3.5rem, max-content);
-      gap: 0.25rem 0.75rem;
+      gap: var(--space-1) var(--space-3);
 
       .row-label {
         grid-column: 1 / -1;
@@ -282,8 +282,8 @@ export const rowsCss = css`
 
   .row-zero {
     position: absolute;
-    top: -3px;
-    bottom: -3px;
+    top: calc(-1 * var(--space-1));
+    bottom: calc(-1 * var(--space-1));
     width: 1px;
     background: color-mix(in srgb, var(--color-text) 40%, transparent);
   }
@@ -306,8 +306,8 @@ export const rowsCss = css`
 
   .tick-line {
     position: absolute;
-    top: -3px;
-    bottom: -3px;
+    top: calc(-1 * var(--space-1));
+    bottom: calc(-1 * var(--space-1));
     width: 1px;
     background: color-mix(in srgb, var(--color-text) 12%, transparent);
   }
@@ -325,7 +325,7 @@ export const rowsCss = css`
     top: 50%;
     width: 10px;
     height: 10px;
-    margin: -5px 0 0 -5px;
+    margin: calc(-1 * var(--space-2)) 0 0 calc(-1 * var(--space-2));
     border-radius: 50%;
 
     &.planned {
