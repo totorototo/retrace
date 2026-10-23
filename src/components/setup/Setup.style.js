@@ -148,6 +148,15 @@ const style = (Component) => styled(Component)`
     display: block;
   }
 
+  /* The suite's privacy note, as Waymark's and Regimen's: last on the start, under the list. */
+  .note {
+    max-width: 40ch;
+    margin-top: var(--space-8);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-tiny);
+    color: var(--color-text-muted);
+  }
+
   .ledger {
     margin-top: var(--space-8);
     border-bottom: 1px solid var(--color-hairline);
