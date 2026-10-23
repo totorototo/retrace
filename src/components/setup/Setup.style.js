@@ -71,6 +71,7 @@ const style = (Component) => styled(Component)`
     color: var(--color-text);
     margin: 0 0 var(--space-4);
     max-width: 16ch;
+    text-wrap: balance;
   }
 
   .lede {

@@ -74,7 +74,7 @@ const Setup = memo(function Setup({ className }) {
             <h2 className="title">Your race, against the plan</h2>
             <p className="lede">
               The route, the plan.json you made for it in Regimen, and the activity from your watch.
-              Nothing leaves this device.
+              Your files stay on this device: nothing is uploaded.
             </p>
           </div>
         )}
