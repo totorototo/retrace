@@ -28,13 +28,24 @@ const GlobalStyle = createGlobalStyle`
     padding: 0;
   }
 
+  /* Terminus's scroll model: the document is the window, never taller, and the body
+     scrolls inside it, only when the page is. why: a root that scrolls shows a full-height
+     scroll bar on a phone, and 100vh (taller than the screen under the URL bar) plus the
+     safe-area padding made every page scroll a few px. */
+  html {
+    height: 100%;
+    overflow: hidden;
+  }
+
   /* A column: the footer at the window's foot on a short page, as the other apps'.
      why flex: a flex item's margins stay inside it, so the masthead's top margin no longer
      runs through to the body and pushes the page 20px past the window. */
   body {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
     min-width: 320px;
     background-color: var(--color-background);
     padding:
